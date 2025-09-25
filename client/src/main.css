@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: red;
+  --color-brand-red-100: blue;
+
+  --color-cnsc-primary-color: #500000;
+  --color-cnsc-secondary-color: #ee8f00;
+  --color-cnsc-accent-1-color: #003092;
+  --color-cnsc-accent-2-color: #00879e;
+  --color-cnsc-white-color: #f1f1f1;
+  --color-cnsc-black-color: #4d4d4d;
+  --color-cnsc-blue-color: #1c4060;
+
+  --color-brian-blue: #1b3a57;
+}
+
+.stroked-text-cnsc {
+  color: #500000;
+  font-weight: 1000; /* or bold, or any numeric weight like 900 */
+  -webkit-text-stroke: 3px white;
+  text-stroke: 3px white; /* fallback (not widely supported) */
+}
+
+.stroked-text-codex {
+  color: #ee8f00;
+  font-weight: 700; /* or bold */
+  -webkit-text-stroke: 3px white;
+  text-stroke: 3px white;
+}
+/* Scrollbar width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* For Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* For Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Scrollbar Track */
+::-webkit-scrollbar-track {
+  background: #4d4d4d;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 2.5px white;
+}
+
+/* Scrollbar Thumb */
+::-webkit-scrollbar-thumb {
+  background: #500000;
+  border-radius: 1000px;
+}
+
+/* Scrollbar Thumb on Hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+body {
+  font-family: "Afacad", sans-serif;
+}
+
+.underline-animate {
+  position: relative;
+  /* Optional: remove default underline if needed */
+  text-decoration: none;
+}
+
+.underline-animate::after {
+  content: "";
+  position: absolute;
+  height: 2px; /* Adjust underline thickness */
+  width: 100%;
+  background-color: currentColor; /* Uses the text color */
+  left: 50%;
+  bottom: -2px; /* Adjust vertical position as needed */
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+.underline-animate:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
