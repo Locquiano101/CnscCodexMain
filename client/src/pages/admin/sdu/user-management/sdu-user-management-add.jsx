@@ -3,8 +3,7 @@ import { useState, useCallback } from "react";
 import { API_ROUTER } from "../../../../App";
 
 import { GraduationCap, Building, Mail, X, Save, User } from "lucide-react";
-import { departments } from "../sdu-main";
-
+import { departments } from "../../../../components/department_arrays";
 export function AddUserModal({ organization, onClose, onUserAdded }) {
   const [formData, setFormData] = useState({
     name: "",

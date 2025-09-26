@@ -22,35 +22,38 @@ export function CalendarComponent() {
       try {
         const response = await axios.get(
           `${API_ROUTER}/getAllProposalConduct/`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
-        setProposalCalendar(response.data);
-      } catch (error) {}
+
+        // Ensure we always set an array
+        setProposalCalendar(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error("Error fetching calendar data:", error);
+        setProposalCalendar([]);
+      }
     };
 
     fetchUserData();
   }, []);
 
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  const getDaysInMonth = (date) =>
+    new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  const getFirstDayOfMonth = (date) =>
+    new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const getEventsForDate = (date) => {
+    if (!proposalCalendar || proposalCalendar.length === 0) return [];
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${day}`;
 
     return proposalCalendar.filter((event) => {
-      const eventDate =
-        event.ProposedIndividualActionPlan.proposedDate.split("T")[0];
-      return eventDate === dateStr;
+      const proposedDate =
+        event?.ProposedIndividualActionPlan?.proposedDate?.split("T")[0];
+      return proposedDate === dateStr;
     });
   };
 
@@ -76,16 +79,19 @@ export function CalendarComponent() {
   };
 
   const formatDateForDisplay = (isoString) => {
+    if (!isoString) return "No Date";
     const date = new Date(isoString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return isNaN(date)
+      ? "Invalid Date"
+      : date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
   };
 
-  const handleDayClick = (events, date) => {
-    if (events.length === 0) return;
+  const handleDayClick = (events) => {
+    if (!events || events.length === 0) return;
 
     if (events.length === 1) {
       setSelectedEvent(events[0]);
@@ -94,7 +100,7 @@ export function CalendarComponent() {
       setSelectedDayEvents({
         events,
         date: formatDateForDisplay(
-          events[0].ProposedIndividualActionPlan.proposedDate
+          events[0]?.ProposedIndividualActionPlan?.proposedDate
         ),
       });
       setSelectedEvent(null);
@@ -104,7 +110,6 @@ export function CalendarComponent() {
 
   const closePanel = () => {
     setPanelOpen(false);
-    // Delay clearing the content until animation is complete
     setTimeout(() => {
       setSelectedEvent(null);
       setSelectedDayEvents(null);
@@ -118,7 +123,6 @@ export function CalendarComponent() {
 
   const goBackToDayEvents = () => {
     setSelectedEvent(null);
-    // selectedDayEvents should still be set, so it will show the day events view
   };
 
   const renderCalendarGrid = () => {
@@ -127,6 +131,7 @@ export function CalendarComponent() {
     const days = [];
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+    // Day headers
     dayNames.forEach((day) => {
       days.push(
         <div
@@ -138,10 +143,12 @@ export function CalendarComponent() {
       );
     });
 
+    // Empty slots before first day
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="p-3 bg-gray-50"></div>);
     }
 
+    // Calendar days
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(
         currentDate.getFullYear(),
@@ -168,15 +175,19 @@ export function CalendarComponent() {
           </div>
 
           <div className="space-y-1 overflow-y-auto max-h-[80px]">
-            {events.map((event, index) => (
+            {events.map((event) => (
               <div
-                key={event._id}
+                key={event?._id || Math.random()}
                 className={`text-xs p-1 rounded text-white truncate ${getStatusColor(
-                  event.overallStatus
+                  event?.overallStatus
                 )}`}
-                title={`${event.ProposedIndividualActionPlan.activityTitle} - ${event.overallStatus}`}
+                title={`${
+                  event?.ProposedIndividualActionPlan?.activityTitle ||
+                  "Untitled"
+                } - ${event?.overallStatus || "No Status"}`}
               >
-                {event.ProposedIndividualActionPlan.activityTitle}
+                {event?.ProposedIndividualActionPlan?.activityTitle ||
+                  "Untitled"}
               </div>
             ))}
 
@@ -194,15 +205,14 @@ export function CalendarComponent() {
   };
 
   return (
-    <div className="min-h-screen  bg-gray-300 flex flex-col gap-4 ">
-      {/* Main Calendar Content */}
-      <h2 className="text-3xl  font-bold text-gray-900 mb-4 text-center">
+    <div className="min-h-screen bg-gray-300 flex flex-col gap-4">
+      <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">
         Event Calendar
       </h2>
-      {/* Sliding Panel */}
-      <div className="h-full mx-auto container flex gap-4  p-12">
+
+      <div className="h-full mx-auto container flex gap-4 p-12">
+        {/* Calendar Section */}
         <div className="bg-white flex-1 rounded-lg shadow-lg overflow-hidden">
-          {/* Calendar Header */}
           <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
             <button
               onClick={() => navigateMonth(-1)}
@@ -224,13 +234,12 @@ export function CalendarComponent() {
             </button>
           </div>
 
-          {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-0">{renderCalendarGrid()}</div>
         </div>
+
         {/* Multiple Events View */}
         {selectedDayEvents && !selectedEvent && (
           <div className="flex flex-col bg-white rounded-xl shadow-md">
-            {/* Header */}
             <div className="flex justify-between items-center p-6 border-b rounded-xl border-gray-200 bg-gray-50">
               <h3 className="text-lg font-bold text-gray-800">
                 Events on {selectedDayEvents.date}
@@ -243,41 +252,48 @@ export function CalendarComponent() {
               </button>
             </div>
 
-            {/* Events List */}
             <div className="w-fit overflow-y-auto p-6 space-y-4">
-              {selectedDayEvents.events.map((event, index) => (
+              {selectedDayEvents.events.map((event) => (
                 <div
-                  key={event._id}
+                  key={event?._id || Math.random()}
                   className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => selectEventFromDay(event)}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-bold text-gray-800 text-sm leading-tight">
-                      {event.ProposedIndividualActionPlan.activityTitle}
+                      {event?.ProposedIndividualActionPlan?.activityTitle ||
+                        "Untitled"}
                     </h4>
                     <span
                       className={`px-2 py-1 rounded text-xs text-white ml-2 ${getStatusColor(
-                        event.overallStatus
+                        event?.overallStatus
                       )}`}
                     >
-                      {event.overallStatus}
+                      {event?.overallStatus || "No Status"}
                     </span>
                   </div>
 
                   <div className="space-y-1 text-xs text-gray-600">
                     <div className="flex items-center gap-2">
                       <MapPin size={12} />
-                      <span>{event.ProposedIndividualActionPlan.venue}</span>
+                      <span>
+                        {event?.ProposedIndividualActionPlan?.venue ||
+                          "No Venue"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">Budget:</span>
                       <span>
                         ₱
-                        {event.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()}
+                        {event?.ProposedIndividualActionPlan
+                          ?.budgetaryRequirements
+                          ? event.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
+                          : "0"}
                       </span>
                     </div>
                     <p className="text-gray-600 mt-2 line-clamp-2">
-                      {event.ProposedIndividualActionPlan.briefDetails}
+                      {event?.ProposedIndividualActionPlan?.briefDetails ||
+                        "No details provided."}
                     </p>
                   </div>
                 </div>
@@ -288,8 +304,7 @@ export function CalendarComponent() {
 
         {/* Single Event View */}
         {selectedEvent && (
-          <div className="flex flex-col bg-white shadow-md rounded-xl ">
-            {/* Header */}
+          <div className="flex flex-col bg-white shadow-md rounded-xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-300">
               <div className="flex items-center gap-3">
                 {selectedDayEvents && (
@@ -312,109 +327,111 @@ export function CalendarComponent() {
               </button>
             </div>
 
-            {/* Event Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Title */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 leading-tight">
-                  {selectedEvent.ProposedIndividualActionPlan.activityTitle}
+                  {selectedEvent?.ProposedIndividualActionPlan?.activityTitle ||
+                    "Untitled"}
                 </h3>
               </div>
 
-              {/* Organization */}
               <div>
                 <p className="text-sm text-gray-500 mb-1">
                   Proponent Organization
                 </p>
                 <p className="font-medium text-gray-800">
-                  {selectedEvent.organizationProfile.orgName}
+                  {selectedEvent?.organizationProfile?.orgName ||
+                    "Unknown Organization"}
                 </p>
               </div>
 
-              {/* Date, Venue, Budget, Status */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-gray-700">
                   <Calendar size={16} />
                   <span className="text-sm">
                     {formatDateForDisplay(
-                      selectedEvent.ProposedIndividualActionPlan.proposedDate
+                      selectedEvent?.ProposedIndividualActionPlan?.proposedDate
                     )}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <MapPin size={16} />
                   <span className="text-sm">
-                    {selectedEvent.ProposedIndividualActionPlan.venue}
+                    {selectedEvent?.ProposedIndividualActionPlan?.venue ||
+                      "No Venue"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <span className="font-medium text-sm">Budget:</span>
                   <span className="text-sm">
                     ₱
-                    {selectedEvent.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()}
+                    {selectedEvent?.ProposedIndividualActionPlan
+                      ?.budgetaryRequirements
+                      ? selectedEvent.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
+                      : "0"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <span className="font-medium text-sm">Status:</span>
                   <span
                     className={`rounded px-2 py-1 text-xs font-medium text-white ${getStatusColor(
-                      selectedEvent.overallStatus
+                      selectedEvent?.overallStatus
                     )}`}
                   >
-                    {selectedEvent.overallStatus}
+                    {selectedEvent?.overallStatus || "No Status"}
                   </span>
                 </div>
               </div>
 
-              {/* SDGs */}
               <div>
                 <p className="font-medium text-gray-700 mb-2">Aligned SDGs</p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedEvent.ProposedIndividualActionPlan.alignedSDG.map(
-                    (sdg, index) => {
-                      try {
-                        if (typeof sdg === "string" && sdg.startsWith("[")) {
-                          const parsed = JSON.parse(sdg);
-                          return parsed.map((parsedSdg, subIndex) => (
-                            <span
-                              key={`${index}-${subIndex}`}
-                              className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
-                            >
-                              {parsedSdg}
-                            </span>
-                          ));
-                        }
-                      } catch {
-                        // fallback to string
+                  {(
+                    selectedEvent?.ProposedIndividualActionPlan?.alignedSDG ||
+                    []
+                  ).map((sdg, index) => {
+                    try {
+                      if (typeof sdg === "string" && sdg.startsWith("[")) {
+                        const parsed = JSON.parse(sdg);
+                        return parsed.map((parsedSdg, subIndex) => (
+                          <span
+                            key={`${index}-${subIndex}`}
+                            className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
+                          >
+                            {parsedSdg}
+                          </span>
+                        ));
                       }
-                      return (
-                        <span
-                          key={index}
-                          className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
-                        >
-                          {sdg}
-                        </span>
-                      );
+                    } catch {
+                      // fallback to raw
                     }
-                  )}
+                    return (
+                      <span
+                        key={index}
+                        className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
+                      >
+                        {sdg || "N/A"}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Brief Details */}
               <div>
                 <p className="font-medium text-gray-700 mb-2">Brief Details</p>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  {selectedEvent.ProposedIndividualActionPlan.briefDetails}
+                  {selectedEvent?.ProposedIndividualActionPlan?.briefDetails ||
+                    "No details provided."}
                 </p>
               </div>
 
-              {/* Objective */}
               <div>
                 <p className="font-medium text-gray-700 mb-2">
                   Aligned Objective
                 </p>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  {selectedEvent.ProposedIndividualActionPlan.AlignedObjective}
+                  {selectedEvent?.ProposedIndividualActionPlan
+                    ?.AlignedObjective || "No objective provided."}
                 </p>
               </div>
             </div>
@@ -424,7 +441,7 @@ export function CalendarComponent() {
 
       {panelOpen && (
         <div
-          className=" bg-black bg-opacity-50 z-40 lg:hidden"
+          className="bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={closePanel}
         />
       )}

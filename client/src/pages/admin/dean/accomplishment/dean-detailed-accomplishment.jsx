@@ -15,7 +15,6 @@ export function DeanAccomplishmentReportDetailed({
 
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [modalType, setModalType] = useState(null);
   useEffect(() => {
     if (selectedAccomplishment) {
       setLoading(false);

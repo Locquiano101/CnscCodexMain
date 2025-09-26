@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useRef, useState } from "react";
 import {
   NavLink,
@@ -18,6 +19,7 @@ import {
   LogOut,
   X,
   Plus,
+  Bell,
 } from "lucide-react";
 
 import axios from "axios";
@@ -26,7 +28,7 @@ import { InitialRegistration, ReRegistration } from "./initial-registration";
 import StudentLeaderPresidentListComponent from "./accreditation/presidents/president";
 import StudentLeaderRosters from "./accreditation/roster-members/roster-member";
 import StudentAccreditationMainComponent from "./accreditation/student-accreditation-main";
-import StudentHomePage from "./dashboard/home";
+import StudentHomePage from "./home";
 import FinancialReport from "./accreditation/financial-report.jsx/financial-report";
 import { ProportionCropTool } from "../../../components/image_uploader";
 import { AccreditationDocuments } from "./accreditation/accreditation-document";
@@ -36,6 +38,7 @@ import { StudentLeaderAccomplishmentReport } from "./accomplishment/student-lead
 import backgroundImage from "./../../../assets/cnsc-codex-2.svg";
 
 import { StudentPost } from "./posts/student-post";
+import { StudentLeaderNotification } from "./student-leader-notification";
 
 export default function StudentLeaderMainPage() {
   // User and organization data
@@ -280,6 +283,11 @@ function StudentRoutes({ orgData, accreditationData }) {
           element={<StudentLeaderAccomplishmentReport orgData={orgData} />}
         />
 
+        <Route
+          path="notifications"
+          element={<StudentLeaderNotification orgData={orgData} />}
+        />
+
         <Route path="Post" element={<StudentPost orgData={orgData} />} />
 
         <Route
@@ -466,12 +474,12 @@ function StudentNavigation({ orgData }) {
               label: "Proposals",
               path: "/student-leader/proposal",
             },
-            // {
-            //   key: "post",
-            //   icon: <PenSquare className="mr-3 w-5 h-5" />,
-            //   label: "Post",
-            //   path: "/student-leader/post",
-            // },
+            {
+              key: "Notifications",
+              icon: <Bell className="mr-3 w-5 h-5" />,
+              label: "Notifications",
+              path: "/student-leader/notifications",
+            },
             {
               key: "logs",
               icon: <Clock className="mr-3 w-5 h-5" />,

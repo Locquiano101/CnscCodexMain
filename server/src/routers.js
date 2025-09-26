@@ -125,9 +125,24 @@ router.post("/sendNotificationRoster", Controller.SendEmailToOrgUsers);
 router.post("/postApproveRoster/:rosterId", Controller.ApprovedRosterList);
 /* **********  ADVISER ACCREDITATION ********** */
 
-/*
+router.get("/notifications", async (req, res) => {
+  try {
+    const userId = req.session.userId; // or use query param if not session based
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-**********              **********
+    const notifications = await Notification.find({ recipient: userId }).sort({
+      createdAt: -1,
+    });
+
+    res.json(notifications);
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 /*             **********
 **********              **********
           STUDENT LEADER

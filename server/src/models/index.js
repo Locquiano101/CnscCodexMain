@@ -4,7 +4,7 @@ import {
   organizationSchema,
   organizationProfileSchema,
 } from "./organization.js";
-import { AdviserSchema, userSchema } from "./users.js";
+import { AdviserSchema, notificationSchema, userSchema } from "./users.js";
 import {
   proposalConductSchema,
   proposedIndividualActionPlanSchema,
@@ -61,9 +61,11 @@ const FinancialReport = mongoose.model(
   "FinancialReport",
   financialReportSchema
 );
+const Notification = mongoose.model("Notification", notificationSchema);
 
 export {
   User,
+  Notification,
   Adviser,
   Post,
   Proposal,

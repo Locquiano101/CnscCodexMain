@@ -64,3 +64,28 @@ export const LogsSchema = new Schema(
   },
   { timestamps: true }
 );
+export const DeadlineSchema = new Schema(
+  {
+    DeadlineFor: String, // accomplishment, proposal, etc.
+    DeadlineDate: Date,
+    isDeadlineActive: Boolean,
+  },
+  { timestamps: true }
+);
+
+export const notificationSchema = new mongoose.Schema(
+  {
+    organizationProfile: {
+      type: Schema.Types.ObjectId,
+      ref: "OrganizationProfile",
+    },
+
+    type: {
+      type: String,
+    },
+    message: { type: String, required: true },
+    data: { type: Object }, // optional payload (like proposalId, link, etc.)
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);

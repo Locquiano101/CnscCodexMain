@@ -1,8 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 
 import {
   Upload,
-  Download,
   FileText,
   CheckCircle,
   Clock,
@@ -352,9 +352,8 @@ function ErrorState({ error, onRetry }) {
   </div>;
 }
 
-function OverallStatus({ accreditationData, setUploadingDocType }) {
-  const { overallStatus } = accreditationData;
-
+function OverallStatus({ accreditationData }) {
+  const { overallStatus } = accreditationData ?? {};
   const requirements = [
     {
       name: "Joint Statement",
@@ -400,7 +399,7 @@ function OverallStatus({ accreditationData, setUploadingDocType }) {
           Accreditation Status
         </h2>
         <div className={`px-4 py-2 -full flex items-center gap-2 `}>
-          <span className="font-medium">{overallStatus}</span>
+          <span className="font-medium">{overallStatus || "N/A"}</span>
         </div>
       </div>
 
@@ -541,7 +540,7 @@ function PresidentInformation({ accreditationData }) {
   );
 }
 
-function DocumentDisplayCard({ accreditationData, setUploadingDocType }) {
+function DocumentDisplayCard({ accreditationData }) {
   const { JointStatement, PledgeAgainstHazing, ConstitutionAndByLaws } =
     accreditationData;
 
@@ -646,7 +645,7 @@ function RosterLists({ accreditationData }) {
     if (accreditationData?.organizationProfile?._id) {
       fetchRosterMembers();
     }
-  }, [accreditationData]);
+  }, [accreditationData, fetchRosterMembers]);
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -727,6 +726,7 @@ function RosterLists({ accreditationData }) {
     </div>
   );
 }
+
 function UploadDocument({
   title = "Upload a Document",
   buttonLabel = "Submit",

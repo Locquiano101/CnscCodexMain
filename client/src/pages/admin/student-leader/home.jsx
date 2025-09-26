@@ -13,7 +13,7 @@ import {
   DollarSign,
   Users,
 } from "lucide-react";
-import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
+import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
 
 export default function StudentHomePage({ orgData, accreditationData }) {
   return (

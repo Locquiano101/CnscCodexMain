@@ -17,13 +17,13 @@ import StudentDevMainLayout from "./pages/admin/sdu/sdu-main";
 import { AdviserPage } from "./pages/admin/adviser/adviser_main";
 import { DeanPage } from "./pages/admin/dean/dean-main";
 import { SduCoordinatorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main";
-import { StudentPost } from "./pages/admin/student-leader/posts/student-post";
 import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
+import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
 
-const MAIN_API_ROUTER = import.meta.env.VITE_API_ROUTER;
-
-export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
+const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
+console.log(MAIN_API_ROUTER);
+export const API_ROUTER = `${MAIN_API_ROUTER}`;
 export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
 
 export default function App() {
@@ -37,7 +37,7 @@ export default function App() {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["SDU", "sdu", "Sdu"]} />}>
-        <Route path="/SDU/*" element={<StudentDevMainLayout />} />
+        <Route path="/SDU/*" element={<SduMainPage />} />
       </Route>
 
       <Route

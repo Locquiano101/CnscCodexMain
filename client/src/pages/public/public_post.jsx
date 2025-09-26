@@ -215,7 +215,7 @@ export function EventComponent() {
       : null;
   };
 
-  const renderContentPreview = (post, imageUrl, content) => {
+  const renderContentPreview = (post, imageUrl) => {
     return (
       <div className="relative h-40 bg-gray-200">
         {imageUrl ? (
@@ -235,16 +235,6 @@ export function EventComponent() {
         )}
       </div>
     );
-  };
-
-  const parseTags = (tags) => {
-    if (!Array.isArray(tags) || tags.length === 0) return [];
-    try {
-      const parsed = JSON.parse(tags[0]);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
   };
 
   if (loading) {
@@ -279,7 +269,6 @@ export function EventComponent() {
                 post?.content,
                 post?.organizationProfile?._id
               );
-              const tags = parseTags(post?.tags);
               const hasContent =
                 post?.caption && post.caption.trim().length > 0;
               const firstContent =

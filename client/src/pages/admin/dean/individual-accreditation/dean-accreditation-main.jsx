@@ -34,7 +34,6 @@ export function DeanAccreditationMain({ selectedOrg }) {
   const [AccreditationData, setAccreditationData] = useState(null);
   const [presidentMoreHorizontal, setPresidentMoreHorizontal] = useState(false);
   const [revisionNotes, setRevisionNotes] = useState("");
-  const [popup, setPopup] = useState(null); // holds type & message
   const [organizationProfileApproval, setOrganizationProfileApproval] =
     useState(false);
   const [organizationProfileRevision, setOrganizationProfileRevision] =
@@ -244,7 +243,7 @@ export function DeanAccreditationMain({ selectedOrg }) {
               {isManagePresidentProfileOpen && (
                 <div className="absolute w-full right-0 bg-white border border-gray-200 rounded-b-lg shadow-xl z-10 overflow-hidden">
                   <button
-                    onClick={(e) => {
+                    onClick={() => {
                       setOrganizationProfileApproval(true);
                     }}
                     className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-green-50 text-sm text-gray-700 transition-colors duration-200"
@@ -253,7 +252,7 @@ export function DeanAccreditationMain({ selectedOrg }) {
                     Approve Organization Profile
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={() => {
                       setOrganizationProfileRevision(true);
                     }}
                     className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-blue-50 text-sm text-gray-700 transition-colors duration-200"
@@ -323,7 +322,7 @@ export function DeanAccreditationMain({ selectedOrg }) {
                 value: orgProfile.adviser?.name,
                 icon: <User className="w-4 h-4 mr-2 text-orange-500" />,
               },
-            ].map((item, index) => {
+            ].map((item) => {
               // Skip rendering if value doesn't exist or is empty
               if (
                 !item.value ||

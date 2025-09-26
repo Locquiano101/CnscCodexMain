@@ -1,93 +1,43 @@
-import { useState, useEffect, useRef } from "react";
-import { Outlet, useOutletContext } from "react-router-dom";
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
-import { Routes, Route } from "react-router-dom";
-import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { API_ROUTER } from "../../../App";
+import { Outlet } from "react-router-dom";
 import {
   Home,
   FolderOpen,
   FileText,
+  User,
   PenSquare,
-  Clock,
   BookMarked,
   ClipboardList,
-  Search,
   ChevronDown,
-  LogOut,
   Users,
   Check,
-  X,
-  Phone,
   FileArchive,
+  PenBox,
 } from "lucide-react";
-import { DeanComponent } from "./dean-route-components";
+import { LogoutButton } from "../../../components/components";
 
-export function DeanPage() {
-  const { user } = useOutletContext();
-  const [selectedOrg, setSelectedOrg] = useState(null);
-  const [orgs, setOrgs] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // Function to fetch organizations
-  const fetchOrganizations = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.post(`${API_ROUTER}/getOrganizations`, {
-        deliveryUnit: user.deliveryUnit,
-      });
-      console.log(res.data);
-      setOrgs(res.data);
-    } catch (err) {
-      console.error("Error fetching organizations:", err);
-      setOrgs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch organizations on component mount
-  useEffect(() => {
-    fetchOrganizations();
-  }, []);
-
-  return (
-    <div className="flex h-screen w-screen bg-gray-50">
-      <div className="flex h-full w-1/5 justify-between bg-cnsc-primary-color overflow-hidden">
-        <DeanMainNavigation />
-      </div>
-      <div className="w-full h-full">
-        <DeanComponent
-          selectedOrg={selectedOrg}
-          orgs={orgs}
-          onSelectOrg={setSelectedOrg}
-          setLoading={setLoading}
-          loading={loading}
-          user={user}
-        />
-      </div>
-    </div>
-  );
-}
-
-function DeanMainNavigation() {
+export function SduMainNavigation() {
   const [activeKey, setActiveKey] = useState("home");
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const path = location.pathname;
-    if (path === "/dean" || path === "/dean/") {
+    if (path === "/SDU" || path === "/SDU/" || path === "/") {
       setActiveKey("home");
-    } else if (path.includes("/dean/accreditation")) {
+    } else if (path.includes("/accreditation")) {
       setActiveKey("accreditations");
-    } else if (path.includes("/dean/accomplishment")) {
+    } else if (path.includes("/accomplishment")) {
       setActiveKey("accomplishments");
-    } else if (path.includes("/dean/proposal")) {
+    } else if (path.includes("/proposal")) {
       setActiveKey("proposals");
-    } else if (path.includes("/dean/post")) {
+    } else if (path.includes("/post")) {
       setActiveKey("post");
-    } else if (path.includes("/dean/log")) {
+    } else if (path.includes("/log")) {
       setActiveKey("logs");
     }
   }, [location.pathname]);
@@ -96,50 +46,53 @@ function DeanMainNavigation() {
     {
       key: "home",
       icon: <Home className="w-5 h-5" />,
-      label: "Reports/Dashboard",
-      path: "/dean",
+      label: "Dashboard",
+      path: "/SDU",
     },
     {
       key: "accreditations",
       icon: <FolderOpen className="w-5 h-5" />,
       label: "Accreditations",
-      path: "/dean/accreditation",
+      path: "/SDU/accreditation",
     },
+
     {
       key: "accomplishments",
       icon: <BookMarked className="w-5 h-5" />,
       label: "Accomplishments",
-      path: "/dean/accomplishment",
+      path: "/SDU/accomplishment",
     },
     {
       key: "proposals",
       icon: <FileText className="w-5 h-5" />,
       label: "Proposals",
-      path: "/dean/proposal",
+      path: "/SDU/proposal",
     },
-
     {
-      key: "logs",
-      icon: <Clock className="w-5 h-5" />,
-      label: "Logs",
-      path: "/dean/log",
+      key: "users",
+      icon: <User className="w-5 h-5" />,
+      label: "User management",
+      path: "/SDU/user-management",
+    },
+    {
+      key: "post",
+      icon: <PenBox className="w-5 h-5" />,
+      label: "Posts & Announcements",
+      path: "/SDU/post",
     },
   ];
 
   return (
     <div className="w-full h-full flex flex-col">
       {/* Top header with welcome text */}
-      <div className="h-28 bg-cnsc-secondary-color flex flex-col items-center justify-center shadow-md">
+      <div className="h-18 bg-cnsc-secondary-color flex flex-col items-center justify-center shadow-md">
         <h1 className="text-white text-xl font-bold tracking-wide">
-          Welcome Dean
+          Welcome SDU Admin
         </h1>
-        <p className="text-amber-300 text-sm font-medium">
-          Manage your dashboard
-        </p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col gap-2 w-full flex-grow mt-5 px-2">
+      <nav className="flex flex-col  w-full flex-grow ">
         {navigationItems.map((item) => (
           <button
             key={item.key}
@@ -147,7 +100,7 @@ function DeanMainNavigation() {
               setActiveKey(item.key);
               navigate(item.path);
             }}
-            className={`flex items-center rounded-xl py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+            className={`flex items-center py-6 px-6 text-base font-medium transition-all duration-300 ${
               activeKey === item.key
                 ? "bg-white text-cnsc-primary-color shadow-md"
                 : "text-white hover:bg-amber-500/90 hover:pl-8"
@@ -167,7 +120,7 @@ function DeanMainNavigation() {
   );
 }
 
-export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
+export function SduMainAccreditationNavigation({ selectedOrg }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showApprovalPopup, setShowApprovalPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -183,7 +136,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
       label: "Overview",
       shortLabel: "Overview",
       icon: <Home className="w-4 h-4" />,
-      path: `/dean/accreditation/`,
+      path: `/sdu/accreditation/`,
       description: "General information and status",
     },
     {
@@ -191,7 +144,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
       label: "President's Information Sheet",
       shortLabel: "President's Info",
       icon: <FileText className="w-4 h-4" />,
-      path: `/dean/accreditation/president-information`,
+      path: `/sdu/accreditation/president-information`,
       description: "President details and information",
     },
     {
@@ -199,7 +152,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
       label: "Financial Report",
       shortLabel: "Financial Report",
       icon: <ClipboardList className="w-4 h-4" />,
-      path: `/dean/accreditation/financial-report`,
+      path: `/sdu/accreditation/financial-report`,
       description: "Financial statements and reports",
     },
     {
@@ -207,7 +160,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
       label: "Roster of Members",
       shortLabel: "Members Roster",
       icon: <Users className="w-4 h-4" />,
-      path: `/dean/accreditation/roster-of-members`,
+      path: `/sdu/accreditation/roster-of-members`,
       description: "Complete list of organization members",
     },
     {
@@ -215,7 +168,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
       label: "Proposed Action Plan",
       shortLabel: "Action Plan",
       icon: <FolderOpen className="w-4 h-4" />,
-      path: `/dean/accreditation/proposed-action-plan`,
+      path: `/sdu/accreditation/proposed-action-plan`,
       description: "Strategic plans and proposals",
     },
     {
@@ -223,7 +176,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
       label: "Accreditation Documents",
       shortLabel: "Documents",
       icon: <FileArchive className="w-4 h-4" />,
-      path: `/dean/accreditation/document`,
+      path: `/sdu/accreditation/document`,
       description: "All supporting documents",
     },
   ];
@@ -263,7 +216,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
 
   useEffect(() => {
     fetchStatus();
-  }, [location, selectedOrg]);
+  }, [fetchStatus, location, selectedOrg]);
 
   // Send approval letter
   const sendApprovalLetter = async () => {
@@ -321,7 +274,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-gray-50">
       {/* Enhanced Navigation Header */}
-      <div className="bg-white border-b border-gray-500">
+      <div className="  border-gray-500">
         <div className="px-4 py-2">
           {/* Dropdown Navigation */}
           <div className="relative" ref={dropdownRef}>
@@ -379,6 +332,24 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
           </div>
         </div>
       </div>
+
+      {/* TESTING AREA  */}
+      <button
+        onClick={async () => {
+          try {
+            const res = await axios.post(`${API_ROUTER}/sendTestNotification`, {
+              recipientId: "68d59b4fbcfb5416f3af63c1",
+              message: "Admin pressed the button 🚀",
+            });
+            console.log("✅ Response:", res.data);
+          } catch (err) {
+            console.error("❌ Error:", err);
+          }
+        }}
+        className="bg-red-500 p-12"
+      >
+        awkejhasdkjh
+      </button>
 
       {/* Content Area */}
       <div className="flex-1 overflow-hidden">
@@ -440,113 +411,5 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
         </div>
       )}
     </div>
-  );
-}
-
-function LogoutButton() {
-  const [showModal, setShowModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogoutClick = () => {
-    setShowModal(true);
-  };
-
-  const handleConfirmLogout = async () => {
-    setIsLoading(true);
-    try {
-      // Replace with your actual API call
-      await new Promise((resolve) => setTimeout(resolve, 300)); // Simulated API call
-      await axios.post(`${API_ROUTER}/logout`, {}, { withCredentials: true });
-
-      // Optional: redirect or update UI after logout
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Logout failed:", error);
-      setIsLoading(false);
-    }
-  };
-
-  const handleCancelLogout = () => {
-    setShowModal(false);
-  };
-
-  return (
-    <>
-      {/* Logout Button */}
-      <div
-        onClick={handleLogoutClick}
-        className=" rounded-2xl flex gap-2 items-center justify-center text-2xl text-white font-bold px-4 w-full   border-cnsc-primary-color py-2  hover:text-cnsc-secondary-color transition-all duration-500 cursor-pointer  hover:bg-red-700 "
-      >
-        <LogOut size={16} />
-        Logout
-      </div>
-
-      {/* Modal Overlay */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          {/* Modal Content */}
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Confirm Logout
-              </h3>
-              <button
-                onClick={handleCancelLogout}
-                className="text-gray-400 text-2xl hover:text-gray-600 transition-colors"
-                disabled={isLoading}
-              >
-                <X />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <LogOut size={24} className="text-red-600" />
-                </div>
-                <div>
-                  <p className="text-gray-900 font-medium">
-                    Are you sure you want to log out?
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    You'll need to sign in again to access your account.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex gap-3 p-6 pt-0">
-              <button
-                onClick={handleCancelLogout}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmLogout}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Logging out...
-                  </>
-                ) : (
-                  <>
-                    <LogOut size={16} />
-                    Logout
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
   );
 }

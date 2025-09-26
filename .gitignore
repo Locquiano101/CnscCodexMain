@@ -25,3 +25,4 @@ dist-ssr
 
 ./server/.env
 ./client/.env
+./server/uploads

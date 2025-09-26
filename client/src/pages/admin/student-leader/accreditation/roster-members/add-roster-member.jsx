@@ -3,8 +3,7 @@ import { Save, Upload, X } from "lucide-react";
 import { ProportionCropTool } from "../../../../../components/image_uploader";
 import axios from "axios";
 import { API_ROUTER } from "../../../../../App";
-import { departments } from "../../../sdu/sdu-main";
-
+import { departments } from "../../../../../components/department_arrays";
 export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
   // Initial state for resetting
   const initialState = {

@@ -7,14 +7,16 @@ import path from "path";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import apiRoutes from "./routers.js";
-
+import http from "http";
+import { Server } from "socket.io";
+import { Notification } from "./models/index.js"; // adjust path!
 dotenv.config();
 
 const app = express();
 const DB = process.env.MONGO_URI;
 const PORT = process.env.PORT;
 
-// Connect to MongoDB
+// -------------------- Connect to MongoDB --------------------
 async function connectDB() {
   try {
     await mongoose.connect(DB);
@@ -26,10 +28,10 @@ async function connectDB() {
 }
 connectDB();
 
-// Middleware
+// -------------------- Middleware --------------------
 app.use(
   cors({
-    origin: true, // Accept all origins
+    origin: true,
     credentials: true,
   })
 );
@@ -40,46 +42,121 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// // Session setup with MongoDB store
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "fallback-secret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: DB,
-      collectionName: "sessions",
-    }),
-    cookie: { httpOnly: true },
-    rolling: true,
-  })
-);
+// Session setup with MongoDB store
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET || "fallback-secret",
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: DB,
+    collectionName: "sessions",
+  }),
+  cookie: { httpOnly: true },
+  rolling: true,
+});
+app.use(sessionMiddleware);
 
-// // Inactivity timeout middleware
+// Inactivity timeout middleware
 const INACTIVITY_GRACE = 5000; // 5 seconds
 const INACTIVITY_TIMEOUT = 2629800000; // 1 month
 
 const activityMiddleware = (req, res, next) => {
+  // Allow public access to this specific endpoint
+  if (req.path === "/notifications" || req.path === "//notifications") {
+    return next();
+  }
+
   const now = Date.now();
-  if (req.session.lastActivity) {
+  if (req.session?.lastActivity) {
     const inactiveTime = now - req.session.lastActivity;
     if (inactiveTime > INACTIVITY_GRACE + INACTIVITY_TIMEOUT) {
       req.session.destroy((err) => {
         if (err) return next(err);
         return res.json({ message: "Session expired due to inactivity" });
       });
-      return; // Prevent further response
+      return;
     }
   }
   req.session.lastActivity = now;
   next();
 };
 
-// API routes
+console.log(process.env.VITE_API_ROUTER);
+
+// -------------------- Setup HTTP + WebSocket --------------------
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.VITE_API_ROUTER,
+    credentials: true,
+  },
+});
+
+// Let Socket.IO access sessions
+io.engine.use(sessionMiddleware);
+
+// When a client connects
+io.on("connection", (socket) => {
+  const userId = socket.handshake.auth?.userId; // frontend must send this
+  if (userId) {
+    socket.join(userId.toString()); // each user in their own room
+    console.log(`🔌 User ${userId} connected with socket ${socket.id}`);
+  }
+
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected:", socket.id);
+  });
+});
+
+// -------------------- Routes --------------------
+
 app.use("/api", activityMiddleware, apiRoutes);
 
-// Start server
-app.listen(PORT, "0.0.0.0", () => {
+// Save + send notification
+app.post("/api/sendTestNotification", async (req, res) => {
+  try {
+    const { recipientId, message } = req.body;
+    const senderId = req.session.userId || "admin"; // fallback
+
+    const notification = await Notification.create({
+      organizationProfile: recipientId,
+      sender: senderId,
+      message,
+    });
+
+    // Emit to recipient only
+    io.to(recipientId.toString()).emit("notification", notification);
+
+    res.json({ success: true, notification });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to send notification" });
+  }
+});
+
+// Using query param (?userId=...)
+app.get("/notifications", async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    const notifications = await Notification.find({
+      organizationProfile: userId,
+    }).sort({
+      createdAt: -1,
+    });
+
+    res.json(notifications);
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// -------------------- Start server --------------------
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`Frontend Server running at ${process.env.VITE_API_ROUTER}`);
   console.log(`Backend Server running at http://0.0.0.0:${PORT}`);
 });
