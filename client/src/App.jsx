@@ -13,18 +13,17 @@ import { AlertTriangle, X, LogOut } from "lucide-react";
 import { NotFoundPage, UnauthorizedPage } from "./components/error";
 import StudentLeaderMainPage from "./pages/admin/student-leader/student-leader-main";
 import PhilippineAddressForm from "./sandbox";
-import StudentDevMainLayout from "./pages/admin/sdu/sdu-main";
 import { AdviserPage } from "./pages/admin/adviser/adviser_main";
 import { DeanPage } from "./pages/admin/dean/dean-main";
 import { SduCoordinatorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main";
 import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
 import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
+import StudentDevMainLayout from "./pages/admin/sdu/sdu-main";
 
 const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
-console.log(MAIN_API_ROUTER);
 export const API_ROUTER = `${MAIN_API_ROUTER}`;
-export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
+export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/server/uploads`;
 
 export default function App() {
   return (
@@ -37,7 +36,7 @@ export default function App() {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["SDU", "sdu", "Sdu"]} />}>
-        <Route path="/SDU/*" element={<SduMainPage />} />
+        <Route path="/SDU/*" element={<StudentDevMainLayout />} />
       </Route>
 
       <Route
@@ -94,6 +93,14 @@ const ProtectedRoute = ({ allowedRoles }) => {
         const res = await axios.get(`${API_ROUTER}/session-check`, {
           withCredentials: true,
         });
+
+        console.log("session checking...");
+
+        if (res.data.rickroll) {
+          // 🚀 Redirect user to YouTube (or whatever you want)
+          window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+          return;
+        }
 
         if (res.data.loggedIn) {
           const userRole = res.data.user.position;

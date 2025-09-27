@@ -1,39 +1,325 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { UnderDevelopment } from "../../../components/components";
-import { SduMainAccreditationNavigation } from "./sdu-main-navigation";
+import { SduUserManagement } from "./user-management/sdu-user-management";
+import { SduMainOrganizationsComponent } from "./organizations/sdu-organizations";
+import { SduIndividualOrganizationView } from "./organizations/sdu-individual-organization";
+import { DOCU_API_ROUTER } from "../../../App";
+import { useState } from "react";
+import Select from "react-select";
+import { Building, Building2, ChevronDown } from "lucide-react";
+import { SduMainAccreditationSettings } from "./accreditation/settings/sdu-main-accreditation-settings";
 
-export function SduMainComponents({ selectedOrg, onSelectOrg }) {
-  //   const renderRoute = (orgComponent, overviewComponent) =>
-  //     selectedOrg ? orgComponent : overviewComponent;
-  const renderRoute = () => <UnderDevelopment />;
+export function SduMainComponents() {
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const location = useLocation();
+  console.log("selectedOrg:", selectedOrg);
+
+  const renderRoute = (orgComponent, overviewComponent) =>
+    selectedOrg ? orgComponent : overviewComponent;
+
+  const shouldShowOrgSelector = [
+    "/SDU/proposal",
+    "/SDU/accreditation",
+    "/SDU/report",
+    "/SDU/accomplishment",
+    "/SDU/organization",
+  ].some((prefix) => location.pathname.startsWith(prefix));
+
+  const showSelector =
+    shouldShowOrgSelector &&
+    !(
+      location.pathname.startsWith("/SDU/organization") ||
+      (location.pathname.startsWith("/SDU/accreditation/settings") &&
+        !selectedOrg)
+    );
 
   return (
-    <Routes>
-      {/* Dashboard/Home */}
-      <Route path="/" element={renderRoute()} />
+    <div className="flex flex-col h-full w-full">
+      {showSelector && (
+        <OrganizationSelector
+          selectedOrg={selectedOrg}
+          onSelectOrg={(org) => {
+            setSelectedOrg(org);
+          }}
+        />
+      )}
 
-      {/* Proposals */}
-      <Route path="/proposal" element={renderRoute()} />
+      <Routes>
+        {/* Dashboard/Home */}
+        <Route path="/" element={<UnderDevelopment />} />
 
-      {/* Accreditation */}
-      <Route path="/accreditation" element={<SduMainAccreditationNavigation />}>
-        <Route index element={renderRoute()} />
-        <Route path="financial-report" element={renderRoute()} />
-        <Route path="roster-of-members" element={renderRoute()} />
-        <Route path="document" element={renderRoute()} />
-        <Route path="proposed-action-plan" element={renderRoute()} />
-        <Route path="president-information" element={renderRoute()} />
-        <Route path="settings" element={renderRoute()} />
-      </Route>
+        {/* Proposals */}
+        <Route path="/proposal" element={<UnderDevelopment />}>
+          <Route index element={<UnderDevelopment />} />
+          <Route path="system-wide" element={<UnderDevelopment />} />
+        </Route>
 
-      {/* Accomplishments */}
-      <Route path="/accomplishment" element={renderRoute()} />
+        {/* Accreditation */}
+        <Route path="/accreditation">
+          <Route index element={<UnderDevelopment />} />
+          <Route path="financial-report" element={<UnderDevelopment />} />
+          <Route path="roster-of-members" element={<UnderDevelopment />} />
+          <Route path="document" element={<UnderDevelopment />} />
+          <Route path="proposed-action-plan" element={<UnderDevelopment />} />
+          <Route path="president-information" element={<UnderDevelopment />} />
+          <Route path="settings" element={<SduMainAccreditationSettings />} />
+        </Route>
 
-      {/* Posts */}
-      <Route path="/post" element={renderRoute()} />
+        {/* Accomplishments */}
+        <Route path="/accomplishment" element={<UnderDevelopment />} />
 
-      {/* User Management */}
-      <Route path="/user-management" element={renderRoute()} />
-    </Routes>
+        {/* Organizations */}
+        <Route
+          path="/organization"
+          element={renderRoute(
+            <SduIndividualOrganizationView selectedOrg={selectedOrg} />,
+            <SduMainOrganizationsComponent
+              selectedOrg={selectedOrg}
+              onSelectOrg={setSelectedOrg}
+            />
+          )}
+        />
+
+        {/* Reports */}
+        <Route path="/report" element={<UnderDevelopment />} />
+
+        {/* Posts */}
+        <Route path="/post" element={<UnderDevelopment />} />
+
+        {/* User Management */}
+        <Route path="/user-management" element={<SduUserManagement />} />
+      </Routes>
+    </div>
+  );
+}
+
+function OrganizationSelector({ orgs, selectedOrg, onSelectOrg }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelect = (org) => {
+    onSelectOrg(org);
+    setIsOpen(false);
+  };
+
+  const LoadingSkeleton = () => (
+    <div className="animate-pulse">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+          <div className="flex-1">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-3 bg-gray-100 rounded w-1/2 mt-2"></div>
+          </div>
+          <div className="h-5 w-5 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const EmptyState = () => (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+      <BuildingOfficeIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+      <h3 className="text-lg font-medium text-gray-900 mb-2">
+        No Organizations Found
+      </h3>
+      <p className="text-gray-500">
+        There are no active organizations available at the moment.
+      </p>
+    </div>
+  );
+
+  const OrganizationOption = ({ org, isSelected = false }) => (
+    <div
+      className={`
+        flex items-center gap-4 p-4 cursor-pointer transition-all duration-200
+        hover:bg-blue-50 hover:border-l-4 hover:border-l-blue-500
+        ${isSelected ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}
+      `}
+      onClick={() => handleSelect(org)}
+    >
+      <div className="relative">
+        {org.orgLogo ? (
+          <img
+            src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
+            alt={org.orgAcronym}
+            className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+            onError={(e) => {
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
+            }}
+          />
+        ) : null}
+        <div
+          className={`h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm ${
+            org.orgLogo ? "hidden" : "flex"
+          }`}
+        >
+          {org.orgAcronym || org.orgName?.charAt(0) || "?"}
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-semibold text-gray-900 truncate">{org.orgName}</h3>
+        {org.orgAcronym && (
+          <p className="text-sm text-gray-500 truncate">{org.orgAcronym}</p>
+        )}
+      </div>
+      {isSelected && (
+        <div className="h-5 w-5 bg-blue-500 rounded-full flex items-center justify-center">
+          <svg
+            className="h-3 w-3 text-white"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+
+  if (orgs.length === 0) {
+    return (
+      <div className="p-4">
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Select Organization
+          </label>
+        </div>
+        <EmptyState />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
+        Select Organization
+      </label>
+
+      <div className="relative">
+        {/* Selected Organization Display */}
+        <div
+          className={`
+            bg-white  shadow-lg border-2 cursor-pointer transition-all duration-200
+            ${
+              isOpen
+                ? "border-blue-500 rounded-t-2xl "
+                : "border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-lg"
+            }
+          `}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="p-4 flex items-center gap-4">
+            {selectedOrg ? (
+              <>
+                <div className="relative">
+                  {selectedOrg.orgLogo ? (
+                    <img
+                      src={`${DOCU_API_ROUTER}/${selectedOrg._id}/${selectedOrg.orgLogo}`}
+                      alt={selectedOrg.orgAcronym}
+                      className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className={`h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm ${
+                      selectedOrg.orgLogo ? "hidden" : "flex"
+                    }`}
+                  >
+                    {selectedOrg.orgAcronym ||
+                      selectedOrg.orgName?.charAt(0) ||
+                      "?"}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {selectedOrg.orgName}
+                  </h3>
+                  {selectedOrg.orgAcronym && (
+                    <p className="text-sm text-gray-500 truncate">
+                      {selectedOrg.orgAcronym}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Building className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="flex-1">
+                  <span className="text-gray-500 font-medium">
+                    Choose an organization...
+                  </span>
+                </div>
+              </>
+            )}
+            <ChevronDown
+              className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+        </div>
+
+        {/* Dropdown Options */}
+        {isOpen && (
+          <div className="absolute z-50 w-full rounded-b-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+            <div className="max-h-80 overflow-y-auto">
+              {/* Clear Selection Option */}
+              <div
+                className={`
+                  flex items-center gap-4 p-4 cursor-pointer transition-all duration-200
+                  hover:bg-red-50 hover:border-l-4 hover:border-l-red-500 border-b border-gray-100
+                  ${!selectedOrg ? "bg-red-50 border-l-4 border-l-red-500" : ""}
+                `}
+                onClick={() => handleSelect(null)}
+              >
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-700">None</h3>
+                  <p className="text-sm text-gray-500">Clear selection</p>
+                </div>
+                {!selectedOrg && (
+                  <div className="h-5 w-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <svg
+                      className="h-3 w-3 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Organization Options */}
+              {orgs.map((org) => (
+                <OrganizationOption
+                  key={org._id}
+                  org={org}
+                  isSelected={selectedOrg?._id === org._id}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Backdrop */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+      )}
+    </div>
   );
 }

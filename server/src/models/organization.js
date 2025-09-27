@@ -14,9 +14,11 @@ export const organizationProfileSchema = new Schema(
     orgStatus: String, // Active, Inactive, Disqualified
     orgAcronym: String,
     orgDepartment: String,
+
     orgSpecialization: String,
     revisionNotes: String,
     isActive: { type: Boolean, default: true },
+    isAllowedForAccreditation: { type: Boolean, default: true },
     isAllowedForReuse: { type: Boolean, default: true },
   },
   { timestamps: true }

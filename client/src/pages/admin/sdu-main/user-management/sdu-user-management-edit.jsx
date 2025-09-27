@@ -1,37 +1,60 @@
 import axios from "axios";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { API_ROUTER } from "../../../../App";
 
 import { GraduationCap, Building, Mail, X, Save, User } from "lucide-react";
 import { departments } from "../../../../components/department_arrays";
-export function AddUserModal({ organization, onClose, onUserAdded }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    position: "",
-    deliveryUnit: "",
-    organizationId: "",
-  });
 
+export function EditUserModal({ user, onClose, onUserUpdated, organization }) {
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    position: user?.position?.toLowerCase() || "",
+    deliveryUnit: user?.deliveryUnit || "",
+    organizationId: user?.organizationProfile || "",
+    password: user?.password || "", // in case you’re showing disabled password
+  });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Log form data changes
-  const logFormData = useCallback(() => {}, []);
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        position: user.position?.toLowerCase() || "",
+        deliveryUnit: user.deliveryUnit || "",
+        organizationId: user.organizationProfile || "",
+        password: user.password || "",
+      });
+
+      // 🔑 auto-detect the department based on the deliveryUnit
+      if (user.deliveryUnit) {
+        const department = Object.keys(departments).find((departmentName) =>
+          departments[departmentName].includes(user.deliveryUnit)
+        );
+        if (department) {
+          setSelectedDepartment(department);
+        }
+      }
+    }
+  }, [user]);
+
+  const logFormData = useCallback((action, data) => {
+    console.log(`[${action}]`, data);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-      // Reset conditional fields when position changes
       ...(name === "position" && {
-        deliveryUnit: "",
         organizationId: "",
+        deliveryUnit: "",
       }),
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -45,21 +68,14 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
+    if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
+    if (!formData.position) newErrors.position = "Position is required";
 
-    if (!formData.position) {
-      newErrors.position = "Position is required";
-    }
-
-    // Conditional validation based on position
     if (
       formData.position === "student-leader" ||
       formData.position === "adviser"
@@ -70,12 +86,10 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
     }
 
     if (
-      formData.position === "dean" ||
-      formData.position === "sdu-coordinator"
+      formData.position === "sdu" ||
+      (formData.position === "dean" && !formData.deliveryUnit.trim())
     ) {
-      if (!formData.deliveryUnit.trim()) {
-        newErrors.deliveryUnit = "Delivery Unit is required";
-      }
+      newErrors.deliveryUnit = "Delivery Unit is required";
     }
 
     setErrors(newErrors);
@@ -88,56 +102,41 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      logFormData("Form Validation Failed", errors);
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
-    logFormData("Starting User Creation", formData);
-
     try {
-      // Prepare data based on position
       const userData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
         position: formData.position,
-        password: formData.password,
       };
 
-      // Add conditional fields based on position
       if (
         formData.position === "student-leader" ||
         formData.position === "adviser"
       ) {
-        userData.organizationId = formData.organizationId;
-      } else if (
-        formData.position === "dean" ||
-        formData.position === "sdu-coordinator"
-      ) {
+        userData.organizationProfile = formData.organizationId;
+      } else if (formData.position === "sdu" || formData.position === "dean") {
         userData.deliveryUnit = formData.deliveryUnit.trim();
       }
 
-      const response = await axios.post(`${API_ROUTER}/postNewUser`, userData);
-      console.log(response.data);
-      // Call the callback to refresh the user list
-      if (onUserAdded) {
-        onUserAdded();
-      }
+      logFormData("Sending Update Request", userData);
 
-      // Close modal
+      const response = await axios.post(
+        `${API_ROUTER}/updateUser/${user._id}`,
+        userData
+      );
+
+      logFormData("User Updated Successfully", response.data);
+
+      if (onUserUpdated) onUserUpdated();
       onClose();
     } catch (error) {
-      console.error("Error creating user:", error);
-      logFormData("User Creation Failed", {
-        error: error.response?.data || error.message,
-        status: error.response?.status,
-      });
-
+      console.error("Error updating user:", error);
       alert(
         error.response?.data?.message ||
-          "Error creating user. Please try again."
+          "Error updating user. Please try again."
       );
     } finally {
       setLoading(false);
@@ -158,7 +157,7 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
               name="organizationId"
               value={formData.organizationId}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-3 py-2 border rounded-lg ${
                 errors.organizationId ? "border-red-500" : "border-gray-300"
               }`}
             >
@@ -177,23 +176,22 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
           </div>
         );
 
-      case "sdu-coordinator":
       case "dean":
+      case "sdu-coordinator":
         return (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              <GraduationCap className="w-4 h-4 inline mr-2" />
-              Department *
+              Delivery Unit *
             </label>
             <select
               name="deliveryUnit"
               value={formData.deliveryUnit}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-3 py-2 border rounded-lg ${
                 errors.deliveryUnit ? "border-red-500" : "border-gray-300"
               }`}
             >
-              <option value="">-- Select Department --</option>
+              <option value="">Select Department</option>
               {Object.keys(departments).map((dept) => (
                 <option key={dept} value={dept}>
                   {dept}
@@ -218,7 +216,7 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
             <User className="w-5 h-5 text-blue-600" />
-            Add New User
+            Edit User
           </h2>
           <button
             onClick={onClose}
@@ -233,7 +231,6 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              <User className="w-4 h-4 inline mr-2" />
               Full Name *
             </label>
             <input
@@ -241,8 +238,7 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="Enter full name"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-3 py-2 border rounded-lg ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -254,7 +250,6 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Mail className="w-4 h-4 inline mr-2" />
               Email Address *
             </label>
             <input
@@ -262,8 +257,7 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="Enter email address"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-3 py-2 border rounded-lg ${
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -275,14 +269,13 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
           {/* Position */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              <GraduationCap className="w-4 h-4 inline mr-2" />
               Position *
             </label>
             <select
               name="position"
               value={formData.position}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-3 py-2 border rounded-lg ${
                 errors.position ? "border-red-500" : "border-gray-300"
               }`}
             >
@@ -301,36 +294,21 @@ export function AddUserModal({ organization, onClose, onUserAdded }) {
           {/* Conditional Fields */}
           {renderConditionalFields()}
 
-          {/* Password */}
-          <h1 className="italic text- text-gray-500">
-            Please note: For security purposes, passwords are generated
-            automatically.
-          </h1>
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg"
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Create User
-                </>
-              )}
+              {loading ? "Updating..." : "Update User"}
             </button>
           </div>
         </form>

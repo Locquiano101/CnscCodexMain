@@ -1,14 +1,7 @@
-import { useState } from "react";
-import {
-  SduMainAccreditationNavigation,
-  SduMainNavigation,
-} from "./sdu-main-navigation";
-import StudentDevMainLayout from "../sdu/sdu-main";
+import { SduMainNavigation } from "./sdu-main-navigation";
 import { SduMainComponents } from "./sdu-route-components";
 
 export function SduMainPage() {
-  const [selecetedOrg, setSelectedOrg] = useState(null);
-
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
       {/* Sidebar */}

@@ -39,9 +39,10 @@ app.use(
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
+app.use(
+  "/api/server/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
 // Session setup with MongoDB store
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "fallback-secret",
@@ -60,12 +61,41 @@ app.use(sessionMiddleware);
 const INACTIVITY_GRACE = 5000; // 5 seconds
 const INACTIVITY_TIMEOUT = 2629800000; // 1 month
 
+const badWords = [
+  "fuck",
+  "shit",
+  "bitch",
+  "asshole",
+  "cunt",
+  "nigger",
+  "faggot",
+];
+// extend this list however you like
+
 const activityMiddleware = (req, res, next) => {
   // Allow public access to this specific endpoint
   if (req.path === "/notifications" || req.path === "//notifications") {
     return next();
   }
 
+  // --- PROFANITY CHECK ---
+  const contentSources = [
+    JSON.stringify(req.body || {}),
+    JSON.stringify(req.query || {}),
+    JSON.stringify(req.params || {}),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const hasProfanity = badWords.some((word) => contentSources.includes(word));
+
+  if (hasProfanity) {
+    return res
+      .status(400)
+      .json({ error: "Profanity detected", rickroll: true });
+  }
+
+  // --- INACTIVITY CHECK ---
   const now = Date.now();
   if (req.session?.lastActivity) {
     const inactiveTime = now - req.session.lastActivity;
@@ -80,8 +110,6 @@ const activityMiddleware = (req, res, next) => {
   req.session.lastActivity = now;
   next();
 };
-
-console.log(process.env.VITE_API_ROUTER);
 
 // -------------------- Setup HTTP + WebSocket --------------------
 const server = http.createServer(app);

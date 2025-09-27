@@ -42,6 +42,10 @@ export default function Login({ navigate, onShowRegistration }) {
       const msg =
         err.response?.data?.message || "Login failed. Please try again.";
       setErrorMsg(msg);
+      if (err.response.data.rickroll) {
+        window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+        return;
+      }
     }
   };
 
