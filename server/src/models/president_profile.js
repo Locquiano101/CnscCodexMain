@@ -23,6 +23,7 @@ export const presidentProfileSchema = new Schema(
     overAllStatus: { type: String, default: "Pending" },
     revisionNotes: String,
     department: String,
+    isActive: { type: Boolean, default: true },
     course: String,
     year: String,
     name: String,

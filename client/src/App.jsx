@@ -36,7 +36,7 @@ export default function App() {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={["SDU", "sdu", "Sdu"]} />}>
-        <Route path="/SDU/*" element={<StudentDevMainLayout />} />
+        <Route path="/SDU/*" element={<SduMainPage />} />
       </Route>
 
       <Route

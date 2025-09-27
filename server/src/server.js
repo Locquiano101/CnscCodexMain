@@ -28,6 +28,44 @@ async function connectDB() {
 }
 connectDB();
 
+// -------------------- Profanity Middleware --------------------
+const badWords = [
+  "fuck",
+  "shit",
+  "bitch",
+  "asshole",
+  "cunt",
+  "nigger",
+  "faggot",
+];
+// extend this list however you like
+
+const profanityMiddleware = (req, res, next) => {
+  const contentSources = [
+    JSON.stringify(req.body || {}),
+    JSON.stringify(req.query || {}),
+    JSON.stringify(req.params || {}),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const hasProfanity = badWords.some((word) => contentSources.includes(word));
+
+  if (hasProfanity) {
+    // 🚨 Trigger Rickroll instantly
+    return res.status(418).json({
+      error: "Profanity detected",
+      rickroll: true,
+      youtube: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    });
+  }
+
+  next();
+};
+
+// 🚨 Must come BEFORE cors()
+app.use(profanityMiddleware);
+
 // -------------------- Middleware --------------------
 app.use(
   cors({
@@ -60,17 +98,6 @@ app.use(sessionMiddleware);
 // Inactivity timeout middleware
 const INACTIVITY_GRACE = 5000; // 5 seconds
 const INACTIVITY_TIMEOUT = 2629800000; // 1 month
-
-const badWords = [
-  "fuck",
-  "shit",
-  "bitch",
-  "asshole",
-  "cunt",
-  "nigger",
-  "faggot",
-];
-// extend this list however you like
 
 const activityMiddleware = (req, res, next) => {
   // Allow public access to this specific endpoint
