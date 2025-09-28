@@ -4,7 +4,7 @@ import {
   organizationSchema,
   organizationProfileSchema,
 } from "./organization.js";
-import { AdviserSchema, notificationSchema, userSchema } from "./users.js";
+import { AdviserSchema, userSchema } from "./users.js";
 import {
   proposalConductSchema,
   proposedIndividualActionPlanSchema,
@@ -20,6 +20,7 @@ import {
 import { presidentProfileSchema } from "./president_profile.js";
 import { ReceiptSchema, financialReportSchema } from "./financial_report.js";
 import { postSchema } from "./post.js";
+import { notificationSchema } from "./notification.js";
 // Compile models
 const User = mongoose.model("Users", userSchema);
 const Adviser = mongoose.model("Advisers", AdviserSchema);

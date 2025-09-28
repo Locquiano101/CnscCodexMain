@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import {
   Upload,
@@ -624,7 +624,7 @@ function RosterLists({ accreditationData }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchRosterMembers = async () => {
+  const fetchRosterMembers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(
@@ -638,14 +638,20 @@ function RosterLists({ accreditationData }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [accreditationData?.organizationProfile?._id]);
+
+  useEffect(() => {
+    if (accreditationData?.organizationProfile?._id) {
+      fetchRosterMembers();
+    }
+  }, [accreditationData, fetchRosterMembers]);
 
   // Load data when component mounts
   useEffect(() => {
     if (accreditationData?.organizationProfile?._id) {
       fetchRosterMembers();
     }
-  }, [accreditationData, fetchRosterMembers]);
+  }, [accreditationData]);
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {

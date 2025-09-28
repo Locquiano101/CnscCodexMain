@@ -1,18 +1,66 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Outlet } from "react-router-dom";
 import { UnderDevelopment } from "../../../components/components";
 import { SduUserManagement } from "./user-management/sdu-user-management";
 import { SduMainOrganizationsComponent } from "./organizations/sdu-organizations";
 import { SduIndividualOrganizationView } from "./organizations/sdu-individual-organization";
-import { DOCU_API_ROUTER } from "../../../App";
-import { useState } from "react";
+import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
+import { useEffect, useState } from "react";
 import Select from "react-select";
-import { Building, Building2, ChevronDown } from "lucide-react";
+import { Building, Building2, BuildingIcon, ChevronDown } from "lucide-react";
 import { SduMainAccreditationSettings } from "./accreditation/settings/sdu-main-accreditation-settings";
+import axios from "axios";
+import { SduMainOverallPresident } from "./accreditation/president/sdu-overall-president";
+import { SduMainIndividualOrganizationPresident } from "./accreditation/president/sdu-individual-president";
+import { SduAccreditationOverview } from "./accreditation/overview/sdu-main-accreditation-overview";
+import { SduMainRosterOverview } from "./accreditation/roster-members/sdu-overall-roster";
+import { SduMainIndividualRosterView } from "./accreditation/roster-members/sdu-individual-roster";
+import { SduMainOverallProposedActioPlan } from "./accreditation/proposed-action-plan/overall-proposed-action-plan";
+import { SduMainProposedActionPlanOrganization } from "./accreditation/proposed-action-plan/individual-proposed-action-plan";
+import {
+  SduMainAccreditationDocumentOrganization,
+  SduMainAccreditationDocumentOverview,
+} from "./accreditation/documents/sdu-accreditation-documents";
 
 export function SduMainComponents() {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const location = useLocation();
-  console.log("selectedOrg:", selectedOrg);
+
+  const [loading, setLoading] = useState(true);
+  const [orgs, setOrgs] = useState([]); // ✅ keep org list
+
+  const getAllOrganizationProfile = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`);
+      console.log("Fetched orgs:", res.data);
+      setOrgs(res.data || []); // ✅ save to state
+    } catch (error) {
+      console.error("Error fetching orgs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllOrganizationProfile(); // fetch once when mounted
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+            <div className="flex-1">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-100 rounded w-1/2 mt-2"></div>
+            </div>
+            <div className="h-5 w-5 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderRoute = (orgComponent, overviewComponent) =>
     selectedOrg ? orgComponent : overviewComponent;
@@ -23,20 +71,22 @@ export function SduMainComponents() {
     "/SDU/report",
     "/SDU/accomplishment",
     "/SDU/organization",
+    "/SDU/organization",
   ].some((prefix) => location.pathname.startsWith(prefix));
 
   const showSelector =
     shouldShowOrgSelector &&
     !(
-      location.pathname.startsWith("/SDU/organization") ||
+      (location.pathname.startsWith("/SDU/organization") && !selectedOrg) ||
       (location.pathname.startsWith("/SDU/accreditation/settings") &&
         !selectedOrg)
     );
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-gray-300">
       {showSelector && (
         <OrganizationSelector
+          orgs={orgs}
           selectedOrg={selectedOrg}
           onSelectOrg={(org) => {
             setSelectedOrg(org);
@@ -55,13 +105,58 @@ export function SduMainComponents() {
         </Route>
 
         {/* Accreditation */}
-        <Route path="/accreditation">
-          <Route index element={<UnderDevelopment />} />
+        <Route path="/accreditation" element={<Outlet />}>
+          <Route index element={<SduAccreditationOverview />} />
+
           <Route path="financial-report" element={<UnderDevelopment />} />
-          <Route path="roster-of-members" element={<UnderDevelopment />} />
-          <Route path="document" element={<UnderDevelopment />} />
-          <Route path="proposed-action-plan" element={<UnderDevelopment />} />
-          <Route path="president-information" element={<UnderDevelopment />} />
+
+          <Route
+            path="roster-of-members"
+            element={renderRoute(
+              <SduMainIndividualRosterView selectedOrg={selectedOrg} />,
+              <SduMainRosterOverview
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+
+          <Route
+            path="document"
+            element={renderRoute(
+              <SduMainAccreditationDocumentOrganization
+                selectedOrg={selectedOrg}
+              />,
+              <SduMainAccreditationDocumentOverview
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+
+          <Route
+            path="proposed-action-plan"
+            e
+            element={renderRoute(
+              <SduMainProposedActionPlanOrganization
+                selectedOrg={selectedOrg}
+              />,
+              <SduMainOverallProposedActioPlan onSelectOrg={setSelectedOrg} />
+            )}
+          />
+
+          <Route
+            path="president-information"
+            element={renderRoute(
+              <SduMainIndividualOrganizationPresident
+                selectedOrg={selectedOrg}
+              />,
+              <SduMainOverallPresident onSelectOrg={setSelectedOrg} />
+            )}
+          />
+
           <Route path="settings" element={<SduMainAccreditationSettings />} />
         </Route>
 
@@ -74,6 +169,7 @@ export function SduMainComponents() {
           element={renderRoute(
             <SduIndividualOrganizationView selectedOrg={selectedOrg} />,
             <SduMainOrganizationsComponent
+              orgs={orgs}
               selectedOrg={selectedOrg}
               onSelectOrg={setSelectedOrg}
             />
@@ -94,31 +190,15 @@ export function SduMainComponents() {
 }
 
 function OrganizationSelector({ orgs, selectedOrg, onSelectOrg }) {
+  console.log(orgs);
   const [isOpen, setIsOpen] = useState(false);
-
   const handleSelect = (org) => {
     onSelectOrg(org);
-    setIsOpen(false);
   };
-
-  const LoadingSkeleton = () => (
-    <div className="animate-pulse">
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
-          <div className="flex-1">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-100 rounded w-1/2 mt-2"></div>
-          </div>
-          <div className="h-5 w-5 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    </div>
-  );
 
   const EmptyState = () => (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
-      <BuildingOfficeIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+      <BuildingIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
       <h3 className="text-lg font-medium text-gray-900 mb-2">
         No Organizations Found
       </h3>
