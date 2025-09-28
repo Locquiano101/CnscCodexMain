@@ -12,6 +12,14 @@ import axios from "axios";
 import { SduMainOverallPresident } from "./accreditation/president/sdu-overall-president";
 import { SduMainIndividualOrganizationPresident } from "./accreditation/president/sdu-individual-president";
 import { SduAccreditationOverview } from "./accreditation/overview/sdu-main-accreditation-overview";
+import { SduMainRosterOverview } from "./accreditation/roster-members/sdu-overall-roster";
+import { SduMainIndividualRosterView } from "./accreditation/roster-members/sdu-individual-roster";
+import { SduMainOverallProposedActioPlan } from "./accreditation/proposed-action-plan/overall-proposed-action-plan";
+import { SduMainProposedActionPlanOrganization } from "./accreditation/proposed-action-plan/individual-proposed-action-plan";
+import {
+  SduMainAccreditationDocumentOrganization,
+  SduMainAccreditationDocumentOverview,
+} from "./accreditation/documents/sdu-accreditation-documents";
 
 export function SduMainComponents() {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -99,10 +107,46 @@ export function SduMainComponents() {
         {/* Accreditation */}
         <Route path="/accreditation" element={<Outlet />}>
           <Route index element={<SduAccreditationOverview />} />
+
           <Route path="financial-report" element={<UnderDevelopment />} />
-          <Route path="roster-of-members" element={<UnderDevelopment />} />
-          <Route path="document" element={<UnderDevelopment />} />
-          <Route path="proposed-action-plan" element={<UnderDevelopment />} />
+
+          <Route
+            path="roster-of-members"
+            element={renderRoute(
+              <SduMainIndividualRosterView selectedOrg={selectedOrg} />,
+              <SduMainRosterOverview
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+
+          <Route
+            path="document"
+            element={renderRoute(
+              <SduMainAccreditationDocumentOrganization
+                selectedOrg={selectedOrg}
+              />,
+              <SduMainAccreditationDocumentOverview
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+
+          <Route
+            path="proposed-action-plan"
+            e
+            element={renderRoute(
+              <SduMainProposedActionPlanOrganization
+                selectedOrg={selectedOrg}
+              />,
+              <SduMainOverallProposedActioPlan onSelectOrg={setSelectedOrg} />
+            )}
+          />
+
           <Route
             path="president-information"
             element={renderRoute(
@@ -112,6 +156,7 @@ export function SduMainComponents() {
               <SduMainOverallPresident onSelectOrg={setSelectedOrg} />
             )}
           />
+
           <Route path="settings" element={<SduMainAccreditationSettings />} />
         </Route>
 
