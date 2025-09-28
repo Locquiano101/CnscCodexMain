@@ -21,6 +21,7 @@ export default function StudentHomePage({ orgData, accreditationData }) {
       {/* Header */}
       <header className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Welcome, Student !</h1>
+
         <div className="text-gray-600 text-right">
           <p className="font-medium">{orgData?.orgName}</p>
           <p className="text-sm">{orgData?.orgClass}</p>

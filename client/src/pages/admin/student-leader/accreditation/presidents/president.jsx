@@ -183,7 +183,7 @@ export default function StudentLeaderPresidentListComponent({
         ) : (
           <div
             onClick={handleAdd}
-            className="group bg-gradient-to-br from-indigo-50 to-white rounded-2xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 p-8 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 hover:shadow-lg"
+            className="group bg-gradient-to-br from-indigo-50 to-white rounded-2xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 p-8 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 hover:shadow-lg "
           >
             <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center border border-indigo-300 group-hover:border-indigo-500 group-hover:scale-105 transition-all duration-300">
               <Plus
