@@ -23,7 +23,7 @@ export function AddCollectionFees({
         </div>
         <button
           onClick={() => handleAddClick("collection")}
-          className="bg-amber-700 text-white px-5 py-2.5 font-semibold"
+          className="bg-amber-700 text-white px-5 py-2.5 font-semibold rounded-md w-45"
         >
           Add Collection Fees
         </button>

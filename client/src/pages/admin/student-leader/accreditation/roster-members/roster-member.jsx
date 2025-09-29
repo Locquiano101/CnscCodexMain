@@ -121,7 +121,7 @@ export default function StudentLeaderRosters({ orgData }) {
   return (
     <div className="p-4 flex flex-col bg-gray-cnsc- min-h-screen">
       {/* Outer Container for Roster Management */}
-      <div className="rounded-xl shadow-2xl p-6 bg-gray-200 ">
+      <div className="rounded-xl shadow-md p-6 bg-gray-100 border-gray-400">
         <div className="flex w-full justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">

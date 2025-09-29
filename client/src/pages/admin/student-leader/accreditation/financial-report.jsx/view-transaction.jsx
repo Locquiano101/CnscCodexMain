@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, DollarSign, Calendar, User, FileText, Tag } from "lucide-react";
+import { X, Calendar, User, FileText, Tag } from "lucide-react";
 import DocumentUploader from "../../../../../components/document_uploader";
 import { DOCU_API_ROUTER } from "../../../../../App";
 
@@ -10,12 +10,10 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
   const isDisbursement = type === "disbursement";
   const isCollection = type === "collection";
 
-  // Build file URL (adjust base path if needed for your backend)
   const fileUrl = transaction?.document?.fileName
     ? `${DOCU_API_ROUTER}/${transaction.organizationProfile}/${transaction.document.fileName}`
     : transaction?.file;
 
-  // Determine header gradient and title
   const headerGradient = isReimbursement
     ? "bg-gradient-to-r from-emerald-500 to-teal-600"
     : isDisbursement
@@ -34,7 +32,7 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
     ? "Recipient"
     : "Payer";
 
-  const amountColor = isDisbursement ? "text-red-600" : "text-green-600"; // Reimbursement and Collection both green
+  const amountColor = isDisbursement ? "text-red-600" : "text-green-600";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -62,10 +60,11 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
           <div>
             <p className="text-sm font-semibold text-gray-600">Amount</p>
             <p className={`text-lg font-bold ${amountColor}`}>
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(transaction.amount)}
+              ₱
+              {Number(transaction.amount).toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
           </div>
 
@@ -130,7 +129,7 @@ export function TransactionModal({
   orgData = { _id: "demo-org", organization: "Demo Organization" },
   isOpen = true,
   onClose = () => {},
-  type = "reimbursement", // can now be "reimbursement" | "disbursement" | "collection"
+  type = "reimbursement",
   financialReportId = "demo-report",
   onSubmit = (data) => console.log("Form submitted:", data),
 }) {
@@ -154,6 +153,16 @@ export function TransactionModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // New handler for amount with numeric + comma formatting
+  const handleAmountChange = (e) => {
+    let value = e.target.value;
+    value = value.replace(/[^0-9.]/g, ""); // Remove non-numeric
+    const parts = value.split(".");
+    if (parts[1]?.length > 2) parts[1] = parts[1].slice(0, 2); // Limit decimals
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas
+    setFormData((prev) => ({ ...prev, amount: parts.join(".") }));
   };
 
   const expenseOptions = {
@@ -198,12 +207,10 @@ export function TransactionModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!selectedFile) {
       setFileError(true);
       return;
     }
-
     setIsSubmitting(true);
 
     try {
@@ -212,7 +219,9 @@ export function TransactionModal({
       multiForm.append("expenseType", formData.expenseType);
       multiForm.append("organizationProfile", orgData._id);
       multiForm.append("organization", orgData.organization);
-      multiForm.append("amount", formData.amount);
+      // Remove commas before submitting
+      const numericAmount = formData.amount.replace(/,/g, "");
+      multiForm.append("amount", numericAmount);
       multiForm.append("financialReportId", financialReportId);
       multiForm.append("name", formData.name);
       multiForm.append("date", formData.date);
@@ -220,13 +229,8 @@ export function TransactionModal({
 
       if (selectedFile) multiForm.append("file", selectedFile);
 
-      for (let pair of multiForm.entries()) {
-        console.log(pair[0] + ": ", pair[1]);
-      }
-
       await onSubmit(multiForm);
       resetForm();
-      // onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
@@ -260,7 +264,7 @@ export function TransactionModal({
         >
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-white ">
                 {isReimbursement
                   ? "Add Reimbursement"
                   : isDisbursement
@@ -341,18 +345,15 @@ export function TransactionModal({
               {/* Amount */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  <DollarSign className="inline h-4 w-4 mr-2" />
-                  Amount
+                  ₱ Amount
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="amount"
                   placeholder="0.00"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
                   value={formData.amount}
-                  onChange={handleChange}
-                  min="0"
-                  step="0.01"
+                  onChange={handleAmountChange}
                   required
                 />
               </div>
@@ -404,10 +405,10 @@ export function TransactionModal({
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <User className="inline h-4 w-4 mr-2" />
                   {isReimbursement
-                    ? "Requestor"
+                    ? "Requested by"
                     : isDisbursement
                     ? "Recipient"
-                    : "Payer"}
+                    : "Payee"}
                 </label>
                 <input
                   type="text"

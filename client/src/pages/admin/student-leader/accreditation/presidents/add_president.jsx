@@ -859,7 +859,7 @@ function PresidentPersonalInfo({
   countries,
 }) {
   const religionOptions = [
-    "Christianity",
+    "Christian",
     "Islam",
     "Hinduism",
     "Buddhism",
@@ -1009,10 +1009,12 @@ function PresidentPersonalInfo({
             name="contactNo"
             value={formData.contactNo}
             onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "");
+              let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+              if (value.length > 11) value = value.slice(0, 11); // Limit to 11 digits
               handleInputChange({ target: { name: "contactNo", value } });
             }}
             placeholder="09XXXXXXXXX"
+            maxLength={11}
             className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
               "contactNo"
             )}`}

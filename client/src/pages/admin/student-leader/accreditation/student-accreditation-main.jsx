@@ -160,16 +160,16 @@ export default function StudentAccreditationMainComponent({ orgId }) {
     <div className="h-full mt-4 overflow-auto">
       <div className="w-full">
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-2">
-          <div className="lg:col-span-2 xl:col-span-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-1">
+          <div className="lg:col-span-2 xl:col-span-3 p-1">
             <OverallStatus accreditationData={accreditationData} />
           </div>
 
-          <div className="lg:col-span-2 ">
+          <div className="lg:col-span-2 p-1 ">
             <PresidentInformation accreditationData={accreditationData} />
           </div>
 
-          <div className="col-span-2">
+          <div className="col-span-2 p-1">
             <DocumentDisplayCard
               accreditationData={accreditationData}
               uploadingDocType={uploadingDocType}
@@ -393,7 +393,7 @@ function OverallStatus({ accreditationData }) {
     (completedRequirements / requirements.length) * 100;
 
   return (
-    <div className="bg-white  border border-gray-400 p-6 h-full">
+    <div className="bg-white  border shadow-2xl border-gray-200 p-6 h-full rounded-2xl">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           Accreditation Status
@@ -449,7 +449,7 @@ function PresidentInformation({ accreditationData }) {
 
   if (!president) {
     return (
-      <div className="bg-white  border border-gray-400 p-6 h-full">
+      <div className="bg-white  border border-gray-200 p-6 h-full rounded-2xl">
         <h2 className="text-xl font-semibold mb-4">President Information</h2>
         <div className="text-center text-gray-500">
           <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
@@ -547,7 +547,7 @@ function DocumentDisplayCard({ accreditationData }) {
   const renderDocumentCard = (label, doc) => {
     if (doc && doc.fileName) {
       return (
-        <div className="flex flex-col  gap-4 border-2 border-gray-400 bg-white shadow-md p-4 justify-between">
+        <div className="flex flex-col  gap-4 border-2 border-gray-200 bg-white shadow-md p-4 justify-between rounded-2xl">
           <div className="flex items-center gap-3">
             <FileText className="min-w-8 min-h-8 text-blue-600" />
             <div className="flex-1 min-w-0">
@@ -592,7 +592,7 @@ function DocumentDisplayCard({ accreditationData }) {
   };
 
   return (
-    <div className="flex  flex-col  w-full  bg-white  border border-gray-400 p-6 h-full">
+    <div className="flex  flex-col  w-full  bg-white  border border-gray-200 p-6 h-full rounded-2xl">
       <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
         <FileText className="w-5 h-5" />
         Required Documents
@@ -664,7 +664,7 @@ function RosterLists({ accreditationData }) {
     }
   };
   return (
-    <div className="bg-white border border-gray-400 p-6 h-full">
+    <div className="bg-white border border-gray-200 p-6 h-full rounded-2xl">
       <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
         <Users className="w-5 h-5" />
         Organization Roster
