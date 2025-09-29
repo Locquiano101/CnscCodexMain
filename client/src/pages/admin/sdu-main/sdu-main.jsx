@@ -1,7 +1,10 @@
+import { useOutletContext } from "react-router-dom";
 import { SduMainNavigation } from "./sdu-main-navigation";
 import { SduMainComponents } from "./sdu-route-components";
 
 export function SduMainPage() {
+  const { user } = useOutletContext();
+
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
       {/* Sidebar */}
@@ -11,7 +14,7 @@ export function SduMainPage() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <SduMainComponents />
+        <SduMainComponents user={user} />
       </main>
     </div>
   );

@@ -6,7 +6,7 @@ export const notificationSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: "OrganizationProfile",
     },
-
+    department: String,
     type: {
       type: String,
     },

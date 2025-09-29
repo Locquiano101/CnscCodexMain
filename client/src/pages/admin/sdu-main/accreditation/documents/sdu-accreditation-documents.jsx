@@ -8,288 +8,565 @@ import {
   TriangleAlert,
   Upload,
   XCircle,
+  FileText,
+  Users,
+  Calendar,
+  AlertCircle,
+  Building2,
 } from "lucide-react";
-import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
+
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+} from "recharts";
+
+import { API_ROUTER } from "../../../../../App";
 
 export function SduMainAccreditationDocumentOverview({ onSelectOrg }) {
-  return <> mama mo 2</>;
-}
+  const [accreditationDocuments, setAccreditationDocuments] = useState(null);
+  const [activeView, setActiveView] = useState("overview");
 
-export function SduMainAccreditationDocumentOrganization({ selectedOrg }) {
-  const [accreditationData, setAccreditationData] = useState(null);
-  const [showApprovePopup, setShowApprovePopup] = useState(false);
-  const [showRevisionPopup, setShowRevisionPopup] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-
-  const fetchAccreditationInfo = async (orgId) => {
-    if (!orgId) return;
+  const fetchAccreditationInfo = async () => {
     try {
       const { data } = await axios.get(
-        `${API_ROUTER}/getAccreditationInfo/${orgId}`,
+        `${API_ROUTER}/getAccreditatationDocuments`,
         { withCredentials: true }
       );
-      console.log(data);
-      setAccreditationData(data);
+      console.log("Raw data:", data);
+      setAccreditationDocuments(data);
     } catch (err) {
       console.error("Error fetching accreditation info:", err);
     }
   };
 
   useEffect(() => {
-    if (selectedOrg?._id) {
-      fetchAccreditationInfo(selectedOrg._id);
-    }
-  }, [selectedOrg?._id]);
+    fetchAccreditationInfo();
+  }, []);
 
-  const handleDropdownAction = (action, doc, label, docKey) => {
-    setSelectedDocument({ doc, label, docKey });
-    if (action === "update") {
-      setShowApprovePopup(true);
-    } else if (action === "revision") {
-      setShowRevisionPopup(true);
-    }
+  // Process data while keeping the original structure intact
+  const processData = () => {
+    if (!accreditationDocuments) return [];
+
+    return accreditationDocuments.map((item) => {
+      const org = item.organizationProfile;
+      const documents = [
+        item.JointStatement,
+        item.PledgeAgainstHazing,
+        item.ConstitutionAndByLaws,
+      ].filter((doc) => doc !== null);
+
+      return {
+        // Keep the entire organization profile data
+        ...org,
+        // Add document information
+        documentsSubmitted: documents.length,
+        totalDocuments: 3,
+        completionRate: (documents.length / 3) * 100,
+        // Keep reference to the original item if needed
+        originalData: item,
+      };
+    });
   };
 
-  const ApprovePopup = () => {
-    const handleUpdateStatus = async ({ documentId, status }) => {
-      try {
-        // 1. Update the document status
-        await axios.post(
-          `${API_ROUTER}/UpdateDocument/${documentId}`,
-          { status },
-          { withCredentials: true }
-        );
+  const summaryData = processData();
 
-        // 2. Refresh accreditation data
-        const { data } = await axios.get(
-          `${API_ROUTER}/getAccreditationInfo/${selectedOrg?._id}`,
-          { withCredentials: true }
-        );
+  // Chart data preparations - use the actual data structure
+  const documentCompletionData = summaryData.map((org) => ({
+    name: org.orgAcronym,
+    completed: org.documentsSubmitted,
+    remaining: org.totalDocuments - org.documentsSubmitted,
+    completionRate: org.completionRate,
+  }));
 
-        setAccreditationData(data);
-        console.log(`Document ${documentId} status updated to ${status}`);
+  const statusDistribution = [
+    {
+      name: "Pending",
+      value: summaryData.filter((org) => org.overAllStatus === "Pending")
+        .length,
+    },
+    {
+      name: "Approved",
+      value: summaryData.filter((org) => org.overAllStatus === "Approved")
+        .length,
+    },
+    {
+      name: "Rejected",
+      value: summaryData.filter((org) => org.overAllStatus === "Rejected")
+        .length,
+    },
+  ];
 
-        // Close popup after success
-        setShowApprovePopup(false);
-      } catch (err) {
-        console.error("Error updating document status:", err);
-      }
-    };
+  const orgClassDistribution = [
+    {
+      name: "Local",
+      value: summaryData.filter((org) => org.orgClass === "Local").length,
+    },
+    {
+      name: "System-wide",
+      value: summaryData.filter((org) => org.orgClass === "System-wide").length,
+    },
+  ];
 
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-          <h3 className="text-lg font-semibold mb-4">Approve Document</h3>
-          <p className="text-gray-600 mb-4">
-            Approve {selectedDocument?.label}?
-          </p>
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={() => setShowApprovePopup(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() =>
-                handleUpdateStatus({
-                  documentId: selectedDocument?.doc?._id,
-                  status: "Approved",
-                })
+  const COLORS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B"];
+
+  const StatCard = ({ title, value, color = "blue" }) => (
+    <div
+      className={`bg-white p-6 rounded-lg shadow-sm border-l-4 border-${color}-500`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          SDU Accreditation Document Overview
+        </h1>
+        <p className="text-gray-600">
+          Comprehensive overview of organization accreditation documents and
+          status
+        </p>
+      </div>
+
+      {/* Navigation */}
+      <div className="mb-6">
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setActiveView("overview")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeView === "overview"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveView("charts")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeView === "charts"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Charts
+          </button>
+          <button
+            onClick={() => setActiveView("detailed")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeView === "detailed"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Detailed Table
+          </button>
+        </div>
+      </div>
+
+      {activeView === "overview" && (
+        <div className="space-y-6">
+          {/* Key Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              title="Total Organizations"
+              value={summaryData.length}
+              color="blue"
+            />
+            <StatCard
+              title="Pending Applications"
+              value={
+                summaryData.filter((org) => org.overAllStatus === "Pending")
+                  .length
               }
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Approve
-            </button>
+              color="yellow"
+            />
+            <StatCard
+              title="Active Organizations"
+              value={summaryData.filter((org) => org.isActive).length}
+              color="green"
+            />
+            <StatCard
+              title="Avg. Completion Rate"
+              value={`${
+                summaryData.length > 0
+                  ? Math.round(
+                      summaryData.reduce(
+                        (acc, org) => acc + org.completionRate,
+                        0
+                      ) / summaryData.length
+                    )
+                  : 0
+              }%`}
+              color="purple"
+            />
+          </div>
+
+          {/* Quick Summary Table */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Organization Summary
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Organization
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Class
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Documents
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Completion
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {summaryData.map((org, index) => (
+                    <tr
+                      onClick={() => onSelectOrg(org)}
+                      key={index}
+                      className="hover:bg-gray-50 cursor-pointer"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {org.orgName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {org.orgAcronym}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            org.orgClass === "Local"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
+                          {org.orgClass}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            org.overAllStatus === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : org.overAllStatus === "Approved"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {org.overAllStatus}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {org.documentsSubmitted}/{org.totalDocuments}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-16 bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                org.completionRate === 100
+                                  ? "bg-green-500"
+                                  : org.completionRate >= 50
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                              style={{ width: `${org.completionRate}%` }}
+                            ></div>
+                          </div>
+                          <span className="ml-2 text-sm text-gray-500">
+                            {Math.round(org.completionRate)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  };
+      )}
 
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case "approved":
-        return <CheckCircle className="w-3 h-3" />;
-      case "pending":
-        return <Clock className="w-3 h-3" />;
-      case "rejected":
-        return <XCircle className="w-3 h-3" />;
-      default:
-        return <AlertCircle className="w-3 h-3" />;
-    }
-  };
-
-  const RevisionPopup = () => {
-    const [revisionNotes, setRevisionNotes] = useState("");
-
-    const handleUpdateRevision = async () => {
-      try {
-        // 1. Update the document status with revision notes
-        await axios.post(
-          `${API_ROUTER}/UpdateDocument/${selectedDocument?.doc?._id}`,
-          {
-            status: "Revision From SDU",
-            revisionNotes,
-            logs: "revision from the Sdu by the SDU",
-          },
-          { withCredentials: true }
-        );
-
-        // 2. Refresh accreditation data
-        const { data } = await axios.get(
-          `${API_ROUTER}/getAccreditationInfo/${selectedOrg?._id}`,
-          { withCredentials: true }
-        );
-
-        setAccreditationData(data);
-        console.log(
-          `Document ${selectedDocument?.doc?._id} status updated to Revision From SDU`
-        );
-
-        // Close revision popup after success
-        setShowRevisionPopup(false);
-      } catch (err) {
-        console.error("Error updating document status:", err);
-      }
-    };
-
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-          <h3 className="text-lg font-semibold mb-4">Create Revision</h3>
-          <p className="text-gray-600 mb-4">
-            Create a revision for {selectedDocument?.label}
-          </p>
-
-          {/* Text box for revision notes */}
-          <textarea
-            className="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Enter revision notes here..."
-            value={revisionNotes}
-            onChange={(e) => setRevisionNotes(e.target.value)}
-            rows={4}
-          />
-
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={() => setShowRevisionPopup(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleUpdateRevision}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              Create Revision
-            </button>
+      {activeView === "charts" && (
+        <div className="space-y-8">
+          {/* Document Completion Chart */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Document Completion by Organization
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={documentCompletionData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  dataKey="completed"
+                  fill="#10B981"
+                  name="Completed Documents"
+                />
+                <Bar
+                  dataKey="remaining"
+                  fill="#EF4444"
+                  name="Remaining Documents"
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        </div>
-      </div>
-    );
-  };
 
-  // Show loading or nothing if data not ready yet
-  if (!accreditationData) {
-    return <div className="p-4 text-gray-500">Loading documents...</div>;
-  }
-
-  const DocumentCard = ({ label, doc, docKey }) => {
-    return doc?.fileName ? (
-      <div
-        onClick={() => openDocumentDetails(doc, label, docKey)}
-        className="flex-1 h-full  transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
-      >
-        <div className=" h-full flex flex-col  bg-white rounded-lg shadow-md  hover:shadow-md transition-all duration-300">
-          {/* Header */}
-          <div className="p-4 border-gray-100">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <File className="w-5 h-5 text-amber-600" />
-                  <h3 className="font-semibold text-lg text-gray-900">
-                    {label}
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-500">
-                  Uploaded{" "}
-                  {new Date(doc.createdAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-              <div className="flex flex-col  gap-2 items-end justify-between h-full  ">
-                <div className="flex items-center ">
-                  <div
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getStatusStyle(
-                      doc.status
-                    )}`}
+          {/* Status Distribution */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Status Distribution
+              </h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={statusDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                   >
-                    {getStatusIcon(doc.status)}
-                    <span>{doc.status}</span>
-                  </div>
-                </div>
-              </div>
+                    {statusDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Organization Class Distribution
+              </h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={orgClassDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {orgClassDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* PDF Viewer */}
-          <div className="flex-1  overflow-hidden">
-            <iframe
-              src={`${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}#toolbar=0&navpanes=0&scrollbar=0`}
-              title={`${label} PDF Viewer`}
-              className="w-full h-full"
-            />
+          {/* Completion Rate Chart */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Document Completion Rate
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={documentCompletionData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip
+                  formatter={(value) => [`${value}%`, "Completion Rate"]}
+                />
+                <Bar
+                  dataKey="completionRate"
+                  fill="#3B82F6"
+                  name="Completion Rate %"
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
-      </div>
-    ) : (
-      <div className="flex-1 h-full min-h-0">
-        <div
-          onClick={() => console.log(docKey)}
-          className="bg-white border-2 border-dashed border-gray-300 rounded-xl h-full flex flex-col justify-center items-center p-8 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group"
-        >
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-            <TriangleAlert className="w-8 h-8 text-gray-400 group-hover:text-blue-500 transition-colors" />
+      )}
+
+      {activeView === "detailed" && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">
+              Detailed Organization Information
+            </h3>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Not Yet Uploaded: {label}
-          </h3>
-          <p className="text-sm text-gray-500">Notify Organization</p>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Organization Details
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Classification
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Leadership
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Document Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {summaryData.map((org, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {org.orgName}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {org.orgAcronym} • {org.orgDepartment || "N/A"}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {org.orgCourse || "No course specified"}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          org.orgClass === "Local"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {org.orgClass}
+                      </span>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Status:{" "}
+                        <span
+                          className={`font-medium ${
+                            org.overAllStatus === "Pending"
+                              ? "text-yellow-600"
+                              : org.overAllStatus === "Approved"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {org.overAllStatus}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        President:{" "}
+                        <span className="text-gray-600">
+                          {org.orgPresident ? "Assigned" : "Not Assigned"}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Active:{" "}
+                        <span
+                          className={
+                            org.isActive ? "text-green-600" : "text-red-600"
+                          }
+                        >
+                          {org.isActive ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        Adviser: {org.adviser ? "Assigned" : "Not Assigned"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center mb-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${
+                              org.completionRate === 100
+                                ? "bg-green-500"
+                                : org.completionRate >= 50
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{ width: `${org.completionRate}%` }}
+                          ></div>
+                        </div>
+                        <span className="ml-2 text-sm text-gray-500">
+                          {Math.round(org.completionRate)}%
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {org.documentsSubmitted}/{org.totalDocuments} documents
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(org.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    );
-  };
-
-  const { JointStatement, PledgeAgainstHazing, ConstitutionAndByLaws } =
-    accreditationData;
-
-  return (
-    <>
-      <div className="grid h-full gap-4 p-4 lg:grid-cols-3">
-        <DocumentCard
-          label="Joint Statement"
-          doc={JointStatement}
-          docKey="JointStatement"
-        />
-        <DocumentCard
-          label="Constitution and By-Laws"
-          doc={ConstitutionAndByLaws}
-          docKey="ConstitutionAndByLaws"
-        />
-        <DocumentCard
-          label="Pledge Against Hazing"
-          doc={PledgeAgainstHazing}
-          docKey="PledgeAgainstHazing"
-        />
-      </div>
-
-      {/* Popups */}
-      {showApprovePopup && <ApprovePopup />}
-      {showRevisionPopup && <RevisionPopup />}
-    </>
+      )}
+    </div>
   );
 }

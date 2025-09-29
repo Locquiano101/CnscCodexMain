@@ -5,13 +5,11 @@ import * as Controller from "./controller/index.js";
 const router = express.Router();
 const storage = multer.memoryStorage();
 export const upload = multer({ storage });
-/*
-**********                                **********
-**********                                **********
-          DEAN
-**********                                **********
-**********                                ********** 
-*/
+
+router.get(
+  "/generateReportAccreditationSdu",
+  Controller.GenerateAccreditationReports
+);
 router.post("/getOrganizations", Controller.GetOrganizationsByDeliveryUnit);
 router.get("/getPublicPosts", Controller.getPostForPublic);
 router.get("/getOrgProfilePosts/:orgProfileId", Controller.getPostByOrgProfile);
@@ -95,26 +93,6 @@ router.post("/ApproveRosterList/:rosterId", Controller.ApprovedRosterList);
 router.post("/RevisionRosterList/:rosterId", Controller.revisionNoteRosterList);
 router.post("/gradeAccomplishment/", Controller.gradeAccomplishment);
 
-/*
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-              ADVISER
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-**********              **********
-**********              ********** 
-*/
-
-/* **********  ADVISER GENERAL ********** */
-
 router.post("/adviserChangePassword/:userId", Controller.ChangePasswordAdviser);
 router.post("/adviserChangePassword/:userId", Controller.ChangePasswordAdviser);
 
@@ -176,6 +154,7 @@ router.get(
   "/getAccreditationInfo/:orgProfileId",
   Controller.GetAccreditationDetails
 );
+router.get("/getAllAccreditationInfo", Controller.GetAllAccreditationDetails);
 router.get(
   "/getAccomplishment/:OrgProfileId",
   Controller.getAccomplishmentReportByOrg
@@ -183,7 +162,11 @@ router.get(
 router.get("/getAccomplishmentAll", Controller.getAccomplishmentReportAll);
 router.get(
   "/getAccreditatationDocuments/:orgProfileId",
-  Controller.GetAccreditationDocuments
+  Controller.GetAccreditationDocumentsByOrg
+);
+router.get(
+  "/getAccreditatationDocuments",
+  Controller.GetAccreditationDocumentsAll
 );
 
 /* ********** STUDENT LEADER PROPOSAL ********** */

@@ -9,4 +9,5 @@ export * from "./organization.js";
 export * from "./registration.js";
 export * from "./proposal.js";
 export * from "./proposal-conduct.js";
+export * from "./generate-reports.js";
 export * from "./public-post.js";

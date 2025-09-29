@@ -16,7 +16,7 @@ import {
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 import axios from "axios";
 
-export function SduFinancialReport({ selectedOrg, user }) {
+export function SduMainFinancialReport({ selectedOrg, user }) {
   const [financialReport, setFinancialReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentBalance, setCurrentBalance] = useState(""); // You might want to get this from the backend as well
@@ -273,7 +273,7 @@ export function SduFinancialReport({ selectedOrg, user }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full w-full pt-4 bg-gray-200 p-4 flex gap-4 ">
+    <div className="h-full w-full pt-4 bg-gray-200 p-4 flex gap-4 overflow-auto">
       <div className="bg-white shadow-lg flex flex-col flex-1 p-6    border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
