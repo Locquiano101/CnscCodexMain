@@ -7,7 +7,7 @@ import {
   User,
 } from "../models/index.js";
 
-export const GetAccreditationDocuments = async (req, res) => {
+export const GetAccreditationDocumentsByOrg = async (req, res) => {
   const orgProfileId = req.params.orgProfileId;
 
   try {
@@ -36,17 +36,66 @@ export const GetAccreditationDocuments = async (req, res) => {
   }
 };
 
+export const GetAccreditationDocumentsAll = async (req, res) => {
+  try {
+    let accreditation = await Accreditation.find({
+      isActive: true, // only fetch if active
+    })
+      .populate([
+        "JointStatement",
+        "PledgeAgainstHazing",
+        "ConstitutionAndByLaws",
+        "organizationProfile",
+      ])
+      .select(
+        "organizationProfile JointStatement PledgeAgainstHazing ConstitutionAndByLaws  "
+      ) // only return document fields
+      .exec();
+
+    if (!accreditation) {
+      return res.status(404).json({
+        message: "No active accreditation found for this organization.",
+      });
+    }
+
+    res.status(200).json(accreditation);
+  } catch (error) {
+    console.error("Error fetching accreditation documents:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const DeactivateAllAccreditations = async (req, res) => {
   try {
     const result = await Accreditation.updateMany(
       {}, // match all documents
       { $set: { isActive: false } }
     );
+    // Find all non-adviser users in the organization
+    const users = await User.find({}).select("email");
 
     const resultOrganizationProfile = await OrganizationProfile.updateMany(
       {}, // match all documents
       { $set: { isActive: false } }
     );
+
+    const message = `
+Hello ${orgName},
+
+A new inquiry has been submitted regarding your accreditation documents.
+
+Inquiry Details:
+- From: ${senderInfo}
+- Message: 
+${inquiryText}
+
+Please log in to the system to review and respond.
+
+Thank you,
+Accreditation Support Team
+    `;
+
+    await NodeEmail(recipientEmails, inquirySubject, message);
 
     res.status(200).json({
       message: "All accreditations have been deactivated",
@@ -213,6 +262,27 @@ export const AddAccreditationDocument = async (req, res) => {
   }
 };
 
+export const GetAllAccreditationDetails = async (req, res) => {
+  try {
+    const accreditation = await Accreditation.find()
+      .populate([
+        "organizationProfile",
+        "JointStatement",
+        "FinancialReport",
+        "PledgeAgainstHazing",
+        "Roster",
+        "ConstitutionAndByLaws",
+        "PresidentProfile",
+      ])
+      .exec();
+
+    res.status(200).json(accreditation);
+  } catch (error) {
+    console.error("Error handling accreditation request:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const GetAccreditationDetails = async (req, res) => {
   const orgProfileId = req.params.orgProfileId;
 
@@ -281,6 +351,7 @@ export const SendAccreditationInquiryEmailInquiry = async (req, res) => {
       userName,
     } = req.body;
 
+    console.log(orgId);
     // Find all non-adviser users in the organization
     const users = await User.find({
       organizationProfile: orgId,
@@ -297,12 +368,19 @@ export const SendAccreditationInquiryEmailInquiry = async (req, res) => {
     // Extract plain email list
     const recipientEmails = users.map((u) => u.email).filter(Boolean);
 
+    console.log(recipientEmails);
     if (recipientEmails.length === 0) {
       return res.status(404).json({
         success: false,
         error: "No valid email addresses found.",
       });
     }
+
+    // Format the sender information
+    const senderInfo =
+      userName && userName.trim() !== ""
+        ? `${userName} || ${userPosition}`
+        : userPosition;
 
     // Email body
     const message = `
@@ -311,7 +389,7 @@ Hello ${orgName},
 A new inquiry has been submitted regarding your accreditation documents.
 
 Inquiry Details:
-- From: ${userName} || ${userPosition} 
+- From: ${senderInfo}
 - Message: 
 ${inquiryText}
 

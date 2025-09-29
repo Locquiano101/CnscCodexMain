@@ -27,6 +27,7 @@ export const NodeEmail = async (emailAddress, emailSubject, emailMessage) => {
     console.error("NodeEmail: No recipient email address provided.");
     return { success: false, error: "Missing recipient" };
   }
+  console.error(emailAddress);
 
   console.log("Sending Email...");
   try {

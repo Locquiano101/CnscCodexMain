@@ -6,12 +6,11 @@ import { API_ROUTER } from "../App";
 export function EmailModal({
   open,
   onClose,
-  endpoint, // API endpoint like `${API_ROUTER}/accreditationEmailInquiry`
   title = "Compose Email",
   description,
   sendButtonLabel = "Send Email",
   onSuccess, // callback after success
-  route,
+  route = "accreditationEmailInquiry",
   Subject,
   onError,
   orgData,
@@ -20,6 +19,7 @@ export function EmailModal({
   if (!open) return null;
   const [loading, setLoading] = useState(false);
 
+  console.log(orgData);
   // In-house emailData state
   const [emailData, setEmailData] = useState({
     orgId: orgData._id,

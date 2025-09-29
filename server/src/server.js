@@ -3,26 +3,33 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import path from "path";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import apiRoutes from "./routers.js";
 import http from "http";
 import { Server } from "socket.io";
+import PDFDocument from "pdfkit";
+
+import apiRoutes from "./routers.js";
 import { Notification } from "./models/index.js"; // adjust path!
+
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const DB = process.env.MONGO_URI;
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // -------------------- Connect to MongoDB --------------------
 async function connectDB() {
   try {
     await mongoose.connect(DB);
-    console.log(`Connected to MongoDB at ${DB}`);
+    console.log(`✅ Connected to MongoDB at ${DB}`);
   } catch (error) {
-    console.error("MongoDB Connection Error:", error);
+    console.error("❌ MongoDB Connection Error:", error);
     process.exit(1);
   }
 }
@@ -38,10 +45,9 @@ const badWords = [
   "nigger",
   "faggot",
 ];
-// extend this list however you like
 
 const profanityMiddleware = (req, res, next) => {
-  const contentSources = [
+  const content = [
     JSON.stringify(req.body || {}),
     JSON.stringify(req.query || {}),
     JSON.stringify(req.params || {}),
@@ -49,24 +55,21 @@ const profanityMiddleware = (req, res, next) => {
     .join(" ")
     .toLowerCase();
 
-  const hasProfanity = badWords.some((word) => contentSources.includes(word));
-
-  if (hasProfanity) {
-    // 🚨 Trigger Rickroll instantly
+  if (badWords.some((word) => content.includes(word))) {
     return res.status(418).json({
       error: "Profanity detected",
       rickroll: true,
       youtube: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     });
   }
-
   next();
 };
 
-// 🚨 Must come BEFORE cors()
-app.use(profanityMiddleware);
-
 // -------------------- Middleware --------------------
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "client/build")));
+
 app.use(
   cors({
     origin: true,
@@ -74,14 +77,6 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
-
-app.use(
-  "/api/server/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
-// Session setup with MongoDB store
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "fallback-secret",
   resave: false,
@@ -95,18 +90,14 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-// Inactivity timeout middleware
+// -------------------- Inactivity + Profanity Middleware --------------------
 const INACTIVITY_GRACE = 5000; // 5 seconds
-const INACTIVITY_TIMEOUT = 2629800000; // 1 month
+const INACTIVITY_TIMEOUT = 2629800000; // ~1 month
 
 const activityMiddleware = (req, res, next) => {
-  // Allow public access to this specific endpoint
-  if (req.path === "/notifications" || req.path === "//notifications") {
-    return next();
-  }
+  if (req.path === "/notifications") return next();
 
-  // --- PROFANITY CHECK ---
-  const contentSources = [
+  const content = [
     JSON.stringify(req.body || {}),
     JSON.stringify(req.query || {}),
     JSON.stringify(req.params || {}),
@@ -114,15 +105,12 @@ const activityMiddleware = (req, res, next) => {
     .join(" ")
     .toLowerCase();
 
-  const hasProfanity = badWords.some((word) => contentSources.includes(word));
-
-  if (hasProfanity) {
+  if (badWords.some((word) => content.includes(word))) {
     return res
       .status(400)
       .json({ error: "Profanity detected", rickroll: true });
   }
 
-  // --- INACTIVITY CHECK ---
   const now = Date.now();
   if (req.session?.lastActivity) {
     const inactiveTime = now - req.session.lastActivity;
@@ -138,7 +126,7 @@ const activityMiddleware = (req, res, next) => {
   next();
 };
 
-// -------------------- Setup HTTP + WebSocket --------------------
+// -------------------- HTTP + WebSocket --------------------
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -147,14 +135,12 @@ const io = new Server(server, {
   },
 });
 
-// Let Socket.IO access sessions
 io.engine.use(sessionMiddleware);
 
-// When a client connects
 io.on("connection", (socket) => {
-  const userId = socket.handshake.auth?.userId; // frontend must send this
+  const userId = socket.handshake.auth?.userId;
   if (userId) {
-    socket.join(userId.toString()); // each user in their own room
+    socket.join(userId.toString());
     console.log(`🔌 User ${userId} connected with socket ${socket.id}`);
   }
 
@@ -164,14 +150,13 @@ io.on("connection", (socket) => {
 });
 
 // -------------------- Routes --------------------
+app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
-app.use("/api", activityMiddleware, apiRoutes);
-
-// Save + send notification
+// Send test notification
 app.post("/api/sendTestNotification", async (req, res) => {
   try {
     const { recipientId, message } = req.body;
-    const senderId = req.session.userId || "admin"; // fallback
+    const senderId = req.session.userId || "admin";
 
     const notification = await Notification.create({
       organizationProfile: recipientId,
@@ -179,29 +164,26 @@ app.post("/api/sendTestNotification", async (req, res) => {
       message,
     });
 
-    // Emit to recipient only
     io.to(recipientId.toString()).emit("notification", notification);
 
     res.json({ success: true, notification });
   } catch (err) {
-    console.error(err);
+    console.error("Error sending notification:", err);
     res.status(500).json({ error: "Failed to send notification" });
   }
 });
 
-// Using query param (?userId=...)
+// Fetch notifications
 app.get("/notifications", async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const { userId } = req.query;
     if (!userId) {
       return res.status(400).json({ error: "userId is required" });
     }
 
     const notifications = await Notification.find({
       organizationProfile: userId,
-    }).sort({
-      createdAt: -1,
-    });
+    }).sort({ createdAt: -1 });
 
     res.json(notifications);
   } catch (err) {
@@ -210,8 +192,8 @@ app.get("/notifications", async (req, res) => {
   }
 });
 
-// -------------------- Start server --------------------
+// -------------------- Start Server --------------------
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Frontend Server running at ${process.env.VITE_API_ROUTER}`);
-  console.log(`Backend Server running at http://0.0.0.0:${PORT}`);
+  console.log(`🚀 Frontend served at ${process.env.VITE_API_ROUTER}`);
+  console.log(`✅ Backend running at http://0.0.0.0:${PORT}`);
 });

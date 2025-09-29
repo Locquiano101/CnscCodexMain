@@ -27,6 +27,7 @@ import {
   RevisionModal,
   ViewProposalModal,
 } from "./update-status-proposed-action-plan";
+import { EmailModal } from "../../../../../components/accreditation-email";
 
 export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
   const [proposals, setProposals] = useState([]);
@@ -43,6 +44,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
   const [isManageProposedPlanOpen, setIsManageProposedPlanOpen] =
     useState(false);
   const dropdownRef = useRef(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const [popup, setPopup] = useState({
     open: false,
@@ -73,10 +75,8 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
   };
 
   useEffect(() => {
-    if (selectedOrg._id) {
-      fetchProposals();
-    }
-  }, [selectedOrg._id]);
+    fetchProposals();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -281,20 +281,25 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && proposals.length === 0 && (
-        <div className="bg-white p-4  h-full rounded-xl shadow-xl">
-          <div className="border-4  flex flex-col items-center justify-center text-center h-full rounded-2xl border-dashed border-yellow-500 hover:bg-amber-500/50 transition-all duration-300">
-            <div className=" rounded-full p-6 h-fit w-fit bg-yellow-200 mx-auto mb-6 flex items-center justify-center">
+        <div
+          onClick={() => setShowEmailModal(true)}
+          className="bg-white p-4  h-full rounded-xl shadow-xl"
+        >
+          <div className="border-4 flex flex-col items-center justify-center text-center h-full rounded-2xl border-dashed border-yellow-500 hover:bg-amber-500/50 transition-all duration-300">
+            <div className="rounded-full p-6 h-fit w-fit bg-yellow-200 mx-auto mb-6 flex items-center justify-center">
               <AlertTriangle size={48} className="text-yellow-600" />
             </div>
             <h3 className="text-xl font-semibold text-slate-800 mb-3">
               No Proposals Found
             </h3>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto">
+            <p className="text-slate-600 mb-4 max-w-md mx-auto">
               There are currently no proposed action plans for this
-              organization. Notify Organization
+              organization.
             </p>
+            <button className="px-6 py-2 bg-cnsc-primary-color text-white rounded-lg shadow hover:bg-cnsc-primary-color/80 transition">
+              Notify Organization
+            </button>
           </div>
         </div>
       )}
@@ -582,11 +587,30 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
         handleApproval={handleApproval}
         formatDate={(date) => new Date(date).toLocaleDateString()}
         formatCurrency={(amount) => `$${amount.toLocaleString()}`}
-        getStatusIcon={(status) => {
+        getStatusIcon={() => {
           return null;
         }}
       />
-
+      <EmailModal
+        open={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        title="Notify Organization - Missing President Profile"
+        description="Send an email to notify the organization about the missing president profile."
+        sendButtonLabel="Send Notification"
+        Subject="Missing President Profile Notification"
+        orgData={selectedOrg}
+        user={{
+          name: "SDU Admin", // Replace with actual user name
+          position: "SDU Administrator", // Replace with actual user position
+        }}
+        onSuccess={() => {
+          console.log("Email sent successfully");
+          setShowEmailModal(false);
+        }}
+        onError={(err) => {
+          console.error("Failed to send email:", err);
+        }}
+      />
       <RevisionModal
         show={showRevisionModal}
         onClose={() => setShowRevisionModal(false)}

@@ -15,13 +15,13 @@ import { SduAccreditationOverview } from "./accreditation/overview/sdu-main-accr
 import { SduMainRosterOverview } from "./accreditation/roster-members/sdu-overall-roster";
 import { SduMainIndividualRosterView } from "./accreditation/roster-members/sdu-individual-roster";
 import { SduMainOverallProposedActioPlan } from "./accreditation/proposed-action-plan/overall-proposed-action-plan";
+import { SduMainAccreditationDocumentOverview } from "./accreditation/documents/sdu-accreditation-documents";
+import { SduMainAccreditationDocumentIndividualOrganization } from "./accreditation/documents/sdu-main-accreditation-indivual";
 import { SduMainProposedActionPlanOrganization } from "./accreditation/proposed-action-plan/individual-proposed-action-plan";
-import {
-  SduMainAccreditationDocumentOrganization,
-  SduMainAccreditationDocumentOverview,
-} from "./accreditation/documents/sdu-accreditation-documents";
+import { SduMainFinancialReportOverall } from "./accreditation/financial-report/sdu-main-financial-report";
+import { SduMainFinancialReport } from "./accreditation/financial-report/individual-financial-report";
 
-export function SduMainComponents() {
+export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const location = useLocation();
 
@@ -32,7 +32,6 @@ export function SduMainComponents() {
     try {
       setLoading(true);
       const res = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`);
-      console.log("Fetched orgs:", res.data);
       setOrgs(res.data || []); // ✅ save to state
     } catch (error) {
       console.error("Error fetching orgs:", error);
@@ -108,7 +107,17 @@ export function SduMainComponents() {
         <Route path="/accreditation" element={<Outlet />}>
           <Route index element={<SduAccreditationOverview />} />
 
-          <Route path="financial-report" element={<UnderDevelopment />} />
+          <Route
+            path="financial-report"
+            element={renderRoute(
+              <SduMainFinancialReport selectedOrg={selectedOrg} />,
+              <SduMainFinancialReportOverall
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
 
           <Route
             path="roster-of-members"
@@ -125,8 +134,9 @@ export function SduMainComponents() {
           <Route
             path="document"
             element={renderRoute(
-              <SduMainAccreditationDocumentOrganization
+              <SduMainAccreditationDocumentIndividualOrganization
                 selectedOrg={selectedOrg}
+                user={user}
               />,
               <SduMainAccreditationDocumentOverview
                 orgs={orgs}
@@ -138,7 +148,6 @@ export function SduMainComponents() {
 
           <Route
             path="proposed-action-plan"
-            e
             element={renderRoute(
               <SduMainProposedActionPlanOrganization
                 selectedOrg={selectedOrg}
@@ -189,8 +198,7 @@ export function SduMainComponents() {
   );
 }
 
-function OrganizationSelector({ orgs, selectedOrg, onSelectOrg }) {
-  console.log(orgs);
+export function OrganizationSelector({ orgs, selectedOrg, onSelectOrg }) {
   const [isOpen, setIsOpen] = useState(false);
   const handleSelect = (org) => {
     onSelectOrg(org);

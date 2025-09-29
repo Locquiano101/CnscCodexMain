@@ -13,24 +13,17 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
   Area,
   AreaChart,
 } from "recharts";
 import {
-  Icon,
-  Download,
-  FileText,
-  BarChart3,
-  PieChart as PieChartIcon,
   TrendingUp,
-  Calendar,
-  X,
   Users,
   CheckCircle,
   Clock,
-  XCircle,
+  Settings2,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
 
 export function SduAccreditationOverview() {
@@ -62,24 +55,6 @@ export function SduAccreditationOverview() {
       status,
       count,
       percentage: ((count / activeOrganization.length) * 100).toFixed(1),
-    }));
-  };
-
-  const processDepartmentData = () => {
-    const deptCounts = activeOrganization.reduce((acc, org) => {
-      const dept =
-        org.organizationProfile?.orgDepartment || "Unknown Department";
-      acc[dept] = (acc[dept] || 0) + 1;
-      return acc;
-    }, {});
-
-    return Object.entries(deptCounts).map(([department, count]) => ({
-      department:
-        department.length > 20
-          ? department.substring(0, 20) + "..."
-          : department,
-      fullDepartment: department,
-      count,
     }));
   };
 
@@ -165,13 +140,9 @@ export function SduAccreditationOverview() {
 
   // Chart data
   const statusData = processStatusData();
-  const departmentData = processDepartmentData();
   const orgClassData = processOrgClassData();
   const documentCompletionData = processDocumentCompletionData();
   const timelineData = processTimelineData();
-  const dropdownRef = useRef(null);
-
-  const [manageAccreditation, setManageAccreditation] = useState(false);
 
   return (
     <div className="flex flex-col gap-6 p-6 pt-0 overflow-auto">
@@ -181,40 +152,6 @@ export function SduAccreditationOverview() {
           <h1 className="text-3xl font-bold mb-2">
             SDU Accreditation Analytics Dashboard
           </h1>
-        </div>
-
-        <div className="relative inline-block text-left" ref={dropdownRef}>
-          <button
-            onClick={() => setManageAccreditation((prev) => !prev)}
-            className={`px-4 py-2 bg-cnsc-primary-color w-48 text-white transition-colors hover:bg-cnsc-primary-color-dark ${
-              manageAccreditation ? "rounded-t-lg" : "rounded-lg"
-            }`}
-          >
-            Manage Accreditation
-          </button>
-
-          {manageAccreditation && (
-            <div className="absolute right-0 w-48 bg-white border rounded-b-lg shadow-lg z-10">
-              <button
-                onClick={() => console.log("approve")}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-              >
-                Approve
-              </button>
-              <button
-                onClick={() => console.log("notes")}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-              >
-                Revision Notes
-              </button>
-              <button
-                onClick={() => console.log("history")}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-              >
-                View Previous Presidents
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

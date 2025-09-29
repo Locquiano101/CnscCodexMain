@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
-import { X } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import {
   ApprovePresidentProfile,
   RevisePresidentProfile,
 } from "./sdu-update-status-president";
 import { SduHistoryPresidents } from "./sdu-history-president";
+import { EmailModal } from "../../../../../components/accreditation-email";
 
 export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
   const [presidentData, setPresidentData] = useState(null);
@@ -21,6 +22,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
 
   const [isManagePresidentProfileOpen, setManagePresidentProfileOpen] =
     useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -63,11 +65,49 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
 
   if (noPresidentFound) {
     return (
-      <div className="flex h-full w-full items-center justify-center text-center">
-        <p className="text-red-500 font-semibold">
-          No president found for this organization
-        </p>
-      </div>
+      <>
+        <div className="bg-white p-4 h-full rounded-xl shadow-xl">
+          <div className="border-4 flex flex-col items-center justify-center text-center h-full rounded-2xl border-dashed border-yellow-500 hover:bg-amber-500/50 transition-all duration-300">
+            <div className="rounded-full p-6 h-fit w-fit bg-yellow-200 mx-auto mb-6 flex items-center justify-center">
+              <AlertTriangle size={48} className="text-yellow-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-800 mb-3">
+              No Current President Found
+            </h3>
+            <p className="text-slate-600 mb-8 max-w-md mx-auto">
+              [ President Profile ] is not detected for this organization.
+              Notify Organization
+            </p>
+            <button
+              onClick={() => setShowEmailModal(true)}
+              className="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-300 font-medium"
+            >
+              Notify Organization
+            </button>
+          </div>
+        </div>
+
+        <EmailModal
+          open={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          title="Notify Organization - Missing President Profile"
+          description="Send an email to notify the organization about the missing president profile."
+          sendButtonLabel="Send Notification"
+          Subject="Missing President Profile Notification"
+          orgData={selectedOrg}
+          user={{
+            name: "SDU Admin", // Replace with actual user name
+            position: "SDU Administrator", // Replace with actual user position
+          }}
+          onSuccess={() => {
+            console.log("Email sent successfully");
+            setShowEmailModal(false);
+          }}
+          onError={(err) => {
+            console.error("Failed to send email:", err);
+          }}
+        />
+      </>
     );
   }
 
@@ -99,8 +139,8 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
 
   return (
     <div className="p-6 bg-white m-4 mt-0 rounded-xl shadow-xl">
-      <div className="border-b pb-4  flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 ">
+      <div className="border-b pb-4 flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">
           Organization President
         </h2>
 
@@ -139,7 +179,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
         </div>
       </div>
 
-      <div className="flex mt-2 mb-4 items-center p-4  gap-6">
+      <div className="flex mt-2 mb-4 items-center p-4 gap-6">
         <div className="w-32 h-32 bg-gray-200 rounded-full overflow-hidden">
           {profilePicture ? (
             <img
@@ -162,11 +202,11 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
           <p className="text-gray-600">
             {course} • {year}
           </p>
-          <h3 className=" text-cnsc-primary-color">Status: {overAllStatus}</h3>
+          <h3 className="text-cnsc-primary-color">Status: {overAllStatus}</h3>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2  gap-4 mt-4text-sm text-gray-700">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-sm text-gray-700">
         <div>
           <h4 className="text-lg text-cnsc-primary-color font-bold">
             Personal Information
@@ -254,7 +294,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
         </div>
 
         <div className="md:col-span-2">
-          <h4 className="text-lg text-cnsc-primary-color font-boldmb-2">
+          <h4 className="text-lg text-cnsc-primary-color font-bold mb-2">
             Class Schedule
           </h4>
           <div className="overflow-x-auto">
@@ -281,7 +321,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="px-4 py-2 border text-center">
+                    <td colSpan="5" className="px-4 py-2 border text-center">
                       No schedule available
                     </td>
                   </tr>
@@ -293,7 +333,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
       </div>
 
       {showPopup.show && (
-        <div className="absolute  top-0 left-0 z-11 w-full h-full flex bg-black/20 items-center justify-center">
+        <div className="absolute top-0 left-0 z-11 w-full h-full flex bg-black/20 items-center justify-center">
           <div className="relative h-fit w-fit px-12 py-6 bg-white">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Manage President Profile
