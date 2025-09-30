@@ -306,8 +306,16 @@ export function DeanPage() {
         <Routes>
           <Route
             index
-            element={<DeanDashboard organizationSummary={organizationSummary} orgs={orgs} onSelectOrg={(org) => navigate(`/dean/${org.orgAcronym}/home`)} />}
-          />
+            element={
+              <DeanDashboard
+                organizationSummary={organizationSummary}
+                orgs={orgs}
+                loading={loading}   // 👈 pass it here
+                onSelectOrg={(org) => navigate(`/dean/${org.orgAcronym}/home`)}
+              />
+            }
+            />
+
           <Route path=":orgAcronym/*" element={<OrgLayout orgs={orgs} onClose={() => navigate("/dean")} />} />
         </Routes>
       </div>

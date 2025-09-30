@@ -473,7 +473,7 @@ export function DeanComponent({
 
 
 
-export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
+export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -485,7 +485,7 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
     const timeOf = (o) =>
       new Date(o?.updatedAt || o?.createdAt || 0).getTime();
 
-    const map = new Map(); // key -> latest org
+    const map = new Map();
     for (const o of orgs || []) {
       const k = keyOf(o);
       const prev = map.get(k);
@@ -503,10 +503,7 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
       const status = o.overAllStatus || o.status || "Unknown";
       counts[status] = (counts[status] || 0) + 1;
     }
-    return Object.entries(counts).map(([status, value]) => ({
-      name: status,
-      value,
-    }));
+    return Object.entries(counts).map(([status, value]) => ({ name: status, value }));
   }, [latestOrgs]);
 
   const COLORS = ["#4caf50", "#ff9800", "#f44336", "#2196f3", "#9c27b0"];
@@ -515,33 +512,18 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
   const upcomingActivities = useMemo(() => {
     return latestOrgs
       .flatMap((o) => o.activities || [])
-      .filter(
-        (act) =>
-          new Date(act?.ProposedIndividualActionPlan?.proposedDate) > new Date()
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.ProposedIndividualActionPlan.proposedDate) -
-          new Date(b.ProposedIndividualActionPlan.proposedDate)
-      )
+      .filter((act) => new Date(act?.ProposedIndividualActionPlan?.proposedDate) > new Date())
+      .sort((a, b) => new Date(a.ProposedIndividualActionPlan.proposedDate) - new Date(b.ProposedIndividualActionPlan.proposedDate))
       .slice(0, 5);
   }, [latestOrgs]);
 
   // expiring orgs
   const expiringOrgs = useMemo(() => {
     const soon = new Date();
-    soon.setMonth(soon.getMonth() + 1); // expiring within 1 month
+    soon.setMonth(soon.getMonth() + 1);
     return latestOrgs
-      .filter(
-        (o) =>
-          o.accreditation?.expiryDate &&
-          new Date(o.accreditation.expiryDate) < soon
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.accreditation.expiryDate) -
-          new Date(b.accreditation.expiryDate)
-      )
+      .filter((o) => o.accreditation?.expiryDate && new Date(o.accreditation.expiryDate) < soon)
+      .sort((a, b) => new Date(a.accreditation.expiryDate) - new Date(b.accreditation.expiryDate))
       .slice(0, 5);
   }, [latestOrgs]);
 
@@ -562,10 +544,7 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
       Active: "bg-green-100 text-green-700 border-green-200",
       active: "bg-green-100 text-green-700 border-green-200",
     };
-    return (
-      statusStyles[status] ||
-      "bg-gray-100 text-gray-600 border-gray-200"
-    );
+    return statusStyles[status] || "bg-gray-100 text-gray-600 border-gray-200";
   };
 
   return (
@@ -660,12 +639,10 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
       {/* org cards */}
       <div className="w-full h-full flex flex-col pt-3 items-center pb-2">
         <div className="h-fit w-full px-4 mb-2 flex justify-between items-center">
-          <span className="text-3xl text-gray-600">
-            Local Organizations
-          </span>
+          <span className="text-3xl text-gray-600">Local Organizations</span>
 
           {/* pagination */}
-          {totalPages > 1 && (
+          {!loading && totalPages > 1 && (
             <div className="flex items-center gap-2 text-sm">
               <button
                 disabled={currentPage === 1}
@@ -697,80 +674,88 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
         </div>
 
         <div className="flex flex-wrap gap-3 h-full w-[98%]">
-          {paginatedOrgs.map((org, idx) => {
-            const overallStatus =
-              org.overAllStatus ||
-              org.overallStatus ||
-              org.status ||
-              "—";
-
-            return (
-              <div
-                key={idx}
-                onClick={() => onSelectOrg(org)}
-                className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg transition-shadow"
-              >
-                <img
-                  src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
-                  alt={`${org.orgName} logo`}
-                  className="w-full max-w-[30%] h-auto object-contain"
-                />
-                <div className="w-full h-full flex flex-col p-2 justify-center">
-                  <div className="h-11 flex items-center">
-                    <h1 className="text-lg font-semibold text-gray-700 leading-4">
-                      {org.orgName} (<span>{org.orgAcronym}</span>)
-                    </h1>
-                  </div>
-                  <div className="pt-1 border-t-1">
-                    <span
-                      className={`${getStatusBadge(
-                        overallStatus
-                      )} w-fit px-2 border rounded-xl mb-1 text-xs`}
-                    >
-                      {overallStatus}
-                    </span>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    {/* Adviser */}
-                    <div className="flex items-start">
-                      <span className="text-gray-500 font-medium min-w-[40px]">
-                        Adviser:
-                      </span>
-                      <span className="text-gray-700 flex-1">
-                        {org.adviser?.name || "No adviser assigned"}
-                      </span>
-                    </div>
-
-                    {/* Course */}
-                    <div className="flex items-start">
-                      <span className="text-gray-500 font-medium min-w-[40px]">
-                        Course:
-                      </span>
-                      <span className="text-gray-700 flex-1">
-                        {org.orgCourse || "No course specified"}
-                      </span>
-                    </div>
-
-                    {/* Updated */}
-                    {(org.updatedAt || org.createdAt) && (
-                      <div className="flex items-start">
-                        <span className="text-gray-500 font-medium min-w-[40px]">
-                          Updated:
-                        </span>
-                        <span className="text-gray-700 flex-1">
-                          {new Date(
-                            org.updatedAt || org.createdAt
-                          ).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
+          {loading
+            ? // 🔹 Skeleton loaders
+              Array.from({ length: itemsPerPage }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="w-[32.75%] h-[48%] rounded-md border border-gray-300 shadow-md shadow-gray-300 flex items-center px-2 animate-pulse bg-gray-100"
+                >
+                  <div className="w-full max-w-[30%] h-24 bg-gray-300 rounded"></div>
+                  <div className="w-full h-full flex flex-col p-2 justify-center space-y-2">
+                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/3"></div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              ))
+            : paginatedOrgs.map((org, idx) => {
+                const overallStatus =
+                  org.overAllStatus || org.overallStatus || org.status || "—";
 
-          {paginatedOrgs.length === 0 && (
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => onSelectOrg(org)}
+                    className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg transition-shadow"
+                  >
+                    <img
+                      src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
+                      alt={`${org.orgName} logo`}
+                      className="w-full max-w-[30%] h-auto object-contain"
+                    />
+                    <div className="w-full h-full flex flex-col p-2 justify-center">
+                      <div className="h-11 flex items-center">
+                        <h1 className="text-lg font-semibold text-gray-700 leading-4">
+                          {org.orgName} (<span>{org.orgAcronym}</span>)
+                        </h1>
+                      </div>
+                      <div className="pt-1 border-t-1">
+                        <span
+                          className={`${getStatusBadge(
+                            overallStatus
+                          )} w-fit px-2 border rounded-xl mb-1 text-xs`}
+                        >
+                          {overallStatus}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-start">
+                          <span className="text-gray-500 font-medium min-w-[40px]">
+                            Adviser:
+                          </span>
+                          <span className="text-gray-700 flex-1">
+                            {org.adviser?.name || "No adviser assigned"}
+                          </span>
+                        </div>
+                        <div className="flex items-start">
+                          <span className="text-gray-500 font-medium min-w-[40px]">
+                            Course:
+                          </span>
+                          <span className="text-gray-700 flex-1">
+                            {org.orgCourse || "No course specified"}
+                          </span>
+                        </div>
+                        {(org.updatedAt || org.createdAt) && (
+                          <div className="flex items-start">
+                            <span className="text-gray-500 font-medium min-w-[40px]">
+                              Updated:
+                            </span>
+                            <span className="text-gray-700 flex-1">
+                              {new Date(
+                                org.updatedAt || org.createdAt
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+          {!loading && paginatedOrgs.length === 0 && (
             <div className="w-full h-32 flex items-center justify-center text-gray-500">
               No organizations available
             </div>
