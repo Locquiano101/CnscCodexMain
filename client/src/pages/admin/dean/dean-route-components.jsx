@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { DOCU_API_ROUTER } from "../../../App";
 import { DeanAccreditationNavigationSubRoute } from "./dean-main";
 import { DeanAccreditationMain } from "./individual-accreditation/dean-accreditation-main";
@@ -10,6 +10,7 @@ import { DeanAccreditationDocument } from "./individual-accreditation/dean-accre
 import { X, School2 } from "lucide-react";
 import { DeanProposalConduct } from "./proposals/dean-proposal";
 import { DeanAccomplishmentReport } from "./accomplishment/dean-accomplishment";
+import { useState, useMemo } from "react";
 
 export function DeanComponent({
   selectedOrg,
@@ -159,6 +160,14 @@ export function DeanComponent({
       <h1 className="text-2xl font-bold mb-6">
         {title} - Select an organization
       </h1>
+      <div className="w-full h-[10rem] border">
+
+      </div>
+
+
+
+
+
       {orgs.length === 0 ? (
         <div className="text-center py-12">
           {loading ? (
@@ -454,6 +463,168 @@ export function DeanComponent({
             }
           />
         </Routes>
+      </div>
+    </div>
+  );
+}
+
+
+export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const totalPages = Math.ceil(orgs.length / itemsPerPage);
+
+  const paginatedOrgs = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return orgs.slice(start, start + itemsPerPage);
+  }, [orgs, currentPage]);
+
+  const getStatusBadge = (status) => {
+    const statusStyles = {
+      Approved: "bg-green-100 text-green-700 border-green-200",
+      Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      "Revision From SDU": "bg-red-100 text-red-700 border-red-200",
+      Rejected: "bg-red-100 text-red-700 border-red-200",
+      "Approved by the Adviser": "bg-blue-100 text-blue-700 border-blue-200",
+    };
+    return statusStyles[status] || "bg-gray-100 text-gray-600 border-gray-200";
+  };
+
+  return (
+    <div className="w-full h-full grid grid-cols-1 grid-rows-[18rem_1fr] gap-0">
+      {/* mini dashboard */}
+      <div className="bg-gray-300 px-5 flex py-4 gap-x-3 justify-center">
+        {/* summary of orgs */}
+        <div className="w-[15%] h-full flex flex-col justify-between ">
+          {organizationSummary.map(({ label, value }, idx) => (
+            <div
+              key={idx}
+              className="rounded-md w-full h-20 flex flex-col bg-white p-2 items-start shadow-md shadow-gray-400"
+            >
+              <span className="text-gray font-semibold">{label}</span>
+              <span className="ml-3 text-3xl font-bold">{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* chart */}
+        <div className="w-[31%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex items-center justify-center">
+          donut chart for activities
+        </div>
+
+        {/* list */}
+        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex items-center justify-center">
+          list of upcoming org activities
+        </div>
+
+        {/* list */}
+        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex items-center justify-center">
+          list of expiring orgs
+        </div>
+      </div>
+
+      {/* organization cards */}
+      <div className="w-full h-full flex flex-col pt-3 items-center pb-2">
+        <div className="h-fit w-full px-4 mb-2 flex justify-between items-center">
+          <span className="text-3xl text-gray-600">Local Organizations</span>
+
+          {/* pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2 text-sm">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className={`px-2 py-1 rounded border ${
+                  currentPage === 1
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white hover:bg-gray-100"
+                }`}
+              >
+                Prev
+              </button>
+              <span className="text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className={`px-2 py-1 rounded border ${
+                  currentPage === totalPages
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white hover:bg-gray-100"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-3 h-full w-[98%] ">
+          {paginatedOrgs.map((org, idx) => {
+            const overallStatus = org.overAllStatus || org.overallStatus;
+
+            return (
+              <div
+                key={idx}
+                onClick={() => onSelectOrg(org)}
+                className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                <img
+                  src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
+                  alt={`${org.orgName} logo`}
+                  className="w-full max-w-[30%] h-auto object-contain"
+                />
+                <div className="w-full h-full flex flex-col p-2 justify-center">
+                  <div className="h-11 flex items-center">
+                    <h1 className="text-lg font-semibold text-gray-700 leading-4">
+                      {org.orgName} (<span>{org.orgAcronym}</span>)
+                    </h1>
+                  </div>
+                  <div className="pt-1 border-t-1">
+                    <span
+                      className={`${getStatusBadge(
+                        overallStatus
+                      )} w-fit px-2 border rounded-xl mb-1 text-xs`}
+                    >
+                      {overallStatus}
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    {/* Adviser */}
+                    <div className="flex items-start">
+                      <span className="text-gray-500 font-medium min-w-[40px]">
+                        Adviser:
+                      </span>
+                      <span className="text-gray-700 flex-1">
+                        {org.adviser?.name || "No adviser assigned"}
+                      </span>
+                    </div>
+
+                    {/* Course */}
+                    <div className="flex items-start">
+                      <span className="text-gray-500 font-medium min-w-[40px]">
+                        Course:
+                      </span>
+                      <span className="text-gray-700 flex-1">
+                        {org.orgCourse || "No course specified"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Empty state if no orgs */}
+          {paginatedOrgs.length === 0 && (
+            <div className="w-full h-32 flex items-center justify-center text-gray-500">
+              No organizations available
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

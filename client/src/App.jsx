@@ -96,11 +96,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
         console.log("session checking...");
 
-        if (res.data.rickroll) {
-          // 🚀 Redirect user to YouTube (or whatever you want)
-          window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-          return;
-        }
+        // if (res.data.rickroll) {
+        //   // 🚀 Redirect user to YouTube (or whatever you want)
+        //   window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+        //   return;
+        // }
 
         if (res.data.loggedIn) {
           const userRole = res.data.user.position;
