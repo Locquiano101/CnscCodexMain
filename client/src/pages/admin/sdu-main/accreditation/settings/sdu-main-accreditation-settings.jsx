@@ -24,7 +24,7 @@ export function SduMainAccreditationSettings() {
   const [deadlineAccreditationModal, setDeadlineAccreditationModal] =
     useState(false);
   const [warningAccreditationModal, setWarningAccreditationModal] =
-    useState(true);
+    useState(false);
   const [suspendAccreditationModal, setSuspendAccreditationModal] =
     useState(false);
 
@@ -210,8 +210,16 @@ export function SduMainAccreditationSettings() {
       </div>
 
       {resetAccreditationModal && <ResetAccreditationModal />}
-      {suspendAccreditationModal && <SuspendAccreditationProcess />}
-      {warningAccreditationModal && <SduMainAccreditationWarning />}
+      {suspendAccreditationModal && (
+        <SuspendAccreditationProcess
+          onCancel={() => setSuspendAccreditationModal(false)}
+        />
+      )}
+      {warningAccreditationModal && (
+        <SduMainAccreditationWarning
+          onCancel={() => setWarningAccreditationModal(false)}
+        />
+      )}
       {deadlineAccreditationModal && <SduMainUpdateAccreditationDeadline />}
     </div>
   );

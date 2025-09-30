@@ -21,13 +21,13 @@ export const sendNotification = async (req, res) => {
     // 1️⃣ Save log entry
     await Logs.create({
       action: subject,
-      organizationProfile: organizationProfileId ? [organizationProfileId] : [],
-      Organization: organizationId || null,
+      organizationProfile: organizationProfileId,
+      Organization: organizationId,
     });
 
     // 2️⃣ Save notification
     const notification = await Notification.create({
-      organizationProfile: organizationProfileId || null,
+      organizationProfile: organizationProfileId,
       organization: organizationId || null,
       subject,
       message,

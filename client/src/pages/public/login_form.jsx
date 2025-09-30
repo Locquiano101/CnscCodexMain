@@ -33,7 +33,7 @@ export default function Login({ navigate, onShowRegistration }) {
       } else if (role === "sdu-coordinator" || role === "sdu-coordinator") {
         navigate("/sdu-coordinator");
       } else if (role === "sdu" || role === "SDU") {
-        navigate("/SDU");
+        navigate("/SDU/organization");
       } else {
         navigate("/unauthorized");
       }

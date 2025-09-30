@@ -1,5 +1,10 @@
 import { sendNotification } from "../middleware/notification.js";
-import { Organization, OrganizationProfile, User } from "../models/index.js";
+import {
+  Notification,
+  Organization,
+  OrganizationProfile,
+  User,
+} from "../models/index.js";
 // 🔄 Accreditation Reset
 
 export const NotifcationAccreditationReset = async (req, res) => {
@@ -48,10 +53,47 @@ export const NotifcationAccreditationReset = async (req, res) => {
   }
 };
 
+// 📩 Get Notifications by OrganizationProfile ID
+export const GetNotificationsByOrgProfile = async (req, res) => {
+  try {
+    const { organizationProfileId } = req.params;
+
+    if (!organizationProfileId) {
+      return res.status(400).json({
+        success: false,
+        error: "organizationProfileId is required",
+      });
+    }
+
+    const notifications = await Notification.find({
+      organizationProfile: organizationProfileId,
+    })
+      .sort({ createdAt: -1 }) // latest first
+      .lean();
+
+    if (!notifications || notifications.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No notifications found for this organization profile",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: notifications.length,
+      notifications,
+    });
+  } catch (err) {
+    console.error("GetNotificationsByOrgProfile error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // ⚠️ Accreditation Warning
 export const NotifcationWarningAccreditation = async (req, res) => {
   try {
     const { organizationProfileId, organizationId, warningNote } = req.body;
+    console.log(req.body);
 
     if (!organizationProfileId || !organizationId) {
       return res.status(400).json({
@@ -60,14 +102,54 @@ export const NotifcationWarningAccreditation = async (req, res) => {
       });
     }
 
-    const result = await sendNotification({
-      organizationProfileId,
-      organizationId,
-      subject: "Accreditation Warning",
-      message: `This is a warning regarding your accreditation status.\n\n${
-        warningNote || ""
-      }`,
-    });
+    const result = await sendNotification(
+      {
+        body: {
+          organizationProfileId,
+          organizationId,
+          subject: "Accreditation Warning",
+          message: `This is a warning regarding your accreditation status.\n\n${
+            warningNote || ""
+          }`,
+        },
+      },
+      { status: () => ({ json: () => {} }) } // fake res
+    );
+    65;
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("NotifcationWarningAccreditation error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+// ⚠️ Accreditation Suspension
+export const NotifcationSuspensionAccreditation = async (req, res) => {
+  try {
+    const { organizationProfileId, organizationId, warningNote } = req.body;
+    console.log(req.body);
+
+    if (!organizationProfileId || !organizationId) {
+      return res.status(400).json({
+        success: false,
+        error: "organizationProfileId and organizationId are required",
+      });
+    }
+
+    const result = await sendNotification(
+      {
+        body: {
+          organizationProfileId,
+          organizationId,
+          subject: "Accreditation Suspended",
+          message: `This is a note regarding your accreditation suspension.\n\n${
+            warningNote || ""
+          }`,
+        },
+      },
+      { status: () => ({ json: () => {} }) } // fake res
+    );
+    65;
 
     res.status(200).json(result);
   } catch (err) {

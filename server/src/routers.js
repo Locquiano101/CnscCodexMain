@@ -14,6 +14,14 @@ router.post(
   "/SduMainAccreditationReset",
   Controller.NotifcationAccreditationReset
 );
+router.post(
+  "/SduMainAccreditationWarning",
+  Controller.NotifcationWarningAccreditation
+);
+router.post(
+  "/SduMainAccreditationSuspension",
+  Controller.NotifcationSuspensionAccreditation
+);
 router.post("/getOrganizations", Controller.GetOrganizationsByDeliveryUnit);
 router.post("/getOrganizations", Controller.GetOrganizationsByDeliveryUnit);
 router.get("/getPublicPosts", Controller.getPostForPublic);
@@ -106,32 +114,11 @@ router.get("/getAdviserProposals/:orgId", Controller.getAdviserProposal);
 router.post("/postUpdateProposal/:id", Controller.ApprovedProposal);
 router.post("/sendNotificationRoster", Controller.SendEmailToOrgUsers);
 router.post("/postApproveRoster/:rosterId", Controller.ApprovedRosterList);
-/* **********  ADVISER ACCREDITATION ********** */
+router.get(
+  "/OrganizationNotification/:organizationProfileId",
+  Controller.GetNotificationsByOrgProfile
+);
 
-router.get("/notifications", async (req, res) => {
-  try {
-    const userId = req.session.userId; // or use query param if not session based
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const notifications = await Notification.find({ recipient: userId }).sort({
-      createdAt: -1,
-    });
-
-    res.json(notifications);
-  } catch (err) {
-    console.error("Error fetching notifications:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-/*             **********
-**********              **********
-          STUDENT LEADER
-**********              **********
-**********              ********** 
-*/
 router.get(
   "/getAllCollaboratingOrganizationProfile",
   Controller.GetAllOrganizationProfileStudent

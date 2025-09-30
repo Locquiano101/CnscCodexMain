@@ -7,6 +7,7 @@ import {
   CheckCircle,
   Building2,
   Loader2,
+  CoinsIcon,
 } from "lucide-react";
 
 export function SduMainAccreditationWarning({ onCancel }) {
@@ -56,18 +57,30 @@ export function SduMainAccreditationWarning({ onCancel }) {
   };
 
   const handleFinalConfirm = async () => {
-    if (!selectedOrg) return;
+    if (!selectedOrg || !warningNote.trim()) return;
+
+    setIsSubmitting(true); // ⬅️ disable button immediately
+    setError(null);
 
     try {
-      await axios.post(`${API_ROUTER}/warningAccreditation`, {
-        organizationProfileId: selectedOrg._id,
-        organizationId: selectedOrg.organizationId,
-        warningNote: warningNote.trim() || "No additional note provided.",
-      });
+      const res = await axios.post(
+        `${API_ROUTER}/SduMainAccreditationWarning`,
+        {
+          organizationProfileId: selectedOrg._id,
+          organizationId: selectedOrg.organization,
+          warningNote: warningNote.trim(),
+        }
+      );
+
+      console.log(res);
+      // maybe close modal or reset state here
       onCancel();
+      handleClose();
     } catch (err) {
       console.error("Error issuing warning:", err);
-      alert("Failed to issue warning. Please try again.");
+      setError("Failed to issue warning. Please try again.");
+    } finally {
+      setIsSubmitting(false); // ⬅️ re-enable button after request finishes
     }
   };
 
@@ -97,6 +110,13 @@ export function SduMainAccreditationWarning({ onCancel }) {
                 ) : (
                   "Issue Warning"
                 )}
+              </button>
+              <button
+                onClick={onCancel}
+                disabled={isLoading}
+                className="px-6 py-3 rounded-lg w-full font-medium text-white bg-gray-500"
+              >
+                Cancel
               </button>
             </div>
           </div>
@@ -341,12 +361,17 @@ export function SduMainAccreditationWarning({ onCancel }) {
                 <button
                   onClick={handleFinalConfirm}
                   disabled={isSubmitting || !warningNote.trim()}
-                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  className={`flex-1 px-6 py-3.5 rounded-xl font-semibold shadow-lg transition-all duration-200
+    ${
+      isSubmitting
+        ? "bg-red-400 text-white opacity-70 cursor-not-allowed backdrop-blur-sm"
+        : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 hover:shadow-xl"
+    }`}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing...
+                      Submitting...
                     </span>
                   ) : (
                     "Confirm Warning"

@@ -91,12 +91,12 @@ export function SduMainNavigation() {
       label: "Proposals",
       path: "/SDU/proposal",
     },
-    {
-      key: "reports",
-      icon: <BarChart3 className="w-5 h-5" />,
-      label: "Reports",
-      path: "/SDU/report",
-    },
+    // {
+    //   key: "reports",
+    //   icon: <BarChart3 className="w-5 h-5" />,
+    //   label: "Reports",
+    //   path: "/SDU/report",
+    // },
     {
       key: "users",
       icon: <User className="w-5 h-5" />,
@@ -112,12 +112,12 @@ export function SduMainNavigation() {
   ];
 
   const subProposalItems = [
-    {
-      key: "proposal-reports",
-      icon: <FileBarChart className="w-4 h-4" />,
-      label: "Proposal Reports",
-      path: "/SDU/proposal/reports",
-    },
+    // {
+    //   key: "proposal-reports",
+    //   icon: <FileBarChart className="w-4 h-4" />,
+    //   label: "Proposal Reports",
+    //   path: "/SDU/proposal/reports",
+    // },
     {
       key: "proposal-approval",
       icon: <CheckCircle className="w-4 h-4" />,
