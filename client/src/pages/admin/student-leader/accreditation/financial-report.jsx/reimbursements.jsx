@@ -19,7 +19,7 @@ export function StudentReimbursement({
         </div>
         <button
           onClick={() => handleAddClick("reimbursement")}
-          className="bg-green-700 text-white px-5 py-2.5 font-semibold"
+          className="bg-green-700 text-white px-5 py-2.5 font-semibold rounded-md w-45"
         >
           Add Reimbursement
         </button>

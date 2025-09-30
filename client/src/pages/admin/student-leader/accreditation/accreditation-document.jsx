@@ -232,7 +232,7 @@ export function AccreditationDocuments({ orgData }) {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 p-6 gap-6">
       {/* Header Section */}
-      <div className="bg-white rounded-2xl shadow-md border p-8">
+      <div className="bg-white rounded-2xl shadow-lg border-slate-200 p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Accreditation Summary
         </h2>

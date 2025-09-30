@@ -146,20 +146,59 @@ export function AddProposedActionPlan({
             placeholder="Enter activity title"
           />
         </div>
+        {/* Venue */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Venue *
           </label>
-          <input
-            type="text"
+          <select
             name="venue"
-            value={formData.venue}
-            onChange={handleInputChange}
+            value={
+              formData.venue === "" || formData.venue === "other"
+                ? formData.venue
+                : formData.venue
+            }
+            onChange={(e) => {
+              const { value } = e.target;
+              if (value === "other") {
+                setFormData({ ...formData, venue: "other", customVenue: "" });
+              } else {
+                setFormData({ ...formData, venue: value, customVenue: "" });
+              }
+            }}
             required
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            placeholder="Enter venue location"
-          />
+          >
+            <option value="">Select a venue</option>
+            <option value="Covered Court">Covered Court</option>
+            <option value="Student Activity Center">
+              Student Activity Center
+            </option>
+            <option value="Pavilion">Pavilion</option>
+            <option value="Student Park">Student Park</option>
+            <option value="Cafeteria">Cafeteria</option>
+            <option value="other">Other</option>
+          </select>
+
+          {/* If user selects Other → show input box */}
+          {formData.venue === "other" && (
+            <input
+              type="text"
+              name="customVenue"
+              value={formData.customVenue || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  venue: e.target.value,
+                  customVenue: e.target.value,
+                })
+              }
+              placeholder="Enter other venue"
+              className="mt-2 w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
+          )}
         </div>
+
         <div className="col-span-2 flex gap-4 justify-between">
           {/* Proposed Date */}
           <div className="w-full">
@@ -182,15 +221,32 @@ export function AddProposedActionPlan({
               Budgetary Requirements *
             </label>
             <input
-              type="number"
+              type="text"
               name="budgetaryRequirements"
-              value={formData.budgetaryRequirements}
-              onChange={handleInputChange}
+              value={
+                formData.budgetaryRequirements
+                  ? `₱${Number(
+                      formData.budgetaryRequirements
+                    ).toLocaleString()}`
+                  : ""
+              }
+              onChange={(e) => {
+                // Remove non-numeric characters
+                const rawValue = e.target.value.replace(/[^\d]/g, "");
+                // Update state with raw number (no commas or currency symbol)
+                handleInputChange({
+                  target: {
+                    name: "budgetaryRequirements",
+                    value: rawValue,
+                  },
+                });
+              }}
               required
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              placeholder="e.g., ₱50,000 - ₱100,000"
+              placeholder="e.g., ₱50,000"
             />
           </div>
+
           {/* Internal / External */}
           <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -260,67 +316,55 @@ export function AddProposedActionPlan({
 
         {/* Aligned SDG */}
         <div className="md:col-span-2 text-black">
-          <label className="block text-sm font-medium text-black mb-2">
+          <label className="block text-sm font-semibold text-gray-800 mb-3">
             Aligned SDG *
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {[
-              { value: "SDG 1", label: "SDG 1: No Poverty" },
-              { value: "SDG 2", label: "SDG 2: Zero Hunger" },
-              {
-                value: "SDG 3",
-                label: "SDG 3: Good Health and Well-being",
-              },
-              { value: "SDG 4", label: "SDG 4: Quality Education" },
-              { value: "SDG 5", label: "SDG 5: Gender Equality" },
-              {
-                value: "SDG 6",
-                label: "SDG 6: Clean Water and Sanitation",
-              },
-              {
-                value: "SDG 7",
-                label: "SDG 7: Affordable and Clean Energy",
-              },
-              {
-                value: "SDG 8",
-                label: "SDG 8: Decent Work and Economic Growth",
-              },
+              { value: "SDG 1", label: "No Poverty" },
+              { value: "SDG 2", label: "Zero Hunger" },
+              { value: "SDG 3", label: "Good Health and Well-being" },
+              { value: "SDG 4", label: "Quality Education" },
+              { value: "SDG 5", label: "Gender Equality" },
+              { value: "SDG 6", label: "Clean Water and Sanitation" },
+              { value: "SDG 7", label: "Affordable and Clean Energy" },
+              { value: "SDG 8", label: "Decent Work and Economic Growth" },
               {
                 value: "SDG 9",
-                label: "SDG 9: Industry, Innovation and Infrastructure",
+                label: "Industry, Innovation and Infrastructure",
               },
-              { value: "SDG 10", label: "SDG 10: Reduced Inequalities" },
-              {
-                value: "SDG 11",
-                label: "SDG 11: Sustainable Cities and Communities",
-              },
+              { value: "SDG 10", label: "Reduced Inequalities" },
+              { value: "SDG 11", label: "Sustainable Cities and Communities" },
               {
                 value: "SDG 12",
-                label: "SDG 12: Responsible Consumption and Production",
+                label: "Responsible Consumption and Production",
               },
-              { value: "SDG 13", label: "SDG 13: Climate Action" },
-              { value: "SDG 14", label: "SDG 14: Life Below Water" },
-              { value: "SDG 15", label: "SDG 15: Life on Land" },
+              { value: "SDG 13", label: "Climate Action" },
+              { value: "SDG 14", label: "Life Below Water" },
+              { value: "SDG 15", label: "Life on Land" },
               {
                 value: "SDG 16",
-                label: "SDG 16: Peace, Justice and Strong Institutions",
+                label: "Peace, Justice and Strong Institutions",
               },
-              {
-                value: "SDG 17",
-                label: "SDG 17: Partnerships for the Goals",
-              },
+              { value: "SDG 17", label: "Partnerships for the Goals" },
             ].map((sdg) => (
-              <div key={sdg.value} className="bg-gray-200 rounded-full">
-                <label className="flex items-center space-x-1 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.alignedSDG.includes(sdg.value)}
-                    onChange={() => handleSDGChange(sdg.value)}
-                    className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer"
-                  />
-                  <span className="text-sm">{sdg.label}</span>
-                </label>
-              </div>
+              <label
+                key={sdg.value}
+                className={`flex items-center gap-2 p-2 px-3 rounded-full cursor-pointer transition-all duration-200
+          ${
+            formData.alignedSDG.includes(sdg.value)
+              ? "bg-amber-500 text-black font-medium"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.alignedSDG.includes(sdg.value)}
+                  onChange={() => handleSDGChange(sdg.value)}
+                  className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-white checked:border-white cursor-pointer"
+                />
+                <span className="text-sm md:text-base">{sdg.label}</span>
+              </label>
             ))}
           </div>
         </div>
