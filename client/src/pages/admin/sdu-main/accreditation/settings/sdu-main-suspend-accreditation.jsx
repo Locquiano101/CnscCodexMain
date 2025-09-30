@@ -3,7 +3,7 @@ import { AlertTriangle, Building, ChevronDown, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 
-export function RevokeAccreditationProcess({ onCancel }) {
+export function SuspendAccreditationProcess({ onCancel }) {
   const [isOpen, setIsOpen] = useState(false);
   const [orgs, setOrgs] = useState([]);
   const [selectedOrg, setSelectedOrg] = useState(null);

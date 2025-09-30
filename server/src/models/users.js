@@ -64,11 +64,12 @@ export const LogsSchema = new Schema(
   },
   { timestamps: true }
 );
+
 export const DeadlineSchema = new Schema(
   {
     DeadlineFor: String, // accomplishment, proposal, etc.
     DeadlineDate: Date,
-    isDeadlineActive: Boolean,
+    isDeadlineActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

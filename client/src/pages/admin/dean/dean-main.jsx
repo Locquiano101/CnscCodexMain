@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, useOutletContext } from "react-router-dom";
+import { Outlet, useOutletContext, useParams } from "react-router-dom";
 import axios from "axios";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route,  NavLink , Navigate } from "react-router-dom";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -21,22 +21,139 @@ import {
   Phone,
   FileArchive,
 } from "lucide-react";
-import { DeanComponent } from "./dean-route-components";
+import Logo from "../../../assets/cnsc-codex.svg"
+
+// to be moved
+
+import { OrgHome, OrgAccreditation, OrgActivities, OrgFinancial,OrgAccomplishments } from "./dean-org-views";
+
+import { DeanComponent, DeanDashboard } from "./dean-route-components";
+
+function OrgLayout({ orgs, onClose }) {
+  const { orgAcronym } = useParams();
+  const org = orgs.find((o) => o.orgAcronym === orgAcronym);
+  // console.log(org)
+  if (!org) return <div className="p-4">Organization not found</div>;
+
+  return (
+    <div className="h-full w-full grid grid-cols-[18%_1fr]">
+      {/* Sidebar */}
+      <div className="bg-white text-cnsc-primary-color pt-4 pb-1 flex flex-col border-r  border-gray-400">
+        <div className="w-full h-fit  mb-1 bg-gray-50 flex p-2 gap-x-2 items-center border-b border-gray-400">
+          <img
+            src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
+            alt={org.orgAcronym}
+            className="w-auto h-11 object-contain"
+          />
+          <div className="w-full h-fit flex flex-col ">
+            <span className="text-gray-500 text-md">Welcome!</span>
+            <span className="text-lg font-bold leading-3">{org.orgName}</span>
+            <span className="text-xs leading-4">{org.orgAcronym}</span>
+          </div>
+        </div>
+
+        <NavLink
+          to={`/dean/${orgAcronym}/home`}
+          className={({ isActive }) =>
+            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+              isActive
+                ? "bg-cnsc-primary-color text-white shadow-md"
+                : "text-cnsc-primary-color hover:bg-gray-100"
+            }`
+          }
+        >
+          Home
+        </NavLink>
+
+        <NavLink
+          to={`/dean/${orgAcronym}/accreditation`}
+          className={({ isActive }) =>
+            `flex items-center  py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+              isActive
+                ? "bg-cnsc-primary-color text-white shadow-md"
+                : "text-cnsc-primary-color hover:bg-gray-100"
+            }`
+          }
+        >
+          Accreditation
+        </NavLink>
+
+        <NavLink
+          to={`/dean/${orgAcronym}/activities`}
+          className={({ isActive }) =>
+            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+              isActive
+                ? "bg-cnsc-primary-color text-white shadow-md"
+                : "text-cnsc-primary-color hover:bg-gray-100"
+            }`
+          }
+        >
+          Proposals
+        </NavLink>
+
+        <NavLink
+          to={`/dean/${orgAcronym}/financial`}
+          className={({ isActive }) =>
+            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+              isActive
+                ? "bg-cnsc-primary-color text-white shadow-md"
+                : "text-cnsc-primary-color hover:bg-gray-100"
+            }`
+          }
+        >
+          Financial Statement
+        </NavLink>
+
+        <NavLink
+          to={`/dean/${orgAcronym}/accomplishment`}
+          className={({ isActive }) =>
+            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+              isActive
+                ? "bg-cnsc-primary-color text-white shadow-md"
+                : "text-cnsc-primary-color hover:bg-gray-100"
+            }`
+          }
+        >
+          Accomplishments
+        </NavLink>
+
+        <button
+          onClick={onClose}
+          className="mt-auto px-4 py-2 bg-amber-500  text-white hover:bg-amber-600 transition"
+        >
+          Close Org
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="w-full h-full">
+        <Routes>
+          <Route index element={<Navigate to="home" replace />} />
+          <Route path="home" element={<OrgHome org={org} />} />
+          <Route path="accreditation" element={<OrgAccreditation org={org} />} />
+          <Route path="activities" element={<OrgActivities org={org} />} />
+          <Route path="financial" element={<OrgFinancial org={org} />} />
+          <Route path="accomplishment" element={<OrgAccomplishments org={org} />} />
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 
 export function DeanPage() {
   const { user } = useOutletContext();
-  const [selectedOrg, setSelectedOrg] = useState(null);
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // Function to fetch organizations
+  // Fetch orgs
   const fetchOrganizations = async () => {
     try {
       setLoading(true);
       const res = await axios.post(`${API_ROUTER}/getOrganizations`, {
         deliveryUnit: user.deliveryUnit,
       });
-      console.log(res.data);
       setOrgs(res.data);
     } catch (err) {
       console.error("Error fetching organizations:", err);
@@ -46,29 +163,79 @@ export function DeanPage() {
     }
   };
 
-  // Fetch organizations on component mount
   useEffect(() => {
     fetchOrganizations();
   }, []);
 
+  const organizationSummary = [
+    { label: "Total Organizations", value: "5" },
+    { label: "Accredited Organizations", value: "5" },
+    { label: "Inactive Organizations", value: "5" },
+  ];
+
   return (
-    <div className="flex h-screen w-screen bg-gray-50">
-      <div className="flex h-full w-1/5 justify-between bg-cnsc-primary-color overflow-hidden">
-        <DeanMainNavigation />
+    <div className="w-screen h-screen grid grid-cols-1 grid-rows-[4rem_1fr] gap-0">
+      {/* Header */}
+      <div className="bg-cnsc-primary-color w-full h-full flex items-center justify-between px-5">
+        <div className="flex gap-x-3 items-center">
+          <img src={Logo} alt="CNSC Logo" className="w-15 h-15" />
+          <h1 className="text-3xl text-white">Welcome, Dean</h1>
+        </div>
+        <LogoutButton />
       </div>
-      <div className="w-full h-full">
-        <DeanComponent
-          selectedOrg={selectedOrg}
-          orgs={orgs}
-          onSelectOrg={setSelectedOrg}
-          setLoading={setLoading}
-          loading={loading}
-          user={user}
-        />
+
+      {/* Content */}
+      <div className="w-full h-full flex flex-col">
+        <Routes>
+          {/* Dashboard when no org is selected */}
+          <Route
+            index
+            element={
+              <DeanDashboard
+                organizationSummary={organizationSummary}
+                orgs={orgs}
+                onSelectOrg={(org) =>
+                  navigate(`/dean/${org.orgAcronym}/home`)
+                }
+              />
+            }
+          />
+
+          {/* Org-specific layout */}
+          <Route
+            path=":orgAcronym/*"
+            element={
+              <OrgLayout
+                orgs={orgs}
+                onClose={() => navigate("/dean")}
+              />
+            }
+          />
+        </Routes>
       </div>
     </div>
   );
 }
+
+
+//depreacted
+
+    // <div className="flex h-screen w-screen bg-gray-50">
+    //   <div className="flex h-full w-1/5 justify-between bg-cnsc-primary-color overflow-hidden">
+    //     <DeanMainNavigation />
+    //   </div>
+    //   <div className="w-full h-full">
+    //     <DeanComponent
+    //       selectedOrg={selectedOrg}
+    //       orgs={orgs}
+    //       onSelectOrg={setSelectedOrg}
+    //       setLoading={setLoading}
+    //       loading={loading}
+    //       user={user}
+    //     />
+    //   </div>
+    // </div>
+
 
 function DeanMainNavigation() {
   const [activeKey, setActiveKey] = useState("home");
@@ -475,7 +642,7 @@ function LogoutButton() {
       {/* Logout Button */}
       <div
         onClick={handleLogoutClick}
-        className=" rounded-2xl flex gap-2 items-center justify-center text-2xl text-white font-bold px-4 w-full   border-cnsc-primary-color py-2  hover:text-cnsc-secondary-color transition-all duration-500 cursor-pointer  hover:bg-red-700 "
+        className=" rounded-2xl flex gap-2 items-center justify-center text-2xl text-white font-bold px-4 w-fit   border-cnsc-primary-color py-2  hover:text-cnsc-secondary-color transition-all duration-500 cursor-pointer  hover:bg-red-700 "
       >
         <LogOut size={16} />
         Logout

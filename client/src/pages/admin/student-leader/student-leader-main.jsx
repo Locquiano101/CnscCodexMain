@@ -115,6 +115,7 @@ export default function StudentLeaderMainPage() {
           `${API_ROUTER}/getAccreditationInfo/${orgProfileId}`,
           { withCredentials: true }
         );
+
         setAccreditationData(response.data);
       } catch (error) {
         console.error("Error fetching accreditation info:", error);
