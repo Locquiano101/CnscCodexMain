@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import {
   XAxis,
   YAxis,
@@ -108,10 +108,12 @@ export default function FinancialReport({ orgData }) {
 
   const monthlyData = financialReport ? generateMonthlyData() : [];
 
+  // ✅ Updated to PHP (₱) instead of USD ($)
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-PH", {
       style: "currency",
-      currency: "USD",
+      currency: "PHP",
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -226,8 +228,10 @@ export default function FinancialReport({ orgData }) {
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-amber-100 ">
-              <DollarSign className="w-6 h-6 text-amber-600" />
+            <div className="p-2 bg-amber-100 rounded w-10">
+              <span className="text-amber-600 font-bold text-xl flex justify-center">
+                ₱
+              </span>
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">
               Financial Report
@@ -247,7 +251,10 @@ export default function FinancialReport({ orgData }) {
                   {formatCurrency(currentBalance)}
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-600" />
+              {/* Peso sign instead of DollarSign */}
+              <div className="w-8 h-8 flex items-center justify-center">
+                <span className="text-blue-600 text-2xl font-bold">₱</span>
+              </div>
             </div>
           </div>
 
@@ -311,9 +318,9 @@ export default function FinancialReport({ orgData }) {
 
           {expenseBreakdown.length > 0 && (
             <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
+              <div className="flex items-center gap-3 mb-4 ">
+                <div className="p-2 bg-amber-100 rounded w-10 flex justify-center">
+                  <span className="text-amber-600 font-bold text-xl">₱</span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
                   Expense Breakdown

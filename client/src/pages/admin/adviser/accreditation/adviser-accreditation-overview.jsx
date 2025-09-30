@@ -21,8 +21,6 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
   const [uploadingDocType, setUploadingDocType] = useState(null);
   const [accreditationData, setAccreditationData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -47,11 +45,6 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
         console.log(response);
 
         setAccreditationData(response.data);
-
-        // If inactive → show reset popup
-        if (response.data?.isActive === false) {
-          setShowResetPopup(true);
-        }
       } catch (err) {
         console.error("Error fetching accreditation info:", err);
         setError("Failed to load accreditation information. Please try again.");
@@ -94,8 +87,6 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
               setUploadingDocType={setUploadingDocType}
               selectedFile={selectedFile}
               setSelectedFile={setSelectedFile}
-              isUploading={isUploading}
-              uploadProgress={uploadProgress}
             />
           </div>
 
@@ -118,32 +109,6 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
           buttonLabel="Upload"
           buttonClass="bg-blue-600 hover:bg-blue-700"
         />
-      )}
-
-      {/* Reset Accreditation Popup */}
-      {showResetPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              Accreditation Reset
-            </h2>
-            <p className="text-gray-600 mb-6">
-              The accreditation records for this organization have been
-              deactivated. To proceed, you need to create a new accreditation.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowResetPopup(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Create New Accreditation
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
