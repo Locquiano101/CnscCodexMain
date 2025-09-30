@@ -10,6 +10,11 @@ router.get(
   "/generateReportAccreditationSdu",
   Controller.GenerateAccreditationReports
 );
+router.post(
+  "/SduMainAccreditationReset",
+  Controller.NotifcationAccreditationReset
+);
+router.post("/getOrganizations", Controller.GetOrganizationsByDeliveryUnit);
 router.post("/getOrganizations", Controller.GetOrganizationsByDeliveryUnit);
 router.get("/getPublicPosts", Controller.getPostForPublic);
 router.get("/getOrgProfilePosts/:orgProfileId", Controller.getPostByOrgProfile);

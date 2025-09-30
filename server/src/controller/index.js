@@ -11,3 +11,4 @@ export * from "./proposal.js";
 export * from "./proposal-conduct.js";
 export * from "./generate-reports.js";
 export * from "./public-post.js";
+export * from "./notification.js";
