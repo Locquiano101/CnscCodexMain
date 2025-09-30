@@ -305,13 +305,17 @@ function ProposalsComponent({ orgData }) {
                   Date
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <DollarSign className="w-4 h-4 inline mr-2" />
+                  <span className="inline mr-2 text-lg">₱</span>
                   Budget
                 </th>
+
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <MapPin className="w-4 h-4 inline mr-2" />
-                  Venue
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Venue
+                  </div>
                 </th>
+
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Status
                 </th>

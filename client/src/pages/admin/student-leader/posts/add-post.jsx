@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import { Plus, FileText, Images, X, Upload, Trash2, Tag } from "lucide-react";
+import {
+  Plus,
+  FileText,
+  Images,
+  X,
+  Upload,
+  Trash2,
+  Tag,
+  Check,
+} from "lucide-react";
 import axios from "axios";
 import { API_ROUTER } from "../../../../App";
 
 export function StudentLeaderAddPost({ orgData, Modal }) {
-  const [postType, setPostType] = useState(null); // "document" or "photos"
+  const [postType, setPostType] = useState(null);
   const [files, setFiles] = useState([]);
   const [caption, setCaption] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
@@ -16,348 +25,273 @@ export function StudentLeaderAddPost({ orgData, Modal }) {
     "Reminder",
     "General",
   ];
-
-  const MAX_IMAGES = 10; // Image limit
+  const MAX_IMAGES = 10;
 
   const handleFileChange = (e) => {
     if (!e.target.files) return;
-
     if (postType === "photos") {
       const newFiles = Array.from(e.target.files);
-      const totalFiles = files.length + newFiles.length;
-
-      if (totalFiles > MAX_IMAGES) {
-        alert(
-          `You can only upload a maximum of ${MAX_IMAGES} images. Please select fewer files.`
-        );
+      if (files.length + newFiles.length > MAX_IMAGES) {
+        alert(`Max ${MAX_IMAGES} images allowed.`);
         return;
       }
-
       setFiles([...files, ...newFiles]);
     } else {
-      setFiles([e.target.files[0]]); // single doc
+      setFiles([e.target.files[0]]);
     }
-
-    // Clear the input value so the same file can be selected again if needed
     e.target.value = "";
   };
+
   const toggleTag = (tag) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
   };
 
-  const removeFile = (index) => {
-    setFiles(files.filter((_, i) => i !== index));
-  };
-
-  const clearAllFiles = () => {
-    setFiles([]);
-  };
+  const removeFile = (i) => setFiles(files.filter((_, idx) => idx !== i));
+  const clearAllFiles = () => setFiles([]);
 
   const handleSubmit = async () => {
     if (!postType || files.length === 0) {
       alert("Please select a post type and upload at least one file.");
       return;
     }
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
     try {
       const formData = new FormData();
       formData.append("postType", postType);
       formData.append("organization", orgData.organization);
       formData.append("organizationProfile", orgData._id);
-
       formData.append("caption", caption);
       formData.append("label", "posts");
-      formData.append("tags", JSON.stringify(selectedTags)); // ✅ send tags as JSON
+      formData.append("tags", JSON.stringify(selectedTags));
 
-      formData.append(
-        "logs",
-        `${orgData.orgName} added a new post at ${formattedDate}`
-      );
-      // Append files
-      files.forEach((file, index) => {
-        formData.append("files", file); // backend should accept `files[]`
+      files.forEach((file) => formData.append("files", file));
+
+      await axios.post(`${API_ROUTER}/postPublicInformation`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // 🔎 Debug log
-      console.log("Submitting FormData:");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-
-      // ✅ Send with axios
-      const response = await axios.post(
-        `${API_ROUTER}/postPublicInformation`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log("✅ Post created:", response.data);
-      alert("Post created successfully!");
-
-      // Reset form after submit
+      alert("✅ Post created!");
       Modal();
       setPostType(null);
       setFiles([]);
       setCaption("");
-    } catch (error) {
-      console.error("❌ Error creating post:", error);
-      alert("Failed to create post. Please try again.");
+      setSelectedTags([]);
+    } catch (err) {
+      alert("❌ Failed to create post.");
+      console.error(err);
     }
   };
 
-  const getFilePreview = (file) => {
-    if (file.type.startsWith("image/")) {
-      return URL.createObjectURL(file);
-    }
-    return null;
-  };
+  const getFilePreview = (file) =>
+    file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
 
-  const canAddMore = () => {
-    if (postType === "document") return files.length === 0;
-    if (postType === "photos") return files.length < MAX_IMAGES;
-    return true;
-  };
+  const canAddMore = () =>
+    postType === "document" ? files.length === 0 : files.length < MAX_IMAGES;
 
   return (
-    <div className="bg-black/50 backdrop-blur-sm absolute inset-0 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-6  w-3/4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <Plus className="text-amber-600" size={28} />
-          Create Post
-        </h2>
-
-        {/* Choose type */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <button
-            onClick={() => {
-              setPostType("document");
-              setFiles([]);
-            }}
-            className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-              postType === "document"
-                ? "bg-amber-50 border-amber-500 text-amber-700"
-                : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            <FileText size={24} />
-            <div className="text-center">
-              <div className="font-medium">Document</div>
-              <div className="text-xs opacity-75">Upload 1 file</div>
-            </div>
-          </button>
-          <button
-            onClick={() => {
-              setPostType("photos");
-              setFiles([]);
-            }}
-            className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-              postType === "photos"
-                ? "bg-amber-50 border-amber-500 text-amber-700"
-                : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            <Images size={24} />
-            <div className="text-center">
-              <div className="font-medium">Photos</div>
-              <div className="text-xs opacity-75">
-                Upload multiple (max: {MAX_IMAGES} images)
-              </div>
-            </div>
+    <div className="bg-black/50 backdrop-blur-sm fixed inset-0 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <Plus className="text-amber-600" /> Create Post
+          </h2>
+          <button onClick={Modal} className="text-gray-400 hover:text-gray-600">
+            <X size={22} />
           </button>
         </div>
 
-        {/* 🔖 Tags Section */}
-        <div className="mb-6">
-          <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-            <Tag size={16} className="text-amber-600" /> Tags
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {AVAILABLE_TAGS.map((tag) => (
+        {/* Content */}
+        <div className="p-6 space-y-6 overflow-y-auto">
+          {/* Post Type */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600 mb-3">
+              Choose Post Type
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
               <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  selectedTags.includes(tag)
-                    ? "bg-amber-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                onClick={() => {
+                  setPostType("document");
+                  setFiles([]);
+                }}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  postType === "document"
+                    ? "bg-amber-50 border-amber-500 text-amber-700"
+                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                {tag}
+                <FileText size={28} />
+                <span className="font-medium">Document</span>
+                <span className="text-xs opacity-70">Upload 1 file</span>
               </button>
-            ))}
-          </div>
-          {selectedTags.length > 0 && (
-            <div className="mt-2 text-xs text-gray-500">
-              Selected: {selectedTags.join(", ")}
+              <button
+                onClick={() => {
+                  setPostType("photos");
+                  setFiles([]);
+                }}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  postType === "photos"
+                    ? "bg-amber-50 border-amber-500 text-amber-700"
+                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <Images size={28} />
+                <span className="font-medium">Photos</span>
+                <span className="text-xs opacity-70">
+                  Max {MAX_IMAGES} images
+                </span>
+              </button>
             </div>
-          )}
-        </div>
-        {/* File upload area - only show if can add more files */}
-        {postType && canAddMore() && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              {postType === "document" ? "Upload Document" : "Upload Photos"}
-            </label>
+          </div>
 
-            {/* Upload zone */}
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-amber-400 transition-colors">
-              <Upload className="mx-auto text-gray-400 mb-3" size={32} />
-              <div className="text-gray-600 mb-2">
-                {postType === "document"
-                  ? "Choose a document file"
-                  : `Choose photos (${files.length}/${MAX_IMAGES} selected)`}
-              </div>
-              <div className="text-xs text-gray-500 mb-4">
-                {postType === "document"
-                  ? "PDF, DOC, DOCX files supported"
-                  : "JPG, PNG, GIF files supported"}
-              </div>
+          {/* Tags */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+              <Tag size={16} className="text-amber-600" /> Select Tags
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {AVAILABLE_TAGS.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={`px-4 py-1.5 rounded-full text-sm flex items-center gap-1 transition-all ${
+                    selectedTags.includes(tag)
+                      ? "bg-amber-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {selectedTags.includes(tag) && <Check size={14} />}
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Upload */}
+          {postType && canAddMore() && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-600 mb-3">
+                {postType === "document" ? "Upload Document" : "Upload Photos"}
+              </h3>
+              <label
+                htmlFor="file-upload"
+                className="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-amber-400 transition"
+              >
+                <Upload className="mx-auto text-gray-400 mb-2" size={32} />
+                <p className="text-gray-600">
+                  {postType === "document"
+                    ? "Click to select a document"
+                    : "Click to select photos"}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {postType === "document" ? "PDF, DOC, DOCX" : "JPG, PNG, GIF"}
+                </p>
+              </label>
               <input
                 type="file"
+                id="file-upload"
+                className="hidden"
                 accept={postType === "document" ? ".pdf,.doc,.docx" : "image/*"}
                 multiple={postType === "photos"}
                 onChange={handleFileChange}
-                className="hidden"
-                id="file-upload"
               />
-              <label
-                htmlFor="file-upload"
-                className="inline-block bg-amber-600 text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-amber-700 transition-colors"
-              >
-                Select {postType === "document" ? "File" : "Files"}
-              </label>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* File preview */}
-        {files.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-sm font-medium text-gray-700">
-                {postType === "document"
-                  ? "Selected Document:"
-                  : `Selected Photos (${files.length}/${MAX_IMAGES}):`}
-              </div>
-              <button
-                onClick={clearAllFiles}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700 text-xs font-medium bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
-              >
-                <Trash2 size={12} />
-                Clear All
-              </button>
-            </div>
-
-            {postType === "document" ? (
-              // Document preview
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <FileText className="text-amber-600" size={20} />
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{files[0].name}</div>
-                  <div className="text-xs text-gray-500">
-                    {(files[0].size / 1024 / 1024).toFixed(1)} MB
-                  </div>
-                </div>
+          {/* File Preview */}
+          {files.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-gray-700">
+                  {postType === "document"
+                    ? "Selected Document"
+                    : `Selected Photos (${files.length}/${MAX_IMAGES})`}
+                </span>
                 <button
-                  onClick={() => removeFile(0)}
-                  className="text-red-500 hover:bg-red-50 p-1 rounded"
+                  onClick={clearAllFiles}
+                  className="text-red-600 text-xs flex items-center gap-1 hover:underline"
                 >
-                  <X size={16} />
+                  <Trash2 size={12} /> Clear All
                 </button>
               </div>
-            ) : (
-              // Photos preview
-              <div className="flex gap-4 overflow-x-auto p-4 ">
-                {files.map((file, index) => (
-                  <div key={index} className="relative group flex-shrink-0">
-                    <div className="aspect-auto h-64 rounded-lg overflow-hidden bg-gray-100">
-                      {getFilePreview(file) ? (
-                        <img
-                          src={getFilePreview(file)}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Images className="text-gray-400" size={24} />
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={12} />
-                    </button>
-                    <div className="text-xs text-gray-600 mt-1 truncate max-w-[7rem]">
-                      {file.name}
+
+              {postType === "document" ? (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <FileText className="text-amber-600" size={20} />
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{files[0].name}</div>
+                    <div className="text-xs text-gray-500">
+                      {(files[0].size / 1024 / 1024).toFixed(1)} MB
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Show message when limit is reached for photos */}
-            {postType === "photos" && files.length >= MAX_IMAGES && (
-              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="text-sm text-yellow-800">
-                  Maximum number of images reached ({MAX_IMAGES}/{MAX_IMAGES}).
-                  Remove some images to add more.
+                  <button
+                    onClick={() => removeFile(0)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {files.map((file, i) => (
+                    <div
+                      key={i}
+                      className="relative group rounded-lg overflow-hidden"
+                    >
+                      <img
+                        src={getFilePreview(file)}
+                        alt={`Preview ${i + 1}`}
+                        className="w-full h-40 object-cover"
+                      />
+                      <button
+                        onClick={() => removeFile(i)}
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <X size={12} />
+                      </button>
+                      <p className="text-xs text-gray-500 mt-1 truncate">
+                        {file.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Caption */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Caption
-          </label>
-          <textarea
-            placeholder="Write a caption for your post..."
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none resize-none"
-            rows={4}
-            maxLength={500}
-          />
-          <div className="text-xs text-gray-500 mt-1">
-            {caption.length}/500 characters
+          {/* Caption */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600 mb-2">
+              Caption
+            </h3>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Write something..."
+              rows={4}
+              maxLength={500}
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              {caption.length}/500 characters
+            </p>
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-3">
+        {/* Footer */}
+        <div className="flex gap-3 p-6 border-t bg-gray-50 rounded-b-2xl">
           <button
-            onClick={() => {
-              setPostType(null);
-              setFiles([]);
-              setCaption("");
-            }}
-            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            onClick={Modal}
+            className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!postType || files.length === 0}
-            className="flex-1 bg-amber-600 text-white py-3 rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 bg-amber-600 text-white py-2.5 rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50"
           >
             Create Post
           </button>

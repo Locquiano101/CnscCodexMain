@@ -277,7 +277,7 @@ export function StudentAccomplishmentDetailed({
             </div>
           </div>
 
-          <div className="flex  w-full text-xs justify-end gap-4 pt-6 p-2">
+          <div className="flex  w-full text-xs justify-end gap-4 pt-6 p-2 mt-7">
             <div className="flex items-center gap-2">
               <span>
                 Created: {formatDate(selectedAccomplishment.createdAt)}

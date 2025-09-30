@@ -289,7 +289,7 @@ export default function FinancialReport({ orgData }) {
 
         {/* Charts */}
         <div className="flex mt-4 flex-col gap-6 overflow-auto max-h-[600px]">
-          <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
+          <div className="bg-white p-4 rounded-2xl shadow-2xl border border-slate-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Monthly Comparison
             </h3>

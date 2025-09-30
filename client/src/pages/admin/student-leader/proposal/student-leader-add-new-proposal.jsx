@@ -10,6 +10,7 @@ export function AddNewProposal({ onClose, orgData }) {
     briefDetails: "",
     alignedObjective: "",
     venue: "",
+    otherVenue: "",
     date: "",
     budget: "",
     alignedSDG: [],
@@ -23,12 +24,11 @@ export function AddNewProposal({ onClose, orgData }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     let processedValue = value;
 
     if (name === "date" && value) {
-      const date = new Date(value); // value is yyyy-MM-dd
-      processedValue = date.toISOString(); // standard full ISO string
+      const date = new Date(value);
+      processedValue = date.toISOString();
     }
 
     setFormData((prev) => ({
@@ -92,14 +92,15 @@ export function AddNewProposal({ onClose, orgData }) {
 
     if (!formData.venue.trim()) {
       newErrors.venue = "Venue is required";
+    } else if (formData.venue === "Other" && !formData.otherVenue.trim()) {
+      newErrors.venue = "Please specify the venue";
     }
 
     if (!formData.date) {
       newErrors.date = "Date is required";
     }
 
-    // Fix: Convert budget to number and validate properly
-    const budgetValue = parseFloat(formData.budget);
+    const budgetValue = parseFloat(formData.budget.replace(/,/g, ""));
     if (!formData.budget.trim() || isNaN(budgetValue) || budgetValue <= 0) {
       newErrors.budget = "Budget must be a positive number";
     }
@@ -122,53 +123,34 @@ export function AddNewProposal({ onClose, orgData }) {
 
     setErrors(newErrors);
 
-    // Log validation results
-    const isValid = Object.keys(newErrors).length === 0;
-
-    if (!isValid) {
-      console.log("❌ Validation failed. Missing/invalid fields:");
-      Object.entries(newErrors).forEach(([field, error]) => {
-        console.log(`  - ${field}: ${error}`);
-      });
-      console.log("📋 Current form data:", formData);
-      console.log("📄 Uploaded file:", uploadedFile);
-    } else {
-      console.log("✅ Validation passed successfully!");
-    }
-
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("🚀 handleSubmit triggered");
 
     if (!validateForm()) {
-      console.log("handleSubmit not right");
       return;
     }
 
-    console.log("📋 Form Data:", formData);
-    console.log("📄 Uploaded File:", uploadedFile);
-
     try {
-      // Build FormData to support file upload
       const fd = new FormData();
 
-      // ✅ Append each field individually (not as nested proposalData object)
       fd.append("activityTitle", formData.activityTitle);
       fd.append("briefDetails", formData.briefDetails);
       fd.append("alignedObjective", formData.alignedObjective);
-      fd.append("venue", formData.venue);
+      fd.append(
+        "venue",
+        formData.venue === "Other" ? formData.otherVenue : formData.venue
+      );
       fd.append("date", formData.date);
-      fd.append("budget", parseFloat(formData.budget));
-      fd.append("alignedSDG", JSON.stringify(formData.alignedSDG)); // Array needs to be stringified
+      fd.append("budget", parseFloat(formData.budget.replace(/,/g, "")));
+      fd.append("alignedSDG", JSON.stringify(formData.alignedSDG));
       fd.append("organization", formData.organization);
       fd.append("organizationProfile", formData.organizationProfile);
       fd.append("overallStatus", "Pending");
       fd.append("submittedAt", new Date().toISOString());
 
-      // Append uploaded file
       if (uploadedFile) {
         fd.append("file", uploadedFile);
       }
@@ -206,10 +188,10 @@ export function AddNewProposal({ onClose, orgData }) {
           </button>
         </div>
 
-        {/* Content - Scrollable */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Side - Form Fields */}
+            {/* Left Side */}
             <div className="space-y-6">
               {/* Activity Title */}
               <div>
@@ -281,25 +263,47 @@ export function AddNewProposal({ onClose, orgData }) {
 
               {/* Venue and Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Venue Dropdown */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Venue *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="venue"
                     value={formData.venue}
                     onChange={handleInputChange}
                     className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                       errors.venue ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Event venue"
-                  />
+                  >
+                    <option value="">-- Select Venue --</option>
+                    <option value="Covered Court">Covered Court</option>
+                    <option value="Student Activity Center">
+                      Student Activity Center
+                    </option>
+                    <option value="Pavilion">Pavilion</option>
+                    <option value="Student Park">Student Park</option>
+                    <option value="Cafeteria">Cafeteria</option>
+                    <option value="Other">Other</option>
+                  </select>
+
+                  {formData.venue === "Other" && (
+                    <input
+                      type="text"
+                      name="otherVenue"
+                      value={formData.otherVenue}
+                      onChange={handleInputChange}
+                      placeholder="Enter other venue"
+                      className="mt-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                    />
+                  )}
+
                   {errors.venue && (
                     <p className="text-red-500 text-sm mt-1">{errors.venue}</p>
                   )}
                 </div>
 
+                {/* Date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Date *
@@ -326,16 +330,26 @@ export function AddNewProposal({ onClose, orgData }) {
                   Budget (₱) *
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="budget"
                   value={formData.budget}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    let rawValue = e.target.value.replace(/,/g, "");
+                    if (!isNaN(rawValue) && rawValue !== "") {
+                      const formatted =
+                        parseFloat(rawValue).toLocaleString("en-US");
+                      setFormData((prev) => ({ ...prev, budget: formatted }));
+                    } else {
+                      setFormData((prev) => ({ ...prev, budget: "" }));
+                    }
+                    if (errors.budget) {
+                      setErrors((prev) => ({ ...prev, budget: "" }));
+                    }
+                  }}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.budget ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="0.00"
-                  min="0"
-                  step="0.01"
                 />
                 {errors.budget && (
                   <p className="text-red-500 text-sm mt-1">{errors.budget}</p>
@@ -345,7 +359,7 @@ export function AddNewProposal({ onClose, orgData }) {
 
             {/* Right Side - SDG Selection and File Upload */}
             <div className="space-y-6">
-              {/* Aligned SDG */}
+              {/* SDG Section */}
               <div className="md:col-span-2 text-black">
                 <label className="block text-sm font-medium text-black mb-2">
                   Aligned SDG *
@@ -480,7 +494,7 @@ export function AddNewProposal({ onClose, orgData }) {
           </div>
         </div>
 
-        {/* Footer - Action Buttons */}
+        {/* Footer */}
         <div className="border-t border-gray-200 p-6 bg-gray-50">
           <div className="flex gap-4 justify-end">
             <button
@@ -489,32 +503,27 @@ export function AddNewProposal({ onClose, orgData }) {
             >
               Cancel
             </button>
-
             <button
-              onClick={(e) => handleSubmit(e)}
+              onClick={handleSubmit}
               className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
-              Create Proposal
+              Submit Proposal
             </button>
           </div>
         </div>
-        {showPopup && (
-          <DonePopUp
-            type={showPopup}
-            message={
-              showPopup === "success"
-                ? "Proposal uploaded successfully!"
-                : showPopup === "error"
-                ? "Something went wrong."
-                : "Check your input again."
-            }
-            onClose={() => {
-              setShowPopup(null);
-              onClose(); // ✅ after popup closes, close AddProposal modal
-            }}
-          />
-        )}
       </div>
+
+      {showPopup && (
+        <DonePopUp
+          type={showPopup}
+          onClose={() => {
+            setShowPopup(null);
+            if (showPopup === "success") {
+              onClose();
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

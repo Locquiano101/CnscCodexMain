@@ -97,7 +97,7 @@ export function StudentPost({ orgData }) {
 
         <div className="flex gap-4">
           {/* Left Column */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 w-100">
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Badge className="w-5 h-5 text-blue-600" />
