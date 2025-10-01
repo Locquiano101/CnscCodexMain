@@ -284,11 +284,28 @@ export function DeanPage() {
     fetchOrganizations();
   }, [user?.deliveryUnit]);
 
+
+
   const organizationSummary = [
-    { label: "Total Organizations", value: String(orgs.length) },
-    { label: "Accredited Organizations", value: String(orgs.filter(o => o?.isAllowedForAccreditation).length) },
-    { label: "Inactive Organizations", value: String(orgs.filter(o => o?.status === "inactive").length) },
+    {
+      label: "Total Organizations",
+      value: String(orgs.filter(o => o?.isAllowedForAccreditation).length),
+    },
+    {
+      label: "Accredited Organizations",
+      value: String(
+        orgs.filter(o =>
+          o?.accreditation &&
+          o.accreditation.status === "Accredited" // or whatever field your API uses
+        ).length
+      ),
+    },
+    {
+      label: "Inactive Organizations",
+      value: String(orgs.filter(o => o?.status === "inactive").length),
+    },
   ];
+
 
   return (
     <div className="w-screen h-screen grid grid-cols-1 grid-rows-[4rem_1fr] gap-0">

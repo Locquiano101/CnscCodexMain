@@ -698,7 +698,7 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading 
                   <div
                     key={idx}
                     onClick={() => onSelectOrg(org)}
-                    className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg transition-shadow"
+                    className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg hover:border-black transition-shadow"
                   >
                     <img
                       src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
@@ -756,7 +756,7 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading 
               })}
 
           {!loading && paginatedOrgs.length === 0 && (
-            <div className="w-full h-32 flex items-center justify-center text-gray-500">
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
               No organizations available
             </div>
           )}
