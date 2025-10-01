@@ -71,7 +71,7 @@ export const NodeEmail = async (emailAddress, emailSubject, emailMessage) => {
       ],
     });
 
-    console.log("Email Sent!");
+    console.log("Email Sent! ", emailMessage);
     return { success: true };
   } catch (error) {
     console.error("Email sending failed:", error);
