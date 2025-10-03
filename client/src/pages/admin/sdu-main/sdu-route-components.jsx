@@ -20,6 +20,8 @@ import { SduMainAccreditationDocumentIndividualOrganization } from "./accreditat
 import { SduMainProposedActionPlanOrganization } from "./accreditation/proposed-action-plan/individual-proposed-action-plan";
 import { SduMainFinancialReportOverall } from "./accreditation/financial-report/sdu-main-financial-report";
 import { SduMainFinancialReport } from "./accreditation/financial-report/individual-financial-report";
+import { SduMainAccomplishment } from "./accomplishment/sdu-accomplishment-main";
+import { SduMainAccomplishmentOrganization } from "./accomplishment/sdu-individual-accomplishment";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -170,8 +172,17 @@ export function SduMainComponents({ user }) {
         </Route>
 
         {/* Accomplishments */}
-        <Route path="/accomplishment" element={<UnderDevelopment />} />
-
+        <Route
+          path="/accomplishment"
+          element={renderRoute(
+            <SduMainAccomplishmentOrganization selectedOrg={selectedOrg} />,
+            <SduMainAccomplishment
+              orgs={orgs}
+              selectedOrg={selectedOrg}
+              onSelectOrg={setSelectedOrg}
+            />
+          )}
+        />
         {/* Organizations */}
         <Route
           path="/organization"
