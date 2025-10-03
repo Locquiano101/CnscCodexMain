@@ -111,7 +111,7 @@ export const PostUser = async (req, res) => {
     `;
 
     // TODO: UNCOMMENT
-    // await NodeEmail(email, subject, message);
+    await NodeEmail(email, subject, message);
 
     res.status(201).json({
       message: "User created successfully and email sent",

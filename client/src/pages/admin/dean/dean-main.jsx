@@ -1,9 +1,27 @@
-import { useState, useEffect, useRef } from "react";
-import { Outlet, useOutletContext, useParams } from "react-router-dom";
+// dean-routes.jsx
+import { useState, useEffect } from "react";
+import {
+  Outlet,
+  useOutletContext,
+  useParams,
+  Routes,
+  Route,
+  NavLink,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import axios from "axios";
-import { Routes, Route,  NavLink , Navigate } from "react-router-dom";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
-import { useNavigate, useLocation } from "react-router-dom";
+import Logo from "../../../assets/cnsc-codex.svg";
+import {
+  OrgHome,
+  OrgAccreditation,
+  OrgActivities,
+  OrgFinancial,
+  OrgAccomplishments,
+} from "./dean-org-views";
+
 import {
   Home,
   FolderOpen,
@@ -21,105 +39,156 @@ import {
   Phone,
   FileArchive,
 } from "lucide-react";
-import Logo from "../../../assets/cnsc-codex.svg"
-
-// to be moved
-
-import { OrgHome, OrgAccreditation, OrgActivities, OrgFinancial,OrgAccomplishments } from "./dean-org-views";
+// import icons/components you already have (LogoutButton, DeanDashboard, etc.)
+// import { OrgHome, OrgAccreditation, OrgActivities, OrgFinancial,OrgAccomplishments } from "./dean-org-views";
 
 import { DeanComponent, DeanDashboard } from "./dean-route-components";
+
+
+function getLatestActiveProfile(org, allProfiles, orgs) {
+  if (!org?.organization?.organizationProfile?.length) return null;
+
+  // find all profiles linked to this org
+  const related = allProfiles.filter((p) =>
+    org.organization.organizationProfile.includes(p._id)
+  );
+
+  // only keep active ones
+  const active = related.filter((p) => p.isActive);
+  if (active.length === 0) return null;
+
+  // pick the most recent active profile
+  const latest = active.reduce((latest, p) =>
+    new Date(p.createdAt) > new Date(latest.createdAt) ? p : latest
+  );
+
+  // find the wrapper org that matches this profile id
+  const wrapper = orgs.find((o) => o._id === latest._id);
+
+  return {
+    ...latest,
+    profileId: latest._id,                       // actual profile _id
+    organizationProfile: latest.organizationProfile, // orgProfile ref for API calls
+    adviser: wrapper?.adviser || org.adviser,
+    orgPresident: wrapper?.orgPresident || org.orgPresident,
+    overAllStatus: wrapper?.overAllStatus || org.overAllStatus,
+    orgLogo: wrapper?.orgLogo || org.orgLogo,
+    orgName: wrapper?.orgName || org.orgName,
+    orgAcronym: wrapper?.orgAcronym || org.orgAcronym,
+  };
+}
+
+
 
 function OrgLayout({ orgs, onClose }) {
   const { orgAcronym } = useParams();
   const org = orgs.find((o) => o.orgAcronym === orgAcronym);
-  // console.log(org)
+
+  // declare hooks first (avoids React hook order errors)
+  const [accreditationData, setAccreditationData] = useState({});
+  const [orgProfiles, setOrgProfiles] = useState([]);
+  const [financial, setFinancial] = useState({});
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // bail out after hooks are declared
   if (!org) return <div className="p-4">Organization not found</div>;
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      if (!org?.organization?._id) return;
+
+      try {
+        setLoading(true);
+
+        // accreditation + all profiles
+        const [accRes, profRes] = await Promise.all([
+          axios.get(`${API_ROUTER}/getAccreditationInfo/${org.organization._id}`, {
+            withCredentials: true,
+          }),
+          axios.get(`${API_ROUTER}/getAllOrganizationProfile`, {
+            withCredentials: true,
+          }),
+        ]);
+
+        setAccreditationData(accRes.data);
+        setOrgProfiles(profRes.data);
+
+        // find latest active profile
+        const latest = getLatestActiveProfile(org, profRes.data, orgs);
+
+        // use organizationProfile for API calls
+        const profileId = latest?.organizationProfile || latest?.profileId;
+
+        if (profileId) {
+          const [finRes, actRes] = await Promise.all([
+            axios.get(`${API_ROUTER}/getFinancialReport/${profileId}`, {
+              withCredentials: true,
+            }),
+            axios.get(`${API_ROUTER}/getStudentLeaderProposalConduct/${profileId}`, {
+              withCredentials: true,
+            }),
+          ]);
+          setFinancial(finRes.data);
+          setActivities(actRes.data);
+        }
+      } catch (e) {
+        console.error("OrgLayout fetch error:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, [org?._id, org?.organization?._id, orgs]);
+
+  // latest profile merged with wrapper info
+  const latestActiveProfile = getLatestActiveProfile(org, orgProfiles, orgs);
+  const displayOrg = latestActiveProfile || org;
 
   return (
     <div className="h-full w-full grid grid-cols-[18%_1fr]">
       {/* Sidebar */}
-      <div className="bg-white text-cnsc-primary-color pt-4 pb-1 flex flex-col border-r  border-gray-400">
-        <div className="w-full h-fit  mb-1 bg-gray-50 flex p-2 gap-x-2 items-center border-b border-gray-400">
+      <div className="bg-white text-cnsc-primary-color pt-4 pb-1 flex flex-col border-r border-gray-400">
+        <div className="w-full h-fit mb-1 bg-gray-50 flex p-2 gap-x-2 items-center border-b border-gray-400">
           <img
-            src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
-            alt={org.orgAcronym}
-            className="w-auto h-11 object-contain"
+            src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
+            alt={displayOrg.orgAcronym}
+            className="min-w-11 h-11 object-contain"
           />
-          <div className="w-full h-fit flex flex-col ">
+          <div className="w-full h-fit flex flex-col">
             <span className="text-gray-500 text-md">Welcome!</span>
-            <span className="text-lg font-bold leading-3">{org.orgName}</span>
-            <span className="text-xs leading-4">{org.orgAcronym}</span>
+            <span className="text-lg font-bold leading-3">{displayOrg.orgName}</span>
+            <span className="text-xs leading-4">{displayOrg.orgAcronym}</span>
           </div>
         </div>
 
-        <NavLink
-          to={`/dean/${orgAcronym}/home`}
-          className={({ isActive }) =>
-            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
-              isActive
-                ? "bg-cnsc-primary-color text-white shadow-md"
-                : "text-cnsc-primary-color hover:bg-gray-100"
-            }`
-          }
-        >
-          Home
-        </NavLink>
-
-        <NavLink
-          to={`/dean/${orgAcronym}/accreditation`}
-          className={({ isActive }) =>
-            `flex items-center  py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
-              isActive
-                ? "bg-cnsc-primary-color text-white shadow-md"
-                : "text-cnsc-primary-color hover:bg-gray-100"
-            }`
-          }
-        >
-          Accreditation
-        </NavLink>
-
-        <NavLink
-          to={`/dean/${orgAcronym}/activities`}
-          className={({ isActive }) =>
-            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
-              isActive
-                ? "bg-cnsc-primary-color text-white shadow-md"
-                : "text-cnsc-primary-color hover:bg-gray-100"
-            }`
-          }
-        >
-          Proposals
-        </NavLink>
-
-        <NavLink
-          to={`/dean/${orgAcronym}/financial`}
-          className={({ isActive }) =>
-            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
-              isActive
-                ? "bg-cnsc-primary-color text-white shadow-md"
-                : "text-cnsc-primary-color hover:bg-gray-100"
-            }`
-          }
-        >
-          Financial Statement
-        </NavLink>
-
-        <NavLink
-          to={`/dean/${orgAcronym}/accomplishment`}
-          className={({ isActive }) =>
-            `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
-              isActive
-                ? "bg-cnsc-primary-color text-white shadow-md"
-                : "text-cnsc-primary-color hover:bg-gray-100"
-            }`
-          }
-        >
-          Accomplishments
-        </NavLink>
+        {/* Sidebar nav links */}
+        {[
+          { to: `/dean/${orgAcronym}/home`, label: "Home" },
+          { to: `/dean/${orgAcronym}/accreditation`, label: "Accreditation" },
+          { to: `/dean/${orgAcronym}/activities`, label: "Proposals" },
+          { to: `/dean/${orgAcronym}/financial`, label: "Financial Statement" },
+          { to: `/dean/${orgAcronym}/accomplishment`, label: "Accomplishments" },
+        ].map(({ to, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+                isActive
+                  ? "bg-cnsc-primary-color text-white shadow-md"
+                  : "text-cnsc-primary-color hover:bg-gray-100"
+              }`
+            }
+          >
+            {label}
+          </NavLink>
+        ))}
 
         <button
           onClick={onClose}
-          className="mt-auto px-4 py-2 bg-amber-500  text-white hover:bg-amber-600 transition"
+          className="mt-auto px-4 py-2 bg-amber-500 text-white hover:bg-amber-600 transition"
         >
           Close Org
         </button>
@@ -129,11 +198,22 @@ function OrgLayout({ orgs, onClose }) {
       <div className="w-full h-full">
         <Routes>
           <Route index element={<Navigate to="home" replace />} />
-          <Route path="home" element={<OrgHome org={org} />} />
-          <Route path="accreditation" element={<OrgAccreditation org={org} />} />
-          <Route path="activities" element={<OrgActivities org={org} />} />
-          <Route path="financial" element={<OrgFinancial org={org} />} />
-          <Route path="accomplishment" element={<OrgAccomplishments org={org} />} />
+          <Route
+            path="home"
+            element={
+              <OrgHome
+                baseOrg={org}
+                displayOrg={displayOrg}
+                accreditationData={accreditationData}
+                financial={financial}
+                activities={activities}
+              />
+            }
+          />
+          <Route path="accreditation" element={<OrgAccreditation org={displayOrg} />} />
+          <Route path="activities" element={<OrgActivities org={displayOrg} />} />
+          <Route path="financial" element={<OrgFinancial org={displayOrg} />} />
+          <Route path="accomplishment" element={<OrgAccomplishments org={displayOrg} />} />
         </Routes>
       </div>
     </div>
@@ -147,31 +227,85 @@ export function DeanPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch orgs
-  const fetchOrganizations = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.post(`${API_ROUTER}/getOrganizations`, {
-        deliveryUnit: user.deliveryUnit,
-      });
-      setOrgs(res.data);
-    } catch (err) {
-      console.error("Error fetching organizations:", err);
-      setOrgs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.post(`${API_ROUTER}/getOrganizations`, {
+          deliveryUnit: user.deliveryUnit,
+        });
+        const baseOrgs = res.data || [];
+
+        // enrich each org with latest profile + accreditation + activities + financial
+        const profRes = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`, { withCredentials: true });
+        const profiles = profRes.data;
+
+        const enrichedOrgs = await Promise.all(
+          baseOrgs.map(async (org) => {
+            try {
+              const related = profiles.filter((p) =>
+                org.organization?.organizationProfile?.includes(p._id)
+              );
+              const active = related.filter((p) => p.isActive);
+              if (active.length === 0) return org;
+
+              const latest = active.reduce((latest, p) =>
+                new Date(p.createdAt) > new Date(latest.createdAt) ? p : latest
+              );
+
+              const [accRes, actRes, finRes] = await Promise.all([
+                axios.get(`${API_ROUTER}/getAccreditationInfo/${org.organization._id}`, { withCredentials: true }),
+                axios.get(`${API_ROUTER}/getStudentLeaderProposalConduct/${latest._id}`, { withCredentials: true }),
+                axios.get(`${API_ROUTER}/getFinancialReport/${latest._id}`, { withCredentials: true }),
+              ]);
+
+              return {
+                ...org,
+                latestProfile: latest,
+                accreditation: accRes.data,
+                activities: actRes.data,
+                financial: finRes.data,
+              };
+            } catch (err) {
+              console.error(`Error enriching org ${org.orgAcronym}:`, err);
+              return org;
+            }
+          })
+        );
+
+        setOrgs(enrichedOrgs);
+      } catch (err) {
+        console.error("Error fetching organizations:", err);
+        setOrgs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchOrganizations();
-  }, []);
+  }, [user?.deliveryUnit]);
+
+
 
   const organizationSummary = [
-    { label: "Total Organizations", value: "5" },
-    { label: "Accredited Organizations", value: "5" },
-    { label: "Inactive Organizations", value: "5" },
+    {
+      label: "Total Organizations",
+      value: String(orgs.filter(o => o?.isAllowedForAccreditation).length),
+    },
+    {
+      label: "Accredited Organizations",
+      value: String(
+        orgs.filter(o =>
+          o?.accreditation &&
+          o.accreditation.status === "Accredited" // or whatever field your API uses
+        ).length
+      ),
+    },
+    {
+      label: "Inactive Organizations",
+      value: String(orgs.filter(o => o?.status === "inactive").length),
+    },
   ];
+
 
   return (
     <div className="w-screen h-screen grid grid-cols-1 grid-rows-[4rem_1fr] gap-0">
@@ -187,37 +321,24 @@ export function DeanPage() {
       {/* Content */}
       <div className="w-full h-full flex flex-col">
         <Routes>
-          {/* Dashboard when no org is selected */}
           <Route
             index
             element={
               <DeanDashboard
                 organizationSummary={organizationSummary}
                 orgs={orgs}
-                onSelectOrg={(org) =>
-                  navigate(`/dean/${org.orgAcronym}/home`)
-                }
+                loading={loading}   // 👈 pass it here
+                onSelectOrg={(org) => navigate(`/dean/${org.orgAcronym}/home`)}
               />
             }
-          />
+            />
 
-          {/* Org-specific layout */}
-          <Route
-            path=":orgAcronym/*"
-            element={
-              <OrgLayout
-                orgs={orgs}
-                onClose={() => navigate("/dean")}
-              />
-            }
-          />
+          <Route path=":orgAcronym/*" element={<OrgLayout orgs={orgs} onClose={() => navigate("/dean")} />} />
         </Routes>
       </div>
     </div>
   );
 }
-
-
 //depreacted
 
     // <div className="flex h-screen w-screen bg-gray-50">
@@ -494,7 +615,7 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`group w-85 border max-w-md px-4 py-3 flex items-center justify-between 
+              className={`group w-85 border max-w-md px-4 py-3 flex items-center justify-between
       ${isDropdownOpen ? "rounded-t-xl" : "rounded-xl"}`}
             >
               <div className="flex items-center gap-3">

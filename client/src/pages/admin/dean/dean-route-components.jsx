@@ -12,6 +12,8 @@ import { DeanProposalConduct } from "./proposals/dean-proposal";
 import { DeanAccomplishmentReport } from "./accomplishment/dean-accomplishment";
 import { useState, useMemo } from "react";
 
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
+
 export function DeanComponent({
   selectedOrg,
   orgs,
@@ -469,17 +471,68 @@ export function DeanComponent({
 }
 
 
-export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
-  const navigate = useNavigate();
+
+
+export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const totalPages = Math.ceil(orgs.length / itemsPerPage);
+  // 🔹 Deduplicate: pick only the latest profile per organization
+  const latestOrgs = useMemo(() => {
+    const keyOf = (o) =>
+      o?.organization?._id ?? o?._id ?? o?.orgAcronym ?? o?.orgName ?? String(Math.random());
 
+    const timeOf = (o) =>
+      new Date(o?.updatedAt || o?.createdAt || 0).getTime();
+
+    const map = new Map();
+    for (const o of orgs || []) {
+      const k = keyOf(o);
+      const prev = map.get(k);
+      if (!prev || timeOf(o) > timeOf(prev)) {
+        map.set(k, o);
+      }
+    }
+    return Array.from(map.values());
+  }, [orgs]);
+
+  // donut chart data
+  const statusCounts = useMemo(() => {
+    const counts = {};
+    for (const o of latestOrgs) {
+      const status = o.overAllStatus || o.status || "Unknown";
+      counts[status] = (counts[status] || 0) + 1;
+    }
+    return Object.entries(counts).map(([status, value]) => ({ name: status, value }));
+  }, [latestOrgs]);
+
+  const COLORS = ["#4caf50", "#ff9800", "#f44336", "#2196f3", "#9c27b0"];
+
+  // upcoming activities
+  const upcomingActivities = useMemo(() => {
+    return latestOrgs
+      .flatMap((o) => o.activities || [])
+      .filter((act) => new Date(act?.ProposedIndividualActionPlan?.proposedDate) > new Date())
+      .sort((a, b) => new Date(a.ProposedIndividualActionPlan.proposedDate) - new Date(b.ProposedIndividualActionPlan.proposedDate))
+      .slice(0, 5);
+  }, [latestOrgs]);
+
+  // expiring orgs
+  const expiringOrgs = useMemo(() => {
+    const soon = new Date();
+    soon.setMonth(soon.getMonth() + 1);
+    return latestOrgs
+      .filter((o) => o.accreditation?.expiryDate && new Date(o.accreditation.expiryDate) < soon)
+      .sort((a, b) => new Date(a.accreditation.expiryDate) - new Date(b.accreditation.expiryDate))
+      .slice(0, 5);
+  }, [latestOrgs]);
+
+  // pagination
+  const totalPages = Math.ceil(latestOrgs.length / itemsPerPage);
   const paginatedOrgs = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return orgs.slice(start, start + itemsPerPage);
-  }, [orgs, currentPage]);
+    return latestOrgs.slice(start, start + itemsPerPage);
+  }, [latestOrgs, currentPage]);
 
   const getStatusBadge = (status) => {
     const statusStyles = {
@@ -488,6 +541,8 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
       "Revision From SDU": "bg-red-100 text-red-700 border-red-200",
       Rejected: "bg-red-100 text-red-700 border-red-200",
       "Approved by the Adviser": "bg-blue-100 text-blue-700 border-blue-200",
+      Active: "bg-green-100 text-green-700 border-green-200",
+      active: "bg-green-100 text-green-700 border-green-200",
     };
     return statusStyles[status] || "bg-gray-100 text-gray-600 border-gray-200";
   };
@@ -496,8 +551,8 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
     <div className="w-full h-full grid grid-cols-1 grid-rows-[18rem_1fr] gap-0">
       {/* mini dashboard */}
       <div className="bg-gray-300 px-5 flex py-4 gap-x-3 justify-center">
-        {/* summary of orgs */}
-        <div className="w-[15%] h-full flex flex-col justify-between ">
+        {/* counters */}
+        <div className="w-[15%] h-full flex flex-col justify-between">
           {organizationSummary.map(({ label, value }, idx) => (
             <div
               key={idx}
@@ -510,28 +565,84 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
         </div>
 
         {/* chart */}
-        <div className="w-[31%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex items-center justify-center">
-          donut chart for activities
+        <div className="w-[31%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex flex-col items-center justify-center">
+          <h2 className="text-sm font-semibold mb-1">
+            Organization Statuses
+          </h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie
+                data={statusCounts}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                dataKey="value"
+                label
+              >
+                {statusCounts.map((entry, idx) => (
+                  <Cell
+                    key={`cell-${idx}`}
+                    fill={COLORS[idx % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* list */}
-        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex items-center justify-center">
-          list of upcoming org activities
+        {/* activities */}
+        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex flex-col p-2">
+          <h2 className="text-sm font-semibold mb-1">Upcoming Activities</h2>
+          <div className="flex-1 overflow-y-auto text-xs">
+            {upcomingActivities.map((act, idx) => (
+              <div key={idx} className="border-b py-1">
+                <div className="font-medium">
+                  {act.ProposedIndividualActionPlan?.activityTitle}
+                </div>
+                <div className="text-gray-500">
+                  {new Date(
+                    act.ProposedIndividualActionPlan.proposedDate
+                  ).toLocaleDateString()}
+                  {" • "}
+                  {act.ProposedIndividualActionPlan?.venue}
+                </div>
+              </div>
+            ))}
+            {upcomingActivities.length === 0 && (
+              <div className="text-gray-400">No upcoming activities</div>
+            )}
+          </div>
         </div>
 
-        {/* list */}
-        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex items-center justify-center">
-          list of expiring orgs
+        {/* expiring orgs */}
+        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex flex-col p-2">
+          <h2 className="text-sm font-semibold mb-1">Expiring Orgs</h2>
+          <div className="flex-1 overflow-y-auto text-xs">
+            {expiringOrgs.map((o, idx) => (
+              <div key={idx} className="border-b py-1">
+                <div className="font-medium">{o.orgName}</div>
+                <div className="text-gray-500">
+                  Expiry:{" "}
+                  {new Date(o.accreditation.expiryDate).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+            {expiringOrgs.length === 0 && (
+              <div className="text-gray-400">No expiring orgs</div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* organization cards */}
+      {/* org cards */}
       <div className="w-full h-full flex flex-col pt-3 items-center pb-2">
         <div className="h-fit w-full px-4 mb-2 flex justify-between items-center">
           <span className="text-3xl text-gray-600">Local Organizations</span>
 
-          {/* pagination controls */}
-          {totalPages > 1 && (
+          {/* pagination */}
+          {!loading && totalPages > 1 && (
             <div className="flex items-center gap-2 text-sm">
               <button
                 disabled={currentPage === 1}
@@ -562,65 +673,90 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg }) {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3 h-full w-[98%] ">
-          {paginatedOrgs.map((org, idx) => {
-            const overallStatus = org.overAllStatus || org.overallStatus;
-
-            return (
-              <div
-                key={idx}
-                onClick={() => onSelectOrg(org)}
-                className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg transition-shadow"
-              >
-                <img
-                  src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
-                  alt={`${org.orgName} logo`}
-                  className="w-full max-w-[30%] h-auto object-contain"
-                />
-                <div className="w-full h-full flex flex-col p-2 justify-center">
-                  <div className="h-11 flex items-center">
-                    <h1 className="text-lg font-semibold text-gray-700 leading-4">
-                      {org.orgName} (<span>{org.orgAcronym}</span>)
-                    </h1>
-                  </div>
-                  <div className="pt-1 border-t-1">
-                    <span
-                      className={`${getStatusBadge(
-                        overallStatus
-                      )} w-fit px-2 border rounded-xl mb-1 text-xs`}
-                    >
-                      {overallStatus}
-                    </span>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    {/* Adviser */}
-                    <div className="flex items-start">
-                      <span className="text-gray-500 font-medium min-w-[40px]">
-                        Adviser:
-                      </span>
-                      <span className="text-gray-700 flex-1">
-                        {org.adviser?.name || "No adviser assigned"}
-                      </span>
-                    </div>
-
-                    {/* Course */}
-                    <div className="flex items-start">
-                      <span className="text-gray-500 font-medium min-w-[40px]">
-                        Course:
-                      </span>
-                      <span className="text-gray-700 flex-1">
-                        {org.orgCourse || "No course specified"}
-                      </span>
-                    </div>
+        <div className="flex flex-wrap gap-3 h-full w-[98%]">
+          {loading
+            ? // 🔹 Skeleton loaders
+              Array.from({ length: itemsPerPage }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="w-[32.75%] h-[48%] rounded-md border border-gray-300 shadow-md shadow-gray-300 flex items-center px-2 animate-pulse bg-gray-100"
+                >
+                  <div className="w-full max-w-[30%] h-24 bg-gray-300 rounded"></div>
+                  <div className="w-full h-full flex flex-col p-2 justify-center space-y-2">
+                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/3"></div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              ))
+            : paginatedOrgs.map((org, idx) => {
+                const overallStatus =
+                  org.overAllStatus || org.overallStatus || org.status || "—";
 
-          {/* Empty state if no orgs */}
-          {paginatedOrgs.length === 0 && (
-            <div className="w-full h-32 flex items-center justify-center text-gray-500">
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => onSelectOrg(org)}
+                    className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg hover:border-black transition-shadow"
+                  >
+                    <img
+                      src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
+                      alt={`${org.orgName} logo`}
+                      className="w-full max-w-[30%] h-auto object-contain"
+                    />
+                    <div className="w-full h-full flex flex-col p-2 justify-center">
+                      <div className="h-11 flex items-center">
+                        <h1 className="text-lg font-semibold text-gray-700 leading-4">
+                          {org.orgName} (<span>{org.orgAcronym}</span>)
+                        </h1>
+                      </div>
+                      <div className="pt-1 border-t-1">
+                        <span
+                          className={`${getStatusBadge(
+                            overallStatus
+                          )} w-fit px-2 border rounded-xl mb-1 text-xs`}
+                        >
+                          {overallStatus}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-start">
+                          <span className="text-gray-500 font-medium min-w-[40px]">
+                            Adviser:
+                          </span>
+                          <span className="text-gray-700 flex-1">
+                            {org.adviser?.name || "No adviser assigned"}
+                          </span>
+                        </div>
+                        <div className="flex items-start">
+                          <span className="text-gray-500 font-medium min-w-[40px]">
+                            Course:
+                          </span>
+                          <span className="text-gray-700 flex-1">
+                            {org.orgCourse || "No course specified"}
+                          </span>
+                        </div>
+                        {(org.updatedAt || org.createdAt) && (
+                          <div className="flex items-start">
+                            <span className="text-gray-500 font-medium min-w-[40px]">
+                              Updated:
+                            </span>
+                            <span className="text-gray-700 flex-1">
+                              {new Date(
+                                org.updatedAt || org.createdAt
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+          {!loading && paginatedOrgs.length === 0 && (
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
               No organizations available
             </div>
           )}
