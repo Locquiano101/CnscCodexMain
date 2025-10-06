@@ -16,18 +16,13 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import {
-  TrendingUp,
-  Users,
-  CheckCircle,
-  Clock,
-  Settings2,
-  Settings,
-  ChevronDown,
-} from "lucide-react";
+
+import { TrendingUp, Users, CheckCircle, Clock } from "lucide-react";
 
 export function SduAccreditationOverview() {
   const [activeOrganization, setActiveOrganization] = useState([]);
+  const [page, setPage] = useState(0);
+  const itemsPerPage = 5;
 
   const fetchStatus = async () => {
     try {
@@ -58,17 +53,43 @@ export function SduAccreditationOverview() {
     }));
   };
 
+  // 🔹 Org Class
   const processOrgClassData = () => {
     const classCounts = activeOrganization.reduce((acc, org) => {
-      const orgClass = org.organizationProfile?.orgClass || "Unknown";
-      acc[orgClass] = (acc[orgClass] || 0) + 1;
+      const val = org.organizationProfile?.orgClass || "Unknown Class";
+      acc[val] = (acc[val] || 0) + 1;
       return acc;
     }, {});
-
-    return Object.entries(classCounts).map(([className, count]) => ({
-      className,
+    return Object.entries(classCounts).map(([name, count]) => ({
+      name,
       count,
     }));
+  };
+
+  // 🔹 Org Department + Course combined
+  const processOrgDeptCourseData = () => {
+    const deptCourseCounts = activeOrganization.reduce((acc, org) => {
+      const dept = org.organizationProfile?.orgDepartment || "Unknown Dept";
+      const course = org.organizationProfile?.orgCourse || "Unknown Course";
+      const label = `${dept} - ${course}`;
+      acc[label] = (acc[label] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(deptCourseCounts).map(([name, count]) => ({
+      name,
+      count,
+    }));
+  };
+
+  // 🔹 Org Specialisation
+  const processOrgSpecData = () => {
+    const specCounts = activeOrganization.reduce((acc, org) => {
+      console.log(activeOrganization.organizationProfile?.orgSpecialization);
+      const val = org.organizationProfile?.orgSpecialization || "Unknown Spec";
+      acc[val] = (acc[val] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(specCounts).map(([name, count]) => ({ name, count }));
   };
 
   const processDocumentCompletionData = () => {
@@ -143,6 +164,21 @@ export function SduAccreditationOverview() {
   const orgClassData = processOrgClassData();
   const documentCompletionData = processDocumentCompletionData();
   const timelineData = processTimelineData();
+
+  // 🔹 Sort by highest completion %
+  const sortedData = [...documentCompletionData]
+    .map((item) => ({
+      ...item,
+      percentCompleted: (item.completed / item.total) * 100,
+      remaining: 100 - (item.completed / item.total) * 100,
+    }))
+    .sort((a, b) => b.percentCompleted - a.percentCompleted);
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  const paginatedData = sortedData.slice(
+    page * itemsPerPage,
+    (page + 1) * itemsPerPage
+  );
 
   return (
     <div className="flex flex-col gap-6 p-6 pt-0 overflow-auto">
@@ -260,15 +296,48 @@ export function SduAccreditationOverview() {
           </ResponsiveContainer>
         </div>
 
+        {/* Org Class */}
         <div className="bg-white p-6 col-span-2 rounded-xl shadow-lg">
           <h3 className="text-xl font-bold mb-4">Organization Classes</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={orgClassData}>
+            <BarChart data={processOrgClassData()}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="className" />
+              <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" fill=" #500000" />
+              <Bar dataKey="count" fill="#500000" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Org Department + Course */}
+        <div className="bg-white p-6 col-span-2 rounded-xl shadow-lg">
+          <h3 className="text-xl font-bold mb-4">
+            Organization Department & Course
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={processOrgDeptCourseData()}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" fill="#f59e0b" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Org Specialisation */}
+        <div className="bg-white p-6 col-span-2 rounded-xl shadow-lg">
+          <h3 className="text-xl font-bold mb-4">
+            Organization Specialisations
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={processOrgSpecData()}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" fill="#16a34a" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -276,16 +345,22 @@ export function SduAccreditationOverview() {
         <div className="bg-white p-6 rounded-xl shadow-lg md:col-span-2">
           <h3 className="text-xl font-bold mb-4">Document Completion Status</h3>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={documentCompletionData}>
+            <BarChart
+              data={paginatedData}
+              layout="vertical"
+              margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="orgName" />
-              <YAxis />
+              <XAxis
+                type="number"
+                domain={[0, 100]}
+                tickFormatter={(tick) => `${tick}%`}
+              />
+              <YAxis dataKey="orgName" type="category" />
               <Tooltip
                 formatter={(value, name) => [
-                  value,
-                  name === "completed"
-                    ? "Completed Documents"
-                    : "Total Documents",
+                  `${value.toFixed(1)}%`,
+                  name === "percentCompleted" ? "Completed" : "Remaining",
                 ]}
                 labelFormatter={(label) => {
                   const org = documentCompletionData.find(
@@ -295,11 +370,45 @@ export function SduAccreditationOverview() {
                 }}
               />
               <Legend />
-              <Bar dataKey="completed" fill="#500000" name="Completed" />
-              <Bar dataKey="total" fill="#fbbf24" name="Total Required" />{" "}
-              {/* amber-400 */}
+              <Bar
+                dataKey="percentCompleted"
+                stackId="a"
+                fill="#500000"
+                name="Completed"
+                radius={[0, 10, 10, 0]}
+              />
+              <Bar
+                dataKey="remaining"
+                stackId="a"
+                fill="#e5e7eb"
+                name="Remaining"
+                radius={[10, 0, 0, 10]}
+              />
             </BarChart>
           </ResponsiveContainer>
+
+          {/* 🔹 Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                disabled={page === 0}
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-sm font-medium">
+                Page {page + 1} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
+                disabled={page === totalPages - 1}
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white p-6  col-span-5 rounded-xl shadow-lg">
