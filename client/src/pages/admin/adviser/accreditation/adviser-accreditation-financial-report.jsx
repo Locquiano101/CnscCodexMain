@@ -248,8 +248,8 @@ export function AdviserFinancialReport({ orgData }) {
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           {/* Left Section: Icon and Title */}
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-blue-100 ">
-              <DollarSign className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg w-10 flex justify-center">
+              <span className="text-blue-600 font-bold text-2xl">₱</span>
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">
               Financial Report
@@ -275,7 +275,6 @@ export function AdviserFinancialReport({ orgData }) {
                   {formatCurrency(currentBalance)}
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-600" />
             </div>
           </div>
 
@@ -387,8 +386,8 @@ export function AdviserFinancialReport({ orgData }) {
             <div className="bg-white p-0 border overflow-hidden border-gray-100 flex-1 flex flex-col">
               <div className="sticky flex justify-between w-full top-0 z-10 bg-white p-6 border-b border-gray-400 items-center gap-3">
                 <div className="flex gap-2 items-center">
-                  <div className="p-2.5 bg-amber-100 rounded-lg">
-                    <DollarSign className="w-5 h-5 text-amber-600" />
+                  <div className="p-2.5 bg-amber-100 rounded-lg w-10 flex justify-center">
+                    <span className="text-amber-600 font-bold text-lg">₱</span>
                   </div>
                   <h2 className="text-xl font-bold text-gray-800">
                     Collectible Fees
