@@ -23,6 +23,8 @@ import { SduMainFinancialReportOverall } from "./accreditation/financial-report/
 import { SduMainFinancialReport } from "./accreditation/financial-report/individual-financial-report";
 import { SduMainAccomplishment } from "./accomplishment/sdu-accomplishment-main";
 import { SduMainAccomplishmentOrganization } from "./accomplishment/sdu-individual-accomplishment";
+import { SduMainOverallProposedActioPlanConduct } from "./proposal-conduct/overall-proposed-action-plan";
+import { SduMainIndividualProposeActionPlan } from "./proposal-conduct/sdu-main-individual-proposed-action-plan";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -101,9 +103,18 @@ export function SduMainComponents({ user }) {
         <Route path="/" element={<UnderDevelopment />} />
 
         {/* Proposals */}
-        <Route path="/proposal" element={<UnderDevelopment />}>
-          <Route index element={<UnderDevelopment />} />
-          <Route path="system-wide" element={<UnderDevelopment />} />
+        <Route path="/proposal">
+          <Route
+            index
+            element={renderRoute(
+              <SduMainIndividualProposeActionPlan selectedOrg={selectedOrg} />,
+              <SduMainOverallProposedActioPlanConduct
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+
+          <Route path="system-wide-approval" element={<UnderDevelopment />} />
         </Route>
 
         {/* Accreditation */}

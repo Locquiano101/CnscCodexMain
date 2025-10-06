@@ -309,7 +309,7 @@ export const getAllSystemWideProposal = async (req, res) => {
     const conducts = await ProposalConduct.find({ isActive: true })
       .populate({
         path: "organizationProfile",
-        match: { orgClass: "System-wide", isActive: true }, // only system-wide orgs
+        match: { isActive: true }, // only system-wide orgs
         select:
           "orgName orgAcronym orgStatus orgPresident adviser orgLogo orgClass",
       })
@@ -385,11 +385,32 @@ export const getDoneProposalConductsByOrgProfile = async (req, res) => {
   }
 };
 
-export const getAllProposalConduct = async (req, res) => {
+export const getAllApprovedProposalConduct = async (req, res) => {
   try {
     const doneConducts = await ProposalConduct.find({
       overallStatus: "Conduct Approved", // ✅ filter only completed conducts
     })
+      .populate("document") // include uploaded document(s)
+      .populate("organizationProfile") // include uploaded document(s)
+      .populate("ProposedIndividualActionPlan"); // optional for extra details
+
+    if (!doneConducts || doneConducts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No completed ProposalConduct found for this organization profile",
+      });
+    }
+
+    res.json(doneConducts);
+  } catch (error) {
+    console.error("Error fetching done ProposalConducts:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+export const getAllProposalConduct = async (req, res) => {
+  try {
+    const doneConducts = await ProposalConduct.find({})
       .populate("document") // include uploaded document(s)
       .populate("organizationProfile") // include uploaded document(s)
       .populate("ProposedIndividualActionPlan"); // optional for extra details

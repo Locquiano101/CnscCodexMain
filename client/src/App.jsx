@@ -93,8 +93,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
           withCredentials: true,
         });
 
-        console.log("session checking...");
-
         // if (res.data.rickroll) {
         //   // 🚀 Redirect user to YouTube (or whatever you want)
         //   window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";

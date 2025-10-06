@@ -284,6 +284,10 @@ router.post(
 router.post("/initialRegistration", Controller.PostInitialOrganizationProfile);
 router.post("/reRegistration", Controller.ReRegisterOrganizationProfile);
 router.get("/documents/:id", Controller.getDocumentById);
+router.get(
+  "/getAllApprovedProposalConduct",
+  Controller.getAllApprovedProposalConduct
+);
 router.get("/getAllProposalConduct", Controller.getAllProposalConduct);
 router.get("/documents/:id", Controller.getDocumentById);
 
