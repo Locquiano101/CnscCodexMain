@@ -220,7 +220,11 @@ export function SduMainAccreditationSettings() {
           onCancel={() => setWarningAccreditationModal(false)}
         />
       )}
-      {deadlineAccreditationModal && <SduMainUpdateAccreditationDeadline />}
+      {deadlineAccreditationModal && (
+        <SduMainUpdateAccreditationDeadline
+          onCancel={() => setDeadlineAccreditationModal(false)}
+        />
+      )}
     </div>
   );
 }

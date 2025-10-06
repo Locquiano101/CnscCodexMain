@@ -12,6 +12,7 @@ import axios from "axios";
 import { SduMainOverallPresident } from "./accreditation/president/sdu-overall-president";
 import { SduMainIndividualOrganizationPresident } from "./accreditation/president/sdu-individual-president";
 import { SduAccreditationOverview } from "./accreditation/overview/sdu-main-accreditation-overview";
+import { SduMainIndividualAccreditationView } from "./accreditation/overview/sdu-main-individual-accreditation";
 import { SduMainRosterOverview } from "./accreditation/roster-members/sdu-overall-roster";
 import { SduMainIndividualRosterView } from "./accreditation/roster-members/sdu-individual-roster";
 import { SduMainOverallProposedActioPlan } from "./accreditation/proposed-action-plan/overall-proposed-action-plan";
@@ -20,6 +21,8 @@ import { SduMainAccreditationDocumentIndividualOrganization } from "./accreditat
 import { SduMainProposedActionPlanOrganization } from "./accreditation/proposed-action-plan/individual-proposed-action-plan";
 import { SduMainFinancialReportOverall } from "./accreditation/financial-report/sdu-main-financial-report";
 import { SduMainFinancialReport } from "./accreditation/financial-report/individual-financial-report";
+import { SduMainAccomplishment } from "./accomplishment/sdu-accomplishment-main";
+import { SduMainAccomplishmentOrganization } from "./accomplishment/sdu-individual-accomplishment";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -105,7 +108,13 @@ export function SduMainComponents({ user }) {
 
         {/* Accreditation */}
         <Route path="/accreditation" element={<Outlet />}>
-          <Route index element={<SduAccreditationOverview />} />
+          <Route
+            index
+            element={renderRoute(
+              <SduMainIndividualAccreditationView selectedOrg={selectedOrg} />,
+              <SduAccreditationOverview onSelectOrg={setSelectedOrg} />
+            )}
+          />
 
           <Route
             path="financial-report"
@@ -170,8 +179,17 @@ export function SduMainComponents({ user }) {
         </Route>
 
         {/* Accomplishments */}
-        <Route path="/accomplishment" element={<UnderDevelopment />} />
-
+        <Route
+          path="/accomplishment"
+          element={renderRoute(
+            <SduMainAccomplishmentOrganization selectedOrg={selectedOrg} />,
+            <SduMainAccomplishment
+              orgs={orgs}
+              selectedOrg={selectedOrg}
+              onSelectOrg={setSelectedOrg}
+            />
+          )}
+        />
         {/* Organizations */}
         <Route
           path="/organization"

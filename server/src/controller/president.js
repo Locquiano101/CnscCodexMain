@@ -2,7 +2,85 @@ import {
   Accreditation,
   OrganizationProfile,
   PresidentProfile,
+  Notification,
+  User,
 } from "../models/index.js";
+import { NodeEmail } from "./../middleware/emailer.js";
+
+export const NotifyPresidentOrg = async (req, res) => {
+  try {
+    // 🔍 1. Find all users that belong to an organization
+    const users = await User.find({
+      organizationProfile: { $ne: null },
+    })
+      .populate({
+        path: "organizationProfile",
+        populate: { path: "organization" },
+      })
+      .select("email name position organizationProfile");
+
+    if (!users || users.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No users connected to any organization found." });
+    }
+
+    // 📧 2. Prepare email content
+    const subject = "President Profile Evaluation Result";
+    const message = `
+Hello Organization Member,
+
+We would to inform you that your organization need to pas pass the President Profile evaluation.
+
+Please review your organization’s information and ensure all required details are complete.  
+You may log in to the Accreditation System to check any remarks or revision notes from the committee.
+
+Thank you,  
+Accreditation Support Team
+    `;
+
+    // 📨 3. Collect all valid recipient emails
+    const recipientEmails = users.map((u) => u.email).filter(Boolean);
+
+    if (recipientEmails.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No valid email addresses found." });
+    }
+
+    // 🧾 4. Send notification emails to all org-linked users
+    await NodeEmail(recipientEmails, subject, message);
+
+    // 🛎️ 5. Create in-system notifications for each organization
+    const orgProfileIds = [
+      ...new Set(
+        users.map((u) => u.organizationProfile?._id?.toString()).filter(Boolean)
+      ),
+    ];
+
+    const notificationsToInsert = orgProfileIds.map((orgProfileId) => ({
+      organizationProfile: orgProfileId,
+      type: "President Profile",
+      message:
+        "Your organization did not pass the President Profile evaluation. Please review the revision notes and resubmit as needed.",
+      read: false,
+    }));
+
+    if (notificationsToInsert.length > 0) {
+      await Notification.insertMany(notificationsToInsert);
+    }
+
+    // ✅ 6. Return success response
+    res.status(200).json({
+      success: true,
+      message: `Notification sent to ${recipientEmails.length} users across ${orgProfileIds.length} organizations.`,
+      recipients: recipientEmails,
+    });
+  } catch (error) {
+    console.error("❌ Error sending president profile notifications:", error);
+    res.status(500).json({ message: "Internal server error.", error });
+  }
+};
 
 export const UpdatePresidentProfileStatus = async (req, res) => {
   const { presidentId } = req.params;

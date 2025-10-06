@@ -11,6 +11,8 @@ import {
   UserMinus,
   CircleSlash,
   CircleOff,
+  UserX,
+  Bell,
 } from "lucide-react";
 import {
   PieChart,
@@ -28,6 +30,8 @@ import {
 export function SduMainOverallPresident({ onSelectOrg }) {
   const [presidentList, setPresidentList] = useState([]);
   const [filterBy, setFilterBy] = useState("all");
+
+  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     const fetchPresident = async () => {
@@ -99,11 +103,64 @@ export function SduMainOverallPresident({ onSelectOrg }) {
 
   const COLORS = ["#10b981", "#f59e0b", "#ef4444", "#3b82f6"];
 
+  const handleNotifyAll = async () => {
+    try {
+      // Show the notification popup (like a "Sending..." message)
+      setShowNotification({
+        visible: true,
+        message: "Sending notifications...",
+      });
+
+      // 📨 Send POST request to backend
+      const res = await axios.post(API_ROUTER);
+
+      console.log("✅ Notification Sent:", res.data.message);
+
+      // ✅ Show success message in your popup
+      setShowNotification({
+        visible: true,
+        message: res.data.message || "Notifications sent successfully!",
+      });
+    } catch (error) {
+      console.error("❌ Error sending notifications:", error);
+
+      // ❌ Show error message in your popup
+      setShowNotification({
+        visible: true,
+        message:
+          error.response?.data?.message || "Failed to send notifications.",
+      });
+    } finally {
+      // Hide the notification popup after 3 seconds
+      setTimeout(
+        () => setShowNotification({ visible: false, message: "" }),
+        3000
+      );
+    }
+  };
+
   if (presidentList.length === 0) {
     return (
-      <div className="min-h-screen  bg-gray-50 flex flex-col items-center justify-center">
-        <CircleOff size={32} />
-        <p className="mt-4 text-gray-600">No President Complied</p>
+      <div className="h-full p-12 bg-gray-50 flex flex-col items-center justify-center">
+        <div
+          onClick={handleNotifyAll}
+          className="h-full w-full border border-dashed border-gray-400 hover:border-cnsc-primary-color hover:bg-amber-300/20 transition duration-300 cursor-pointer flex flex-col justify-center items-center rounded-xl"
+        >
+          <Bell size={32} className="text-cnsc-primary-color mt-4" />
+          <p className="text-gray-600 text-lg font-mdium">No President Found</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Click to notify all organizations
+          </p>
+        </div>
+
+        {/* 🔔 Floating notification toast */}
+        {showNotification.visible && (
+          <div className="fixed top-4 right-4 bg-white border shadow-lg rounded-lg p-4 z-50 transition-all">
+            <p className="text-gray-800 font-medium">
+              {showNotification.message}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -472,7 +529,6 @@ export function SduMainOverallPresident({ onSelectOrg }) {
       </div>
       {filteredPresidents.length === 0 && (
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">
             No presidents found for the selected filter
           </p>

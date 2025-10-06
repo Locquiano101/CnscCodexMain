@@ -28,7 +28,7 @@ const COLORS = [
   "#ff8042",
 ];
 
-export function SduAccomplishmentMain({ onSelectOrg }) {
+export function SduMainAccomplishment({ onSelectOrg }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

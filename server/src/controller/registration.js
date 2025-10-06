@@ -111,7 +111,7 @@ export const PostUser = async (req, res) => {
     `;
 
     // TODO: UNCOMMENT
-    // await NodeEmail(email, subject, message);
+    await NodeEmail(email, subject, message);
 
     res.status(201).json({
       message: "User created successfully and email sent",
@@ -173,6 +173,7 @@ export const GetUsers = async (req, res) => {
 
     const users = await User.find(filter)
       .select("-password") // exclude password for safety
+      .sort({ createdAt: -1 }) // 👈 newest first
       .lean();
 
     res.status(200).json({
@@ -184,6 +185,7 @@ export const GetUsers = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 export const ChangePasswordAdviser = async (req, res) => {
   try {
     const { adviserId, newPassword } = req.body;

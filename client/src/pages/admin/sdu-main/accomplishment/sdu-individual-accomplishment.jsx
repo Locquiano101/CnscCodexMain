@@ -52,7 +52,7 @@ const formatDate = (dateString) => {
   });
 };
 
-export function SduAccomplishmentOrganization({ selectedOrg, user }) {
+export function SduMainAccomplishmentOrganization({ selectedOrg, user }) {
   const [accomplishmentData, setAccomplishmentData] = useState(null); // ✅ store report object
   const [accomplishments, setAccomplishments] = useState([]); // ✅ store sub accomplishments
   const [selectedCategory, setSelectedCategory] = useState("All");

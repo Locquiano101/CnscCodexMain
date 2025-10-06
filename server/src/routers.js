@@ -53,6 +53,11 @@ router.post(
 );
 router.post("/postNewUser", Controller.PostUser);
 router.post("/UpdateUser/:id", Controller.UpdateUser);
+router.post("/NotifyPresidentOrganization", Controller.NotifyPresidentOrg);
+router.post(
+  "/UpdateDeadlineAcrreditation/",
+  Controller.NotifcationAccreditationDeadlineSet
+);
 router.delete("/deleteUser/:id", Controller.DeleteUser);
 
 /* ********** STUDENT DEVELOPMENT ORGANIZATION ********** */
