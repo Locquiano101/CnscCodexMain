@@ -92,9 +92,6 @@ export const GetNotificationsByOrgProfile = async (req, res) => {
 // ⚠️ Accreditation Warning
 export const NotifcationWarningAccreditation = async (req, res) => {
   try {
-    const { organizationProfileId, organizationId, warningNote } = req.body;
-    console.log(req.body);
-
     if (!organizationProfileId || !organizationId) {
       return res.status(400).json({
         success: false,
@@ -123,6 +120,7 @@ export const NotifcationWarningAccreditation = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
 // ⚠️ Accreditation Suspension
 export const NotifcationSuspensionAccreditation = async (req, res) => {
   try {
@@ -161,18 +159,60 @@ export const NotifcationSuspensionAccreditation = async (req, res) => {
 // 📅 Accreditation Deadline Set
 export const NotifcationAccreditationDeadlineSet = async (req, res) => {
   try {
-    const { organizationProfileId, organizationId, deadline } = req.body;
+    const { deadline } = req.body; // deadline passed from frontend
 
-    const result = await sendNotification({
-      organizationProfileId,
-      organizationId,
-      subject: "Accreditation Deadline Set",
-      message: `A new accreditation deadline has been set: ${new Date(
+    // 1️⃣ Get all active organization profiles
+    const activeOrgProfiles = await OrganizationProfile.find({
+      isActive: true,
+    }).populate("organization");
+
+    if (!activeOrgProfiles || activeOrgProfiles.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No active organizations found" });
+    }
+
+    // 2️⃣ Loop through each org and send personalized notification/email
+    const results = [];
+    for (const orgProfile of activeOrgProfiles) {
+      const organizationProfileId = orgProfile._id;
+      const organizationId = orgProfile.organization?._id;
+      const orgName =
+        orgProfile.orgName || orgProfile.organization?.currentName;
+
+      const subject = "📅 Accreditation Deadline Set";
+      const message = `Hello ${orgName},
+
+A new accreditation deadline has been set: ${new Date(
         deadline
-      ).toLocaleDateString()}. Please make sure all requirements are submitted before this date.`,
-    });
+      ).toLocaleDateString()}.
 
-    res.status(200).json(result);
+Please ensure that your accreditation report and requirements are submitted before this date to avoid penalties or disqualification.
+
+Thank you,
+Accreditation Committee`;
+
+      // ✅ wrap like the other controllers (fake req/res)
+      let localResult;
+      await sendNotification(
+        { body: { organizationProfileId, organizationId, subject, message } },
+        {
+          status: () => ({
+            json: (data) => {
+              localResult = data;
+            },
+          }),
+        }
+      );
+
+      results.push(localResult);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Deadline notifications sent to all active organizations",
+      results,
+    });
   } catch (err) {
     console.error("NotifcationAccreditationDeadlineSet error:", err);
     res.status(500).json({ success: false, error: err.message });

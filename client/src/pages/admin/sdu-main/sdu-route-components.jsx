@@ -12,6 +12,7 @@ import axios from "axios";
 import { SduMainOverallPresident } from "./accreditation/president/sdu-overall-president";
 import { SduMainIndividualOrganizationPresident } from "./accreditation/president/sdu-individual-president";
 import { SduAccreditationOverview } from "./accreditation/overview/sdu-main-accreditation-overview";
+import { SduMainIndividualAccreditationView } from "./accreditation/overview/sdu-main-individual-accreditation";
 import { SduMainRosterOverview } from "./accreditation/roster-members/sdu-overall-roster";
 import { SduMainIndividualRosterView } from "./accreditation/roster-members/sdu-individual-roster";
 import { SduMainOverallProposedActioPlan } from "./accreditation/proposed-action-plan/overall-proposed-action-plan";
@@ -107,7 +108,13 @@ export function SduMainComponents({ user }) {
 
         {/* Accreditation */}
         <Route path="/accreditation" element={<Outlet />}>
-          <Route index element={<SduAccreditationOverview />} />
+          <Route
+            index
+            element={renderRoute(
+              <SduMainIndividualAccreditationView selectedOrg={selectedOrg} />,
+              <SduAccreditationOverview onSelectOrg={setSelectedOrg} />
+            )}
+          />
 
           <Route
             path="financial-report"

@@ -4,36 +4,49 @@ import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { API_ROUTER } from "./../../../../../App";
 
 export function SduMainUpdateAccreditationDeadline({ onCancel }) {
-  const [step, setStep] = useState(1); // 🔑 Step 1 = warning, Step 2 = final confirm
+  const [step, setStep] = useState(1); // Step 1 = warning, Step 2 = final confirm
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Get the deadline from parent state via localStorage or a prop
   const deadline = localStorage.getItem("selectedDeadline");
+
+  // Format date to "Month Day, Year"
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formattedDeadline = formatDate(deadline);
 
   const handleConfirm = async () => {
     if (step === 1) {
-      // Move to second step
-      setStep(2);
+      setStep(2); // move to final confirmation step
       return;
     }
 
-    // Step 2 → send Axios request
     try {
       setIsProcessing(true);
+
+      // ✅ align with backend controller
       const res = await axios.post(
-        `${API_ROUTER}/updateAccreditationDeadline`,
-        {
-          deadline, // 🔑 send deadline
-        }
+        `${API_ROUTER}/UpdateDeadlineAcrreditation`,
+        { deadline }
       );
 
-      console.log("Deadline updated:", res.data);
+      console.log("Deadline update response:", res.data);
 
-      alert(`Accreditation deadline successfully updated to ${deadline}`);
+      alert(
+        `📅 Accreditation deadline successfully updated to ${formattedDeadline}.
+        Notifications have been sent to all active organizations.`
+      );
       onCancel(); // close modal
     } catch (err) {
       console.error("Error updating deadline:", err);
-      alert("Failed to update deadline. Please try again.");
+      alert("❌ Failed to update deadline. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -50,7 +63,8 @@ export function SduMainUpdateAccreditationDeadline({ onCancel }) {
             </div>
             <p className="text-gray-700 mb-6">
               You are about to set the accreditation deadline to{" "}
-              <span className="font-semibold">{deadline}</span>. Continue?
+              <span className="font-semibold">{formattedDeadline}</span>.
+              Continue?
             </p>
           </>
         ) : (
@@ -61,7 +75,8 @@ export function SduMainUpdateAccreditationDeadline({ onCancel }) {
             </div>
             <p className="text-gray-700 mb-6">
               Please confirm again to officially submit the new accreditation
-              deadline of <span className="font-semibold">{deadline}</span>.
+              deadline of{" "}
+              <span className="font-semibold">{formattedDeadline}</span>.
             </p>
           </>
         )}

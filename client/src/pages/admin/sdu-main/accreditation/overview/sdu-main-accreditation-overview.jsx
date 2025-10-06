@@ -1,28 +1,19 @@
 import axios from "axios";
-import { useState, useEffect, useRef } from "react";
-import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
+import { useState, useEffect } from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Area,
-  AreaChart,
-} from "recharts";
+  TrendingUp,
+  Users,
+  CheckCircle,
+  Clock,
+  Award,
+  Building2,
+  GraduationCap,
+  Briefcase,
+} from "lucide-react";
+import { API_ROUTER } from "../../../../../App";
 
-import { TrendingUp, Users, CheckCircle, Clock } from "lucide-react";
-
-export function SduAccreditationOverview() {
+export function SduAccreditationOverview({ onSelectOrg }) {
   const [activeOrganization, setActiveOrganization] = useState([]);
-  const [page, setPage] = useState(0);
-  const itemsPerPage = 5;
 
   const fetchStatus = async () => {
     try {
@@ -38,7 +29,6 @@ export function SduAccreditationOverview() {
     fetchStatus();
   }, []);
 
-  // Data processing functions
   const processStatusData = () => {
     const statusCounts = activeOrganization.reduce((acc, org) => {
       const status = org.overallStatus || "Unknown";
@@ -53,20 +43,21 @@ export function SduAccreditationOverview() {
     }));
   };
 
-  // 🔹 Org Class
   const processOrgClassData = () => {
     const classCounts = activeOrganization.reduce((acc, org) => {
       const val = org.organizationProfile?.orgClass || "Unknown Class";
       acc[val] = (acc[val] || 0) + 1;
       return acc;
     }, {});
-    return Object.entries(classCounts).map(([name, count]) => ({
-      name,
-      count,
-    }));
+    return Object.entries(classCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: ((count / activeOrganization.length) * 100).toFixed(1),
+      }))
+      .sort((a, b) => b.count - a.count);
   };
 
-  // 🔹 Org Department + Course combined
   const processOrgDeptCourseData = () => {
     const deptCourseCounts = activeOrganization.reduce((acc, org) => {
       const dept = org.organizationProfile?.orgDepartment || "Unknown Dept";
@@ -75,358 +66,321 @@ export function SduAccreditationOverview() {
       acc[label] = (acc[label] || 0) + 1;
       return acc;
     }, {});
-    return Object.entries(deptCourseCounts).map(([name, count]) => ({
-      name,
-      count,
-    }));
+    return Object.entries(deptCourseCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: ((count / activeOrganization.length) * 100).toFixed(1),
+      }))
+      .sort((a, b) => b.count - a.count);
   };
 
-  // 🔹 Org Specialisation
   const processOrgSpecData = () => {
     const specCounts = activeOrganization.reduce((acc, org) => {
-      console.log(activeOrganization.organizationProfile?.orgSpecialization);
       const val = org.organizationProfile?.orgSpecialization || "Unknown Spec";
       acc[val] = (acc[val] || 0) + 1;
       return acc;
     }, {});
-    return Object.entries(specCounts).map(([name, count]) => ({ name, count }));
+    return Object.entries(specCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: ((count / activeOrganization.length) * 100).toFixed(1),
+      }))
+      .sort((a, b) => b.count - a.count);
   };
 
-  const processDocumentCompletionData = () => {
-    return activeOrganization.map((org) => {
-      const orgName =
-        org.organizationProfile?.orgAcronym ||
-        org.organizationProfile?.orgName ||
-        "Unknown";
-      let completedDocs = 0;
-      const totalDocs = 5; // JointStatement, PledgeAgainstHazing, ConstitutionAndByLaws, Roster, PresidentProfile
-
-      if (org.JointStatement && org.JointStatement.status === "Approved")
-        completedDocs++;
-      if (
-        org.PledgeAgainstHazing &&
-        org.PledgeAgainstHazing.status === "Approved"
-      )
-        completedDocs++;
-      if (
-        org.ConstitutionAndByLaws &&
-        org.ConstitutionAndByLaws.status === "Approved"
-      )
-        completedDocs++;
-      if (org.Roster && org.Roster.overAllStatus === "Approved")
-        completedDocs++;
-      if (
-        org.PresidentProfile &&
-        org.PresidentProfile.overAllStatus === "Approved"
-      )
-        completedDocs++;
-
-      return {
-        orgName:
-          orgName.length > 10 ? orgName.substring(0, 10) + "..." : orgName,
-        fullOrgName: orgName,
-        completed: completedDocs,
-        total: totalDocs,
-        percentage: ((completedDocs / totalDocs) * 100).toFixed(1),
-      };
-    });
-  };
-
-  const processTimelineData = () => {
-    return activeOrganization
-      .map((org) => {
-        const createdDate = new Date(
-          org.organizationProfile?.createdAt || org.createdAt
-        );
-        return {
-          month: createdDate.toLocaleDateString("en-US", {
-            month: "short",
-            year: "numeric",
-          }),
-          registrations: 1,
-          date: createdDate,
-        };
-      })
-      .reduce((acc, item) => {
-        const existing = acc.find((entry) => entry.month === item.month);
-        if (existing) {
-          existing.registrations++;
-        } else {
-          acc.push(item);
-        }
-        return acc;
-      }, [])
-      .sort((a, b) => a.date - b.date);
-  };
-
-  // Chart data
   const statusData = processStatusData();
   const orgClassData = processOrgClassData();
-  const documentCompletionData = processDocumentCompletionData();
-  const timelineData = processTimelineData();
-
-  // 🔹 Sort by highest completion %
-  const sortedData = [...documentCompletionData]
-    .map((item) => ({
-      ...item,
-      percentCompleted: (item.completed / item.total) * 100,
-      remaining: 100 - (item.completed / item.total) * 100,
-    }))
-    .sort((a, b) => b.percentCompleted - a.percentCompleted);
-
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  const paginatedData = sortedData.slice(
-    page * itemsPerPage,
-    (page + 1) * itemsPerPage
-  );
+  const deptCourseData = processOrgDeptCourseData();
+  const specData = processOrgSpecData();
 
   return (
-    <div className="flex flex-col gap-6 p-6 pt-0 overflow-auto">
-      {/* Header */}
-      <div className="flex justify-between text-cnsc-primary-color bg-white p-6 rounded-2xl shadow-md">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">
-            SDU Accreditation Analytics Dashboard
-          </h1>
-        </div>
+    <div className="flex flex-col gap-6 p-6 overflow-auto">
+      <div className="bg-white p-6 rounded-2xl shadow-md">
+        <h1 className="text-3xl font-bold text-cnsc-primary-color">
+          SDU Accreditation Analytics Dashboard
+        </h1>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Organizations</p>
-              <p className="text-3xl font-bold text-cnsc-primary-color">
-                {activeOrganization.length}
-              </p>
+      {/* Summary Cards + Main Panels */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Summary Cards Column */}
+        <div className="flex flex-row lg:flex-col gap-4 overflow-x-auto lg:overflow-x-visible lg:min-w-[280px]">
+          {/* Total Organizations */}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">
+                  Total Organizations
+                </p>
+                <p className="text-3xl font-bold text-cnsc-primary-color">
+                  {activeOrganization.length}
+                </p>
+              </div>
+              <Users className="w-12 h-12 text-cnsc-primary-color" />
             </div>
-            <Users className="w-10 h-10 text-cnsc-primary-color" />
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Active</p>
-              <p className="text-3xl font-bold text-cnsc-primary-color">
-                {
-                  activeOrganization.filter(
-                    (org) => org.organizationProfile?.isActive
-                  ).length
-                }
-              </p>
+          {/* Active */}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Active</p>
+                <p className="text-3xl font-bold text-cnsc-primary-color">
+                  {
+                    activeOrganization.filter(
+                      (org) => org.organizationProfile?.isActive
+                    ).length
+                  }
+                </p>
+              </div>
+              <CheckCircle className="w-12 h-12 text-cnsc-primary-color" />
             </div>
-            <CheckCircle className="w-10 h-10 text-cnsc-primary-color" />
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Pending</p>
-              <p className="text-3xl font-bold text-amber-600">
-                {
-                  activeOrganization.filter(
-                    (org) => org.overallStatus === "Pending"
-                  ).length
-                }
-              </p>
+          {/* Pending */}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Pending</p>
+                <p className="text-3xl font-bold text-amber-600">
+                  {
+                    activeOrganization.filter(
+                      (org) => org.overallStatus === "Pending"
+                    ).length
+                  }
+                </p>
+              </div>
+              <Clock className="w-12 h-12 text-amber-500" />
             </div>
-            <Clock className="w-10 h-10 text-amber-500" />
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Completion Rate</p>
-              <p className="text-3xl font-bold text-cnsc-primary-color">
-                {(
-                  (activeOrganization.filter(
-                    (org) => org.overallStatus === "Approved"
-                  ).length /
-                    activeOrganization.length) *
-                  100
-                ).toFixed(0)}
-                %
-              </p>
-            </div>
-            <TrendingUp className="w-10 h-10 text-cnsc-primary-color" />
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h3 className="text-xl font-bold mb-4">Status Distribution</h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={statusData}
-                cx="50%"
-                cy="40%" // move pie up a bit so legend has space
-                labelLine={false}
-                outerRadius={80}
-                dataKey="count"
-              >
-                {statusData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={index % 2 === 0 ? "#500000" : "#f59e0b"} // maroon & amber
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend
-                verticalAlign="bottom"
-                align="center"
-                layout="horizontal"
-                formatter={(value, entry, index) => {
-                  const percentage = (
-                    (statusData[index].count /
-                      statusData.reduce((sum, d) => sum + d.count, 0)) *
+          {/* Completion Rate */}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Completion Rate</p>
+                <p className="text-3xl font-bold text-cnsc-primary-color">
+                  {(
+                    (activeOrganization.filter(
+                      (org) => org.overallStatus === "Approved"
+                    ).length /
+                      activeOrganization.length) *
                     100
-                  ).toFixed(1);
-                  return `${value}: ${percentage}%`;
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Org Class */}
-        <div className="bg-white p-6 col-span-2 rounded-xl shadow-lg">
-          <h3 className="text-xl font-bold mb-4">Organization Classes</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={processOrgClassData()}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#500000" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Org Department + Course */}
-        <div className="bg-white p-6 col-span-2 rounded-xl shadow-lg">
-          <h3 className="text-xl font-bold mb-4">
-            Organization Department & Course
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={processOrgDeptCourseData()}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#f59e0b" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Org Specialisation */}
-        <div className="bg-white p-6 col-span-2 rounded-xl shadow-lg">
-          <h3 className="text-xl font-bold mb-4">
-            Organization Specialisations
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={processOrgSpecData()}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#16a34a" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-lg md:col-span-2">
-          <h3 className="text-xl font-bold mb-4">Document Completion Status</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={paginatedData}
-              layout="vertical"
-              margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                type="number"
-                domain={[0, 100]}
-                tickFormatter={(tick) => `${tick}%`}
-              />
-              <YAxis dataKey="orgName" type="category" />
-              <Tooltip
-                formatter={(value, name) => [
-                  `${value.toFixed(1)}%`,
-                  name === "percentCompleted" ? "Completed" : "Remaining",
-                ]}
-                labelFormatter={(label) => {
-                  const org = documentCompletionData.find(
-                    (item) => item.orgName === label
-                  );
-                  return org ? org.fullOrgName : label;
-                }}
-              />
-              <Legend />
-              <Bar
-                dataKey="percentCompleted"
-                stackId="a"
-                fill="#500000"
-                name="Completed"
-                radius={[0, 10, 10, 0]}
-              />
-              <Bar
-                dataKey="remaining"
-                stackId="a"
-                fill="#e5e7eb"
-                name="Remaining"
-                radius={[10, 0, 0, 10]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-
-          {/* 🔹 Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-4 gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(p - 1, 0))}
-                disabled={page === 0}
-                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span className="text-sm font-medium">
-                Page {page + 1} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
-                disabled={page === totalPages - 1}
-                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-              >
-                Next
-              </button>
+                  ).toFixed(0)}
+                  %
+                </p>
+              </div>
+              <TrendingUp className="w-12 h-12 text-cnsc-primary-color" />
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="bg-white p-6  col-span-5 rounded-xl shadow-lg">
-          <h3 className="text-xl font-bold mb-4">Registration Timeline</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="registrations"
-                stroke="var(--cnsc-primary-color)"
-                fill="#fbbf24" // amber for area fill
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        {/* Main Data Panels */}
+        <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Status Distribution */}
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <div className="flex items-center gap-2 mb-6">
+              <Award className="w-6 h-6 text-blue-900" />
+              <h3 className="text-xl font-bold text-gray-800">
+                Status Distribution
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {statusData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                >
+                  <span className="font-medium text-gray-700">
+                    {item.status}
+                  </span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-blue-900">
+                      {item.count}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({item.percentage}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Organization Classes & Specializations */}
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <Building2 className="w-6 h-6 text-blue-900" />
+              <h3 className="text-xl font-bold text-gray-800">
+                Organization Classes
+              </h3>
+            </div>
+            <div className="space-y-3 mb-6">
+              {orgClassData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                >
+                  <span className="font-medium text-gray-700">{item.name}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-blue-900">
+                      {item.count}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({item.percentage}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 mb-4 mt-6">
+              <Briefcase className="w-6 h-6 text-blue-900" />
+              <h3 className="text-xl font-bold text-gray-800">
+                Specializations
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {specData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                >
+                  <span className="font-medium text-gray-700">{item.name}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-blue-900">
+                      {item.count}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({item.percentage}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Department & Course Distribution */}
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <div className="flex items-center gap-2 mb-6">
+              <GraduationCap className="w-6 h-6 text-blue-900" />
+              <h3 className="text-xl font-bold text-gray-800">
+                Department & Course
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {deptCourseData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                >
+                  <span className="font-medium text-gray-700">{item.name}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-blue-900">
+                      {item.count}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({item.percentage}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Organization Accreditation Section */}
+      <div className="bg-white p-6 rounded-2xl shadow-md min">
+        <h1 className="text-3xl font-bold text-blue-900">
+          Organization Accreditation
+        </h1>
+      </div>
+
+      {/* Accreditation Table */}
+      <div className="bg-white rounded-xl shadow-lg border min-h-screen border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-lg font-bold text-gray-800">
+            Accreditation Overview
+          </h3>
+          <span className="text-sm text-gray-500">
+            Showing {activeOrganization.length} records
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left text-gray-700">
+            <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+              <tr>
+                <th className="px-6 py-3 font-semibold">Organization Name</th>
+                <th className="px-6 py-3 font-semibold">Acronym</th>
+                <th className="px-6 py-3 font-semibold">Department</th>
+                <th className="px-6 py-3 font-semibold">Course</th>
+                <th className="px-6 py-3 font-semibold">Class</th>
+                <th className="px-6 py-3 font-semibold">Overall Status</th>
+                <th className="px-6 py-3 font-semibold">Roster Status</th>
+                <th className="px-6 py-3 font-semibold">Financial Report</th>
+                <th className="px-6 py-3 font-semibold">Created At</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {activeOrganization.map((org, index) => {
+                const profile = org.organizationProfile;
+                const roster = org.Roster;
+                const financial = org.FinancialReport;
+                return (
+                  <tr
+                    key={index}
+                    onClick={() => {
+                      console.log("Selected org:", org);
+                      onSelectOrg(org.organizationProfile);
+                    }}
+                    className="hover:bg-gray-50 transition"
+                  >
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {profile?.orgName || "—"}
+                    </td>
+                    <td className="px-6 py-4">{profile?.orgAcronym || "—"}</td>
+                    <td className="px-6 py-4">
+                      {profile?.orgDepartment || "—"}
+                    </td>
+                    <td className="px-6 py-4">{profile?.orgCourse || "—"}</td>
+                    <td className="px-6 py-4">{profile?.orgClass || "—"}</td>
+                    <td
+                      className={`px-6 py-4 font-semibold ${
+                        org.overallStatus === "Pending"
+                          ? "text-amber-600"
+                          : org.overallStatus === "Approved"
+                          ? "text-green-600"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      {org.overallStatus}
+                    </td>
+                    <td className="px-6 py-4">
+                      {roster?.isComplete ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Complete
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                          Incomplete
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium">
+                      ₱{financial?.endingBalance?.toLocaleString() || 0}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500 text-xs">
+                      {new Date(org.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
