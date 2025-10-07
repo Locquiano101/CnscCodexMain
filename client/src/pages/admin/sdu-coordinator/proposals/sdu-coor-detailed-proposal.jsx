@@ -3,7 +3,6 @@ import { useState } from "react";
 import { UpdateStatusProposal } from "../../../../components/update-status-proposal";
 
 export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
-  if (!proposal) return null;
   const [statusModal, setStatusModal] = useState(null); // ✅ unique name
 
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);

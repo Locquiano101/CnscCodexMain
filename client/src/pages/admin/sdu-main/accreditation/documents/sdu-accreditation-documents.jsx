@@ -85,45 +85,6 @@ export function SduMainAccreditationDocumentOverview({ onSelectOrg }) {
 
   const summaryData = processData();
 
-  // Chart data preparations - use the actual data structure
-  const documentCompletionData = summaryData.map((org) => ({
-    name: org.orgAcronym,
-    completed: org.documentsSubmitted,
-    remaining: org.totalDocuments - org.documentsSubmitted,
-    completionRate: org.completionRate,
-  }));
-
-  const statusDistribution = [
-    {
-      name: "Pending",
-      value: summaryData.filter((org) => org.overAllStatus === "Pending")
-        .length,
-    },
-    {
-      name: "Approved",
-      value: summaryData.filter((org) => org.overAllStatus === "Approved")
-        .length,
-    },
-    {
-      name: "Rejected",
-      value: summaryData.filter((org) => org.overAllStatus === "Rejected")
-        .length,
-    },
-  ];
-
-  const orgClassDistribution = [
-    {
-      name: "Local",
-      value: summaryData.filter((org) => org.orgClass === "Local").length,
-    },
-    {
-      name: "System-wide",
-      value: summaryData.filter((org) => org.orgClass === "System-wide").length,
-    },
-  ];
-
-  const COLORS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B"];
-
   const StatCard = ({ title, value, color = "blue" }) => (
     <div
       className={`bg-white p-6 rounded-lg shadow-sm border-l-4 border-${color}-500`}
@@ -136,12 +97,6 @@ export function SduMainAccreditationDocumentOverview({ onSelectOrg }) {
       </div>
     </div>
   );
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString();
-  };
 
   return (
     <div className="p-4 pt-0 flex flex-col gap-4 overflow-auto">

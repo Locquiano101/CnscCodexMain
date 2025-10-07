@@ -17,8 +17,6 @@ import { SduMainAccreditationWarning } from "./sdu-main-warning-accreditation";
 
 export function SduMainAccreditationSettings() {
   const [deadline, setDeadline] = useState("2024-12-31");
-  const [lastDeadlineUpdate, setLastDeadlineUpdate] = useState("2024-09-15");
-  const [previousDeadline, setPreviousDeadline] = useState("2024-11-30");
 
   const [resetAccreditationModal, setResetAccreditationModal] = useState(false);
   const [deadlineAccreditationModal, setDeadlineAccreditationModal] =
@@ -58,7 +56,7 @@ export function SduMainAccreditationSettings() {
               </p>
             </div>
             <button
-              onClick={() => setWarningAccreditationModal(true)}
+              onClick={() => setResetAccreditationModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               <RotateCcw size={16} />
@@ -138,24 +136,6 @@ export function SduMainAccreditationSettings() {
                 </button>
               </div>
             </div>
-
-            {/* Deadline History */}
-            <div className="bg-gray-50 p-3 rounded-md border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500 font-medium">
-                    Last Deadline Update:
-                  </span>
-                  <div className="text-gray-700 mt-1">{lastDeadlineUpdate}</div>
-                </div>
-                <div>
-                  <span className="text-gray-500 font-medium">
-                    Previous Deadline:
-                  </span>
-                  <div className="text-gray-700 mt-1">{previousDeadline}</div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Additional Actions */}
@@ -209,7 +189,11 @@ export function SduMainAccreditationSettings() {
         </div>
       </div>
 
-      {resetAccreditationModal && <ResetAccreditationModal />}
+      {resetAccreditationModal && (
+        <ResetAccreditationModal
+          onCancel={() => setResetAccreditationModal(false)}
+        />
+      )}
       {suspendAccreditationModal && (
         <SuspendAccreditationProcess
           onCancel={() => setSuspendAccreditationModal(false)}

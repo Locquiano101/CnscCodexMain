@@ -5,8 +5,7 @@ import { SduMainOrganizationsComponent } from "./organizations/sdu-organizations
 import { SduIndividualOrganizationView } from "./organizations/sdu-individual-organization";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
 import { useEffect, useState } from "react";
-import Select from "react-select";
-import { Building, Building2, BuildingIcon, ChevronDown } from "lucide-react";
+import { Building, BuildingIcon, ChevronDown } from "lucide-react";
 import { SduMainAccreditationSettings } from "./accreditation/settings/sdu-main-accreditation-settings";
 import axios from "axios";
 import { SduMainOverallPresident } from "./accreditation/president/sdu-overall-president";
@@ -23,6 +22,8 @@ import { SduMainFinancialReportOverall } from "./accreditation/financial-report/
 import { SduMainFinancialReport } from "./accreditation/financial-report/individual-financial-report";
 import { SduMainAccomplishment } from "./accomplishment/sdu-accomplishment-main";
 import { SduMainAccomplishmentOrganization } from "./accomplishment/sdu-individual-accomplishment";
+import { SduMainOverallProposedActioPlanConduct } from "./proposal-conduct/sdu-main-overall-proposed-action-plan";
+import { SduMainIndividualProposeActionPlan } from "./proposal-conduct/sdu-main-individual-proposed-action-plan";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -79,9 +80,16 @@ export function SduMainComponents({ user }) {
   const showSelector =
     shouldShowOrgSelector &&
     !(
-      (location.pathname.startsWith("/SDU/organization") && !selectedOrg) ||
-      (location.pathname.startsWith("/SDU/accreditation/settings") &&
-        !selectedOrg)
+      // hide when inside organization route but no org selected
+      (
+        (location.pathname.startsWith("/SDU/organization") && !selectedOrg) ||
+        // hide when system-wide route has NO selected org
+        (location.pathname.startsWith("/SDU/proposal/system-wide") &&
+          !selectedOrg) ||
+        // hide when accreditation settings route but no org selected
+        (location.pathname.startsWith("/SDU/accreditation/settings") &&
+          !selectedOrg)
+      )
     );
 
   return (
@@ -101,8 +109,16 @@ export function SduMainComponents({ user }) {
         <Route path="/" element={<UnderDevelopment />} />
 
         {/* Proposals */}
-        <Route path="/proposal" element={<UnderDevelopment />}>
-          <Route index element={<UnderDevelopment />} />
+        <Route path="/proposal">
+          <Route
+            index
+            element={renderRoute(
+              <SduMainIndividualProposeActionPlan selectedOrg={selectedOrg} />,
+              <SduMainOverallProposedActioPlanConduct
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
           <Route path="system-wide" element={<UnderDevelopment />} />
         </Route>
 

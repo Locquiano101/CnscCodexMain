@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { DOCU_API_ROUTER } from "../../../../App";
+import { useState } from "react";
 import { UpdateStatusProposal } from "../../../../components/update-status-proposal";
 
-export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
+export function SduMainDetailedProposal({ proposal, orgData, user, onClose }) {
   const [statusModal, setStatusModal] = useState(null); // ✅ unique name
+
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
@@ -285,7 +286,10 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
             {/* Send Revision button */}
             <button
               onClick={() =>
-                setStatusModal({ type: "alert", status: "Revision from Dean" })
+                setStatusModal({
+                  type: "alert",
+                  status: "Revision from SDU Main",
+                })
               }
               className="px-4 py-2 text-white bg-amber-700 hover:bg-amber-800 rounded-md"
             >
@@ -295,7 +299,10 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
             {/* Approve button */}
             <button
               onClick={() =>
-                setStatusModal({ type: "approval", status: "Conduct Approved" })
+                setStatusModal({
+                  type: "approval",
+                  status: "Approved by SDU Main",
+                })
               }
               className="px-4 py-2 text-white bg-green-700 hover:bg-green-800 rounded-md"
             >
