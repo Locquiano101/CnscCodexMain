@@ -1,5 +1,5 @@
 // dean-routes.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Outlet,
   useOutletContext,
@@ -78,30 +78,36 @@ function getLatestActiveProfile(org, allProfiles, orgs) {
   };
 }
 
-
-
 function OrgLayout({ orgs, onClose }) {
   const { orgAcronym } = useParams();
-  const org = orgs.find((o) => o.orgAcronym === orgAcronym);
-
-  // declare hooks first (avoids React hook order errors)
+const { user } = useOutletContext();
+  // ✅ Always define hooks first, never inside conditionals
   const [accreditationData, setAccreditationData] = useState({});
   const [orgProfiles, setOrgProfiles] = useState([]);
   const [financial, setFinancial] = useState({});
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // bail out after hooks are declared
-  if (!org) return <div className="p-4">Organization not found</div>;
+  // Find org safely (this may be undefined at first)
+  const org = orgs.find((o) => o.orgAcronym === orgAcronym) || null;
 
+  // Compute latest active profile only when data exists
+  const latestActiveProfile = useMemo(() => {
+    if (!org) return null;
+    return getLatestActiveProfile(org, orgProfiles, orgs);
+  }, [org, orgProfiles, orgs]);
+
+  const displayOrg = latestActiveProfile || org;
+
+  // Fetch data — no conditional hooks
   useEffect(() => {
+    if (!org?.organization?._id) return;
+
+    let cancelled = false;
+
     const fetchAll = async () => {
-      if (!org?.organization?._id) return;
-
+      setLoading(true);
       try {
-        setLoading(true);
-
-        // accreditation + all profiles
         const [accRes, profRes] = await Promise.all([
           axios.get(`${API_ROUTER}/getAccreditationInfo/${org.organization._id}`, {
             withCredentials: true,
@@ -111,59 +117,65 @@ function OrgLayout({ orgs, onClose }) {
           }),
         ]);
 
+        if (cancelled) return;
         setAccreditationData(accRes.data);
         setOrgProfiles(profRes.data);
 
-        // find latest active profile
         const latest = getLatestActiveProfile(org, profRes.data, orgs);
-
-        // use organizationProfile for API calls
         const profileId = latest?.organizationProfile || latest?.profileId;
 
         if (profileId) {
           const [finRes, actRes] = await Promise.all([
-            axios.get(`${API_ROUTER}/getFinancialReport/${profileId}`, {
-              withCredentials: true,
-            }),
-            axios.get(`${API_ROUTER}/getStudentLeaderProposalConduct/${profileId}`, {
-              withCredentials: true,
-            }),
+            axios.get(`${API_ROUTER}/getFinancialReport/${profileId}`, { withCredentials: true }),
+            axios.get(`${API_ROUTER}/getStudentLeaderProposalConduct/${profileId}`, { withCredentials: true }),
           ]);
-          setFinancial(finRes.data);
-          setActivities(actRes.data);
+
+          if (!cancelled) {
+            setFinancial(finRes.data);
+            setActivities(actRes.data);
+          }
         }
-      } catch (e) {
-        console.error("OrgLayout fetch error:", e);
+      } catch (err) {
+        if (!cancelled) console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchAll();
-  }, [org?._id, org?.organization?._id, orgs]);
+    return () => {
+      cancelled = true;
+    };
+  }, [org?.organization?._id, orgs]);
 
-  // latest profile merged with wrapper info
-  const latestActiveProfile = getLatestActiveProfile(org, orgProfiles, orgs);
-  const displayOrg = latestActiveProfile || org;
+  // ✅ Always return something — maintain consistent hook order
+  if (!org) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Organization not found or still loading...
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full grid grid-cols-[18%_1fr]">
       {/* Sidebar */}
       <div className="bg-white text-cnsc-primary-color pt-4 pb-1 flex flex-col border-r border-gray-400">
         <div className="w-full h-fit mb-1 bg-gray-50 flex p-2 gap-x-2 items-center border-b border-gray-400">
-          <img
-            src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
-            alt={displayOrg.orgAcronym}
-            className="min-w-11 h-11 object-contain"
-          />
+          {displayOrg?.orgLogo && (
+            <img
+              src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
+              alt={displayOrg.orgAcronym}
+              className="min-w-11 h-11 object-contain"
+            />
+          )}
           <div className="w-full h-fit flex flex-col">
             <span className="text-gray-500 text-md">Welcome!</span>
-            <span className="text-lg font-bold leading-3">{displayOrg.orgName}</span>
-            <span className="text-xs leading-4">{displayOrg.orgAcronym}</span>
+            <span className="text-lg font-bold leading-3">{displayOrg?.orgName}</span>
+            <span className="text-xs leading-4">{displayOrg?.orgAcronym}</span>
           </div>
         </div>
 
-        {/* Sidebar nav links */}
         {[
           { to: `/dean/${orgAcronym}/home`, label: "Home" },
           { to: `/dean/${orgAcronym}/accreditation`, label: "Accreditation" },
@@ -194,7 +206,7 @@ function OrgLayout({ orgs, onClose }) {
         </button>
       </div>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="w-full h-full">
         <Routes>
           <Route index element={<Navigate to="home" replace />} />
@@ -210,15 +222,26 @@ function OrgLayout({ orgs, onClose }) {
               />
             }
           />
-          <Route path="accreditation" element={<OrgAccreditation org={displayOrg} />} />
-          <Route path="activities" element={<OrgActivities org={displayOrg} />} />
-          <Route path="financial" element={<OrgFinancial org={displayOrg} />} />
-          <Route path="accomplishment" element={<OrgAccomplishments org={displayOrg} />} />
+          <Route
+            path="accreditation"
+            element={
+              <OrgAccreditation
+                org={displayOrg}
+                accreditationData={accreditationData}
+                baseOrg={org}
+
+              />
+            }
+          />
+          <Route path="activities" element={<OrgActivities org={displayOrg} activities={activities} user={user}/>} />
+          <Route path="financial" element={<OrgFinancial org={displayOrg} user={user} financial={financial} displayOrg={displayOrg}/>} />
+          <Route path="accomplishment" element={<OrgAccomplishments org={displayOrg} displayOrg={displayOrg} user={user} />} />
         </Routes>
       </div>
     </div>
   );
 }
+
 
 
 export function DeanPage() {
