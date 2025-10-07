@@ -10,7 +10,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
+
+import { UpdateStatusProposal } from "../../../components/update-status-proposal";
+
 
 export function OrgHome({
   baseOrg,           // original org from list
@@ -83,11 +89,19 @@ export function OrgHome({
     },
   ];
 
-  const completedRequirements = requirements.filter((req) =>
-    ["approved", "submitted", "active", "complete"].includes(
-      (req.status || "").toLowerCase()
-    )
-  ).length;
+// Normalize and count completed statuses (case-insensitive + supports variations)
+const completedRequirements = requirements.filter((req) => {
+  const status = (req.status || "").toLowerCase();
+  return (
+    status.includes("approved") ||
+    status.includes("submitted") ||
+    status.includes("active") ||
+    status.includes("complete") ||
+    status.includes("accredited") ||
+    status.includes("renewal")
+  );
+}).length;
+
 
   const totalRequirements = requirements.length;
   const progressPercentage =
@@ -305,22 +319,357 @@ export function OrgHome({
   );
 }
 
-export function OrgAccreditation({ org }) {
+
+export default function AccreditationTable({ data = [] }) {
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold">Accreditation</h2>
-      <p>{org?.isAllowedForAccreditation ? "This organization is allowed for accreditation." : "Not allowed for accreditation."}</p>
+    <div className="w-full overflow-x-auto border border-gray-400  shadow-sm">
+
+
+      <div className="max-h-[400px] overflow-y-auto">
+        <table className="min-w-[1100px] w-full table-fixed border-separate border-spacing-0">
+          <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+            <tr>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                NO.
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                Name of the Organization
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                Nature
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                Status of Accreditation
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                Adviser/s
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                President
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                Validation of Accreditation
+              </th>
+              <th
+                colSpan={3}
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+              >
+                APESOC Result
+              </th>
+              <th
+                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                rowSpan={2}
+              >
+                Status of Accreditation
+              </th>
+            </tr>
+            <tr>
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
+                1st Sem
+              </th>
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
+                2nd Sem
+              </th>
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
+                Total
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={11} className="text-center py-6 text-gray-500">
+                  No data available
+                </td>
+              </tr>
+            ) : (
+              data.map((row, idx) => (
+                <tr key={idx} className="odd:bg-white even:bg-gray-50/40">
+                  <td className="border border-gray-400 px-3 py-2 text-center">
+                    {idx + 1}
+                  </td>
+                  <td className="border border-gray-400 px-3 py-2">{row.name}</td>
+                  <td className="border border-gray-400 px-3 py-2">{row.nature}</td>
+                  <td className="border border-gray-400 px-3 py-2">
+                    {row.accreditationStatus}
+                  </td>
+                  <td className="border border-gray-400 px-3 py-2">{row.adviser}</td>
+                  <td className="border border-gray-400 px-3 py-2">{row.president}</td>
+                  <td className="border border-gray-400 px-3 py-2">{row.validationDate}</td>
+                  <td className="border border-gray-400 px-3 py-2 text-center">{row.apesoc1}</td>
+                  <td className="border border-gray-400 px-3 py-2 text-center">{row.apesoc2}</td>
+                  <td className="border border-gray-400 px-3 py-2 text-center">{row.apesocTotal}</td>
+                  <td className="border border-gray-400 px-3 py-2">{row.finalStatus}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
-export function OrgActivities({ org }) {
+
+export function OrgAccreditation({ org, accreditationData, baseOrg }) {
+  // Parse/normalize the data
+  const orgData = [
+    {
+      name: org?.orgName || baseOrg?.orgName || "N/A",
+      nature: org?.orgClass || baseOrg?.orgClass || "N/A",
+      accreditationStatus:
+        accreditationData?.overallStatus ||
+        baseOrg?.accreditation?.overallStatus ||
+        "Pending",
+      adviser:
+        org?.adviser?.name ||
+        baseOrg?.adviser?.name ||
+        "N/A",
+      president:
+        org?.orgPresident?.name ||
+        baseOrg?.orgPresident?.name ||
+        "N/A",
+      validationDate: accreditationData?.updatedAt
+        ? new Date(accreditationData.updatedAt).toLocaleDateString()
+        : "N/A",
+      apesoc1: baseOrg?.latestProfile?.apesoc1 || 0,
+      apesoc2: baseOrg?.latestProfile?.apesoc2 || 0,
+      apesocTotal:
+        (baseOrg?.latestProfile?.apesoc1 || 0) +
+        (baseOrg?.latestProfile?.apesoc2 || 0),
+      finalStatus:
+        baseOrg?.latestProfile?.overAllStatus ||
+        accreditationData?.overallStatus ||
+        "Pending",
+    },
+  ];
+
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold">Activities</h2>
-      <p>Activities will go here for {org?.orgAcronym}.</p>
-    </div>
+    <>
+      <div className="p-4">
+        <h2 className="text-xl font-semibold">Accreditations</h2>
+        <p>
+          {org?.isAllowedForAccreditation
+            ? "This organization is allowed for accreditation."
+            : "Not allowed for accreditation."}
+        </p>
+      </div>
+
+      <div className="px-4 w-full h-fit">
+        <AccreditationTable data={orgData} />
+      </div>
+    </>
   );
 }
+
+
+
+export function OrgActivities({ org, activities, user }) {
+  console.log(activities)
+  const [selected, setSelected] = useState(null);
+  const [statusModal, setStatusModal] = useState(null); // for UpdateStatusProposal
+
+  // Group activities
+  const pending = activities.filter((a) => a.overallStatus === "Pending");
+  const ongoing = activities.filter((a) => a.overallStatus === "Approved");
+  const completed = activities.filter((a) => a.overallStatus === "Completed");
+
+  const chartData = [
+    { name: "Pending", value: pending.length },
+    { name: "Ongoing", value: ongoing.length },
+    { name: "Completed", value: completed.length },
+  ];
+  const COLORS = ["#facc15", "#60a5fa", "#34d399"];
+
+  const openModal = (activity) => setSelected(activity);
+  const closeModal = () => setSelected(null);
+
+  const handleAction = (type) => {
+    // open UpdateStatusProposal modal
+    if (type === "approve") {
+      setStatusModal({ type: "approval", status: "Approved" });
+    } else {
+      setStatusModal({ type: "alert", status: "Returned" });
+    }
+  };
+
+  return (
+    <>
+      <div className="p-4">
+        <h2 className="text-xl font-semibold">Activities</h2>
+      </div>
+
+      <div className="w-full h-[745px] flex px-4 gap-4">
+        {/* LEFT COLUMN */}
+        <div className="w-1/2 flex flex-col justify-between gap-2">
+          {[
+            { title: "Pending", data: pending },
+            { title: "Ongoing", data: ongoing },
+            { title: "Completed", data: completed },
+          ].map((section) => (
+            <div
+              key={section.title}
+              className="flex-1 bg-white shadow flex flex-col rounded-2xl overflow-hidden"
+            >
+              <h2 className="text-lg font-semibold border-b px-3 py-2">
+                {section.title}
+              </h2>
+              <div className="flex-1 overflow-y-auto max-h-[230px]">
+                {section.data.length === 0 ? (
+                  <p className="text-gray-400 text-center mt-4">
+                    No {section.title.toLowerCase()} activities
+                  </p>
+                ) : (
+                  section.data.map((act) => (
+                    <div
+                      key={act._id}
+                      onClick={() => openModal(act)}
+                      className="p-3 border-b hover:bg-gray-50 cursor-pointer"
+                    >
+                      <p className="font-medium truncate">
+                        {act.ProposedIndividualActionPlan?.activityTitle}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(
+                          act.ProposedIndividualActionPlan?.proposedDate
+                        ).toLocaleDateString()}{" "}
+                        — {act.ProposedIndividualActionPlan?.venue}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* RIGHT COLUMN: CHART */}
+        <div className="w-1/2 bg-white shadow p-4 rounded-2xl flex flex-col items-center justify-center">
+          <h2 className="text-lg font-semibold mb-4">
+            Activity Status Distribution
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                dataKey="value"
+                label
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* DETAIL MODAL */}
+      {selected && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-lg w-[500px] p-6">
+            <h3 className="text-xl font-semibold mb-2">
+              {selected.ProposedIndividualActionPlan?.activityTitle}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Proposed on{" "}
+              {new Date(
+                selected.ProposedIndividualActionPlan?.proposedDate
+              ).toLocaleDateString()}{" "}
+              at {selected.ProposedIndividualActionPlan?.venue}
+            </p>
+
+            <div className="border-t pt-3 text-sm text-gray-700 space-y-2">
+              <p>
+                <span className="font-semibold">Details:</span>{" "}
+                {selected.ProposedIndividualActionPlan?.briefDetails}
+              </p>
+              <p>
+                <span className="font-semibold">Budget:</span> ₱
+                {selected.ProposedIndividualActionPlan?.budgetaryRequirements}
+              </p>
+              <p>
+                <span className="font-semibold">Aligned Objectives:</span>{" "}
+                {selected.AlignedObjective}
+              </p>
+              <p>
+                <span className="font-semibold">Status:</span>{" "}
+                {selected.overallStatus}
+              </p>
+            </div>
+
+            {selected.overallStatus === "Pending" && (
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={() => handleAction("approve")}
+                  className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleAction("return")}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                >
+                  Return for Revision
+                </button>
+              </div>
+            )}
+
+            <div className="flex justify-end mt-3">
+              <button
+                onClick={closeModal}
+                className="px-3 py-1 text-gray-600 border rounded-md hover:bg-gray-100"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STATUS MODAL */}
+      {statusModal && selected && (
+        <UpdateStatusProposal
+          proposal={selected}
+          statusModal={statusModal}
+          setStatusModal={setStatusModal}
+          orgData={org}
+          user={user}
+        />
+      )}
+    </>
+  );
+}
+
 export function OrgFinancial({ org }) {
   return (
     <div className="p-4">
