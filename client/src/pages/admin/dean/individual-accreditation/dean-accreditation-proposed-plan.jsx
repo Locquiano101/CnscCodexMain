@@ -296,29 +296,19 @@ export function DeanProposedPlan({ selectedOrg }) {
         </div>
       )}
 
-      {/* Empty State */}
-      {!loading && !error && proposals.length === 0 && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full p-6 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-              <Plus size={48} className="text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-slate-800 mb-3">
-              No Proposals Found
-            </h3>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto">
-              There are currently no proposed action plans for this
-              organization. Notify Organization
-            </p>
-            <button
-              onClick={() => setShowManageModal(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl flex items-center gap-3 transition-all duration-200 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <Plus size={20} />
-            </button>
-          </div>
-        </div>
-      )}
+{/* Empty State */}
+{!loading && !error && proposals.length === 0 && (
+  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-slate-800 mb-3">
+        No Proposals Found
+      </h3>
+      <p className="text-slate-600 mb-8 max-w-md mx-auto">
+        There are currently no proposed action plans for this organization.
+      </p>
+    </div>
+  </div>
+)}
 
       {/* Enhanced Table */}
       {!loading && !error && proposals.length > 0 && (
@@ -690,23 +680,29 @@ export function DeanProposedPlan({ selectedOrg }) {
                   )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
-                <button
-                  onClick={handleRevision}
-                  className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-                >
-                  <AlertTriangle size={18} />
-                  Notify Revision
-                </button>
-                <button
-                  onClick={handleApproval}
-                  className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-                >
-                  <CheckCircle size={18} />
-                  Approve Proposal
-                </button>
-              </div>
+{/* Action Buttons */}
+{!["Approved by the Dean", "Completed"].includes(selectedProposal.overallStatus) && (
+  <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
+    <button
+      onClick={handleRevision}
+      className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+    >
+      <AlertTriangle size={18} />
+      Notify Revision
+    </button>
+
+    <button
+      onClick={handleApproval}
+      className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+    >
+      <CheckCircle size={18} />
+      Approve Proposal
+    </button>
+  </div>
+)}
+
+
+
             </div>
           </div>
         </div>

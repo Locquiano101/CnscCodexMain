@@ -152,19 +152,19 @@ export function DeanAccreditationMain({ selectedOrg }) {
     );
   };
 
-  if (!selectedOrg) {
-    return (
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 text-center">
-        <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <Building2 className="w-8 h-8 text-gray-400" />
-        </div>
-        <p className="text-gray-500 font-medium">No organization selected</p>
-        <p className="text-gray-400 text-sm mt-1">
-          Select an organization to view details
-        </p>
-      </div>
-    );
-  }
+  // if (!selectedOrg) {
+  //   return (
+  //     <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 text-center">
+  //       <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+  //         <Building2 className="w-8 h-8 text-gray-400" />
+  //       </div>
+  //       <p className="text-gray-500 font-medium">No organization selected</p>
+  //       <p className="text-gray-400 text-sm mt-1">
+  //         Select an organization to view details
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   if (loading) {
     return (
@@ -223,7 +223,7 @@ export function DeanAccreditationMain({ selectedOrg }) {
           </div>
 
           {/* Dropdown Menu - Only show for active organizations */}
-          {orgProfile.isActive && (
+          {/* {orgProfile.isActive && (
             <div className="relative inline-block text-left" ref={dropdownRef}>
               <button
                 onClick={() => setManagePresidentProfileOpen(true)}
@@ -263,7 +263,7 @@ export function DeanAccreditationMain({ selectedOrg }) {
                 </div>
               )}
             </div>
-          )}
+          )} */}
         </div>
       </div>
       {/* Content Body */}
