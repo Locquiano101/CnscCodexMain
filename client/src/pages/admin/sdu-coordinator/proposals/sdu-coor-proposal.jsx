@@ -284,7 +284,7 @@ export function SduCoorProposalConduct({ orgData, user }) {
                     </td>
                   </tr>
                 ) : (
-                  proposalsConduct.map((item, index) => (
+                  proposalsConduct.map((item) => (
                     <tr
                       key={item._id}
                       className="group  cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.001]"

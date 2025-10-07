@@ -13,11 +13,10 @@ import {
 } from "recharts";
 
 export function OrgHome({
-  baseOrg,           // original org from list
-  displayOrg,        // latest active profile OR baseOrg
+  displayOrg, // latest active profile OR baseOrg
   accreditationData, // fetched in parent
-  financial,         // fetched in parent (for latest profile)
-  activities,        // fetched in parent (for latest profile)
+  financial, // fetched in parent (for latest profile)
+  activities, // fetched in parent (for latest profile)
 }) {
   const [tab, setTab] = useState("Overview");
   const [underlineStyle, setUnderlineStyle] = useState({});
@@ -53,7 +52,6 @@ export function OrgHome({
     { label: "Email", value: displayOrg?.adviser?.email ?? "—" },
   ];
 
-
   const requirements = [
     {
       name: "Joint Statement",
@@ -79,7 +77,9 @@ export function OrgHome({
     },
     {
       name: "Financial Report",
-      status: accreditationData?.FinancialReport?.isActive ? "Active" : "Inactive",
+      status: accreditationData?.FinancialReport?.isActive
+        ? "Active"
+        : "Inactive",
     },
   ];
 
@@ -105,21 +105,36 @@ export function OrgHome({
   financial?.collections?.forEach((item) => {
     const month = formatMonth(item.date);
     if (!monthlyDataMap[month]) {
-      monthlyDataMap[month] = { month, collections: 0, reimbursements: 0, disbursements: 0 };
+      monthlyDataMap[month] = {
+        month,
+        collections: 0,
+        reimbursements: 0,
+        disbursements: 0,
+      };
     }
     monthlyDataMap[month].collections += item.amount || 0;
   });
   financial?.reimbursements?.forEach((item) => {
     const month = formatMonth(item.date);
     if (!monthlyDataMap[month]) {
-      monthlyDataMap[month] = { month, collections: 0, reimbursements: 0, disbursements: 0 };
+      monthlyDataMap[month] = {
+        month,
+        collections: 0,
+        reimbursements: 0,
+        disbursements: 0,
+      };
     }
     monthlyDataMap[month].reimbursements += item.amount || 0;
   });
   financial?.disbursements?.forEach((item) => {
     const month = formatMonth(item.date);
     if (!monthlyDataMap[month]) {
-      monthlyDataMap[month] = { month, collections: 0, reimbursements: 0, disbursements: 0 };
+      monthlyDataMap[month] = {
+        month,
+        collections: 0,
+        reimbursements: 0,
+        disbursements: 0,
+      };
     }
     monthlyDataMap[month].disbursements += item.amount || 0;
   });
@@ -127,7 +142,7 @@ export function OrgHome({
     (a, b) => new Date(a.month) - new Date(b.month)
   );
 
-  console.log(financial)
+  console.log(financial);
 
   const presidentName =
     typeof displayOrg?.orgPresident === "object"
@@ -177,7 +192,9 @@ export function OrgHome({
                 <h1 className="text-3xl font-bold">
                   {displayOrg?.orgName || "Organization"}{" "}
                   {displayOrg?.orgAcronym && (
-                    <span className="text-gray-600">({displayOrg.orgAcronym})</span>
+                    <span className="text-gray-600">
+                      ({displayOrg.orgAcronym})
+                    </span>
                   )}
                 </h1>
               </div>
@@ -229,7 +246,9 @@ export function OrgHome({
                 </div>
                 <div className="w-full h-1/2 rounded-md p-2 bg-gray-200 flex flex-col">
                   <span className="text-gray-500 text-[12px]">Adviser</span>
-                  <span className="text-black">{displayOrg?.adviser?.name  ?? "—"}</span>
+                  <span className="text-black">
+                    {displayOrg?.adviser?.name ?? "—"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -255,7 +274,8 @@ export function OrgHome({
                       className="grid grid-cols-3 py-2 text-sm text-black hover:bg-gray-300 cursor-pointer"
                     >
                       <div className="pl-2 capitalize">
-                        {act?.ProposedIndividualActionPlan?.activityTitle ?? "—"}
+                        {act?.ProposedIndividualActionPlan?.activityTitle ??
+                          "—"}
                       </div>
                       <div className="pl-2 capitalize">
                         {act?.ProposedIndividualActionPlan?.venue ?? "—"}
@@ -277,17 +297,34 @@ export function OrgHome({
               </div>
 
               <div className="w-[51%] h-75 bg-white rounded-md flex flex-col">
-                <h1 className="text-lg text-black font-semibold">Financial Report</h1>
+                <h1 className="text-lg text-black font-semibold">
+                  Financial Report
+                </h1>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={financialChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <BarChart
+                    data={financialChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="collections" fill="#4caf50" name="Collections" />
-                    <Bar dataKey="reimbursements" fill="#2196f3" name="Reimbursements" />
-                    <Bar dataKey="disbursements" fill="#f44336" name="Disbursements" />
+                    <Bar
+                      dataKey="collections"
+                      fill="#4caf50"
+                      name="Collections"
+                    />
+                    <Bar
+                      dataKey="reimbursements"
+                      fill="#2196f3"
+                      name="Reimbursements"
+                    />
+                    <Bar
+                      dataKey="disbursements"
+                      fill="#f44336"
+                      name="Disbursements"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -309,7 +346,11 @@ export function OrgAccreditation({ org }) {
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold">Accreditation</h2>
-      <p>{org?.isAllowedForAccreditation ? "This organization is allowed for accreditation." : "Not allowed for accreditation."}</p>
+      <p>
+        {org?.isAllowedForAccreditation
+          ? "This organization is allowed for accreditation."
+          : "Not allowed for accreditation."}
+      </p>
     </div>
   );
 }
