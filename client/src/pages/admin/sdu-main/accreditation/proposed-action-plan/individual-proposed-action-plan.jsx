@@ -366,14 +366,14 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
                 </h4>
                 <p className="text-3xl font-bold text-cnsc-primary-color">
                   {proposals.length > 0
-                    ? "$" +
+                    ? "₱" +
                       Math.round(
                         proposals.reduce(
                           (sum, p) => sum + (p.budgetaryRequirements || 0),
                           0
                         ) / proposals.length
                       ).toLocaleString()
-                    : "$0"}
+                    : "₱0"}
                 </p>
               </div>
 

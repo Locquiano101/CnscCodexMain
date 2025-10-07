@@ -153,17 +153,22 @@ export function AddProposedActionPlan({
           </label>
           <select
             name="venue"
-            value={
-              formData.venue === "" || formData.venue === "other"
-                ? formData.venue
-                : formData.venue
-            }
+            value={formData.venue === "other" ? "other" : formData.venue || ""}
             onChange={(e) => {
               const { value } = e.target;
               if (value === "other") {
-                setFormData({ ...formData, venue: "other", customVenue: "" });
+                setFormData({
+                  ...formData,
+                  venue: "",
+                  customVenue: "",
+                  isCustomVenue: true,
+                });
               } else {
-                setFormData({ ...formData, venue: value, customVenue: "" });
+                setFormData({
+                  ...formData,
+                  venue: value,
+                  isCustomVenue: false,
+                });
               }
             }}
             required
@@ -180,8 +185,8 @@ export function AddProposedActionPlan({
             <option value="other">Other</option>
           </select>
 
-          {/* If user selects Other → show input box */}
-          {formData.venue === "other" && (
+          {/* Show custom venue field when 'Other' is selected */}
+          {formData.isCustomVenue && (
             <input
               type="text"
               name="customVenue"
@@ -189,8 +194,8 @@ export function AddProposedActionPlan({
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  venue: e.target.value,
                   customVenue: e.target.value,
+                  venue: e.target.value, // keeps actual venue value updated
                 })
               }
               placeholder="Enter other venue"

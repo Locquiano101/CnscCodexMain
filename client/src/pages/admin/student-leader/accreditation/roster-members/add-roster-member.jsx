@@ -17,6 +17,7 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
       department: orgData?.orgDepartment || "",
       course: orgData?.orgCourse || "",
       year: "",
+      basePosition: "", // <- added
       position: "",
       birthDate: "",
       studentId: "",
@@ -41,20 +42,29 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
   };
 
   const updateMember = (field, value) => {
-    setRosterData({
-      ...rosterData,
+    setRosterData((prev) => ({
+      ...prev,
       rosterMember: {
-        ...rosterData.rosterMember,
+        ...prev.rosterMember,
         [field]: value,
       },
-    });
+    }));
 
-    if (errors[field]) {
-      setErrors({
-        ...errors,
-        [field]: "",
-      });
-    }
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: "" } : prev));
+  };
+
+  const handleBasePositionChange = (value) => {
+    // update basePosition and position together to avoid transient inconsistent state
+    setRosterData((prev) => ({
+      ...prev,
+      rosterMember: {
+        ...prev.rosterMember,
+        basePosition: value,
+        position: value === "Member" ? "Member" : "",
+      },
+    }));
+
+    setErrors((prev) => ({ ...prev, position: "" }));
   };
 
   // 🔹 Auto-format Student ID to "00-0000"
@@ -82,7 +92,14 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
     } else if (!/^\d{2}-\d{4}$/.test(member.studentId)) {
       newErrors.studentId = "Format must be 00-0000";
     }
-    if (!member.position) newErrors.position = "Position is required";
+
+    // Position is required only when Officer is selected
+    if (member.basePosition === "Officer" && !member.position.trim()) {
+      newErrors.position = "Officer position is required";
+    }
+
+    if (!member.basePosition)
+      newErrors.basePosition = "Select Member or Officer";
     if (!member.year) newErrors.year = "Year level is required";
     if (!member.department) newErrors.department = "Department is required";
     if (!member.course) newErrors.course = "Course is required";
@@ -246,37 +263,41 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
 
               <div className="flex items-center gap-6 mb-2">
                 {/* Member Radio */}
-                <label className="flex items-center gap-2">
+                <label
+                  htmlFor="basePositionMember"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
+                    id="basePositionMember"
                     type="radio"
-                    name="position"
+                    name="basePosition"
                     value="Member"
                     checked={rosterData.rosterMember.basePosition === "Member"}
-                    onChange={(e) =>
-                      updateMember("basePosition", e.target.value)
-                    }
-                    required
+                    onChange={() => handleBasePositionChange("Member")}
+                    className="h-4 w-4"
                   />
-                  Member
+                  <span>Member</span>
                 </label>
 
                 {/* Officer Radio */}
-                <label className="flex items-center gap-2">
+                <label
+                  htmlFor="basePositionOfficer"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
+                    id="basePositionOfficer"
                     type="radio"
-                    name="position"
+                    name="basePosition"
                     value="Officer"
                     checked={rosterData.rosterMember.basePosition === "Officer"}
-                    onChange={(e) =>
-                      updateMember("basePosition", e.target.value)
-                    }
-                    required
+                    onChange={() => handleBasePositionChange("Officer")}
+                    className="h-4 w-4"
                   />
-                  Officer
+                  <span>Officer</span>
                 </label>
               </div>
 
-              {/* Textbox for Officer's Specific Position */}
+              {/* Officer’s Specific Position Input */}
               {rosterData.rosterMember.basePosition === "Officer" && (
                 <input
                   type="text"
@@ -286,10 +307,13 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
                   className={`w-full px-3 py-2 border rounded-md ${
                     errors.position ? "border-red-500" : "border-gray-300"
                   }`}
-                  required
+                  required={rosterData.rosterMember.basePosition === "Officer"}
                 />
               )}
 
+              {errors.basePosition && (
+                <p className="text-red-500 text-sm">{errors.basePosition}</p>
+              )}
               {errors.position && (
                 <p className="text-red-500 text-sm">{errors.position}</p>
               )}
@@ -391,6 +415,7 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
                 <p className="text-red-500 text-sm">{errors.birthDate}</p>
               )}
             </div>
+
             {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -427,7 +452,6 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
                 type="text"
                 value={rosterData.rosterMember.contactNumber}
                 onChange={(e) => {
-                  // Allow only digits and limit to 11 characters
                   if (
                     /^[0-9]*$/.test(e.target.value) &&
                     e.target.value.length <= 11
@@ -440,7 +464,7 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
                 }`}
                 placeholder="Enter 11-digit contact number"
                 required
-                inputMode="numeric" // shows number keypad on mobile
+                inputMode="numeric"
               />
               {errors.contactNumber && (
                 <p className="text-red-500 text-sm">{errors.contactNumber}</p>
