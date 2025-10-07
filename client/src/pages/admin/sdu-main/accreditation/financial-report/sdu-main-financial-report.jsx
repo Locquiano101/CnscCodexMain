@@ -270,174 +270,124 @@ export function SduMainFinancialReportOverall({ onSelectOrg }) {
           </div>
         )}
 
-        {/* Organization Cards */}
-        <div>
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-cnsc-black mb-2 flex items-center">
-              <Users className="w-6 h-6 mr-2 text-cnsc-primary" />
-              Organizations ({financialReport?.length || 0})
-            </h2>
-            <p className="text-cnsc-blue text-sm">
-              Detailed financial overview of each organization
+        {!financialReport?.length ? (
+          <div className="bg-white rounded-xl shadow p-12 text-center">
+            <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-cnsc-black mb-2">
+              No Financial Data Available
+            </h3>
+            <p className="text-cnsc-blue">
+              Financial reports will appear here once data is loaded.
             </p>
+            <button
+              onClick={GetFinancialReportApi}
+              className="mt-4 bg-cnsc-primary text-cnsc-white px-6 py-2 rounded-lg hover:bg-cnsc-secondary transition-colors inline-flex items-center"
+            >
+              <Loader2 className="w-4 h-4 mr-2" />
+              Refresh Data
+            </button>
           </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow overflow-x-auto">
+            <table className="min-w-full border-collapse">
+              <thead className="bg-cnsc-primary text-cnsc-white text-sm uppercase">
+                <tr>
+                  <th className="py-3 px-4 text-left">Organization</th>
+                  <th className="py-3 px-4 text-left">Acronym</th>
+                  <th className="py-3 px-4 text-left">Class</th>
+                  <th className="py-3 px-4 text-left">Specialization</th>
+                  <th className="py-3 px-4 text-center">Status</th>
+                  <th className="py-3 px-4 text-right">Collections</th>
+                  <th className="py-3 px-4 text-right">Disbursements</th>
+                  <th className="py-3 px-4 text-right">Current Balance</th>
+                  <th className="py-3 px-4 text-right">Net Flow</th>
+                  <th className="py-3 px-4 text-center">Transactions</th>
+                  <th className="py-3 px-4 text-center">Updated</th>
+                </tr>
+              </thead>
 
-          {!financialReport?.length ? (
-            <div className="bg-white rounded-xl shadow p-12 text-center">
-              <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-cnsc-black mb-2">
-                No Financial Data Available
-              </h3>
-              <p className="text-cnsc-blue">
-                Financial reports will appear here once data is loaded.
-              </p>
-              <button
-                onClick={GetFinancialReportApi}
-                className="mt-4 bg-cnsc-primary text-cnsc-white px-6 py-2 rounded-lg hover:bg-cnsc-secondary transition-colors inline-flex items-center"
-              >
-                <Loader2 className="w-4 h-4 mr-2" />
-                Refresh Data
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {financialReport.map((org) => {
-                const metrics = calculateFinancialMetrics(org);
-                const profile = org.organizationProfile || {};
+              <tbody className="text-sm text-cnsc-black divide-y divide-gray-100">
+                {financialReport.map((org) => {
+                  const metrics = calculateFinancialMetrics(org);
+                  const profile = org.organizationProfile || {};
 
-                return (
-                  <div
-                    key={org._id}
-                    onClick={() => onSelectOrg?.(org)}
-                    className="bg-white rounded-xl shadow hover:shadow-lg transition-transform duration-300 cursor-pointer hover:scale-105"
-                  >
-                    {/* Card Header */}
-                    <div className="p-6 border-b border-gray-100">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="bg-cnsc-accent1 p-2 rounded-lg">
-                            <Building className="w-6 h-6 text-cnsc-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-cnsc-black text-lg">
-                              {profile.orgName || "N/A"}
-                            </h3>
-                            <p className="text-gray-500 text-sm">
-                              {profile.orgAcronym || "N/A"}
-                            </p>
-                          </div>
+                  return (
+                    <tr
+                      key={org._id}
+                      onClick={() => onSelectOrg?.(org)}
+                      className="hover:bg-cnsc-primary/5 transition cursor-pointer"
+                    >
+                      {/* Organization Info */}
+                      <td className="py-3 px-4 font-semibold flex items-center space-x-2">
+                        <div className="bg-cnsc-accent1 p-2 rounded-lg">
+                          <Building className="w-4 h-4 text-cnsc-white" />
                         </div>
+                        <span>{profile.orgName || "N/A"}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {profile.orgAcronym || "N/A"}
+                      </td>
+                      <td className="py-3 px-4">{profile.orgClass || "N/A"}</td>
+                      <td className="py-3 px-4">
+                        {profile.orgSpecialization || "N/A"}
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3 px-4 text-center">
                         <StatusBadge
                           status={profile.overAllStatus || "Pending"}
                         />
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <span className="bg-gray-100 text-cnsc-black px-2 py-1 rounded text-xs">
-                          {profile.orgClass || "N/A"}
-                        </span>
-                        <span className="bg-cnsc-secondary/20 text-cnsc-secondary px-2 py-1 rounded text-xs">
-                          {profile.orgSpecialization || "N/A"}
-                        </span>
-                      </div>
-                    </div>
+                      </td>
 
-                    {/* Financial Metrics */}
-                    <div className="p-6">
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center p-3 bg-cnsc-accent2/10 rounded-lg">
-                          <ArrowUpCircle className="w-7 h-7 text-cnsc-accent2 mx-auto mb-1" />
-                          <p className="text-xs text-cnsc-black">Collections</p>
-                          <p className="font-bold text-cnsc-accent2">
-                            {formatCurrency(metrics.totalCollections)}
-                          </p>
-                        </div>
-                        <div className="text-center p-3 bg-cnsc-secondary/10 rounded-lg">
-                          <ArrowDownCircle className="w-7 h-7 text-cnsc-secondary mx-auto mb-1" />
-                          <p className="text-xs text-cnsc-black">
-                            Disbursements
-                          </p>
-                          <p className="font-bold text-cnsc-secondary">
-                            {formatCurrency(metrics.totalDisbursements)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Current Balance */}
-                      <div
-                        className={`p-4 rounded-lg mb-3 ${
+                      {/* Financial Data */}
+                      <td className="py-3 px-4 text-right text-cnsc-accent2 font-semibold">
+                        {formatCurrency(metrics.totalCollections)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-cnsc-secondary font-semibold">
+                        {formatCurrency(metrics.totalDisbursements)}
+                      </td>
+                      <td
+                        className={`py-3 px-4 text-right font-bold ${
                           metrics.currentBalance >= 0
-                            ? "bg-cnsc-primary/10"
-                            : "bg-cnsc-secondary/10"
+                            ? "text-cnsc-primary"
+                            : "text-cnsc-secondary"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Wallet
-                              className={`w-5 h-5 mr-2 ${
-                                metrics.currentBalance >= 0
-                                  ? "text-cnsc-primary"
-                                  : "text-cnsc-secondary"
-                              }`}
-                            />
-                            <span className="font-semibold text-cnsc-black">
-                              Current Balance
-                            </span>
-                          </div>
-                          <span
-                            className={`font-bold text-lg ${
-                              metrics.currentBalance >= 0
-                                ? "text-cnsc-primary"
-                                : "text-cnsc-secondary"
-                            }`}
-                          >
-                            {formatCurrency(metrics.currentBalance)}
-                          </span>
-                        </div>
-                      </div>
+                        {formatCurrency(metrics.currentBalance)}
+                      </td>
+                      <td
+                        className={`py-3 px-4 text-right font-semibold flex items-center justify-end ${
+                          metrics.netFlow >= 0
+                            ? "text-cnsc-accent2"
+                            : "text-cnsc-secondary"
+                        }`}
+                      >
+                        {metrics.netFlow >= 0 ? (
+                          <TrendingUp className="w-4 h-4 mr-1" />
+                        ) : (
+                          <TrendingDown className="w-4 h-4 mr-1" />
+                        )}
+                        {formatCurrency(metrics.netFlow)}
+                      </td>
 
-                      {/* Net Flow */}
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-cnsc-black">Net Flow</span>
-                        <span
-                          className={`font-semibold flex items-center ${
-                            metrics.netFlow >= 0
-                              ? "text-cnsc-accent2"
-                              : "text-cnsc-secondary"
-                          }`}
-                        >
-                          {metrics.netFlow >= 0 ? (
-                            <TrendingUp className="w-4 h-4 mr-1" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 mr-1" />
-                          )}
-                          {formatCurrency(metrics.netFlow)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Activity Summary */}
-                    <div className="px-6 py-4 bg-cnsc-white border-t rounded-b-xl">
-                      <div className="flex justify-between text-xs text-cnsc-blue">
-                        <span>
-                          Transactions:{" "}
-                          {(org.collections?.length || 0) +
-                            (org.disbursements?.length || 0) +
-                            (org.reimbursements?.length || 0)}
-                        </span>
-                        <span>
-                          Updated:{" "}
-                          {org.updatedAt
-                            ? new Date(org.updatedAt).toLocaleDateString()
-                            : "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                      {/* Transaction Count & Updated Date */}
+                      <td className="py-3 px-4 text-center text-cnsc-blue">
+                        {(org.collections?.length || 0) +
+                          (org.disbursements?.length || 0) +
+                          (org.reimbursements?.length || 0)}
+                      </td>
+                      <td className="py-3 px-4 text-center text-gray-500">
+                        {org.updatedAt
+                          ? new Date(org.updatedAt).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

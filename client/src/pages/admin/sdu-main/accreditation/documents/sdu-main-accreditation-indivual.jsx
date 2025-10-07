@@ -1,5 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
+import { EmailModal } from "../../../../../components/accreditation-email";
+
 import {
   CheckCircle,
   Clock,
@@ -11,9 +14,6 @@ import {
   Bell,
   X,
 } from "lucide-react";
-
-import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
-import { EmailModal } from "../../../../../components/accreditation-email";
 
 export function SduMainAccreditationDocumentIndividualOrganization({
   selectedOrg,

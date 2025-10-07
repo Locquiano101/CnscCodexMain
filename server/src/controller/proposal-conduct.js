@@ -408,6 +408,7 @@ export const getAllApprovedProposalConduct = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
 export const getAllProposalConduct = async (req, res) => {
   try {
     const doneConducts = await ProposalConduct.find({})

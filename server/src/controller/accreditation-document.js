@@ -67,17 +67,17 @@ export const GetAccreditationDocumentsAll = async (req, res) => {
 
 export const DeactivateAllAccreditations = async (req, res) => {
   try {
-    const result = await Accreditation.updateMany(
-      {}, // match all documents
-      { $set: { isActive: false } }
-    );
+    // const result = await Accreditation.updateMany(
+    //   {}, // match all documents
+    //   { $set: { isActive: false } }
+    // );
     // Find all non-adviser users in the organization
     const users = await User.find({}).select("email");
 
-    const resultOrganizationProfile = await OrganizationProfile.updateMany(
-      {}, // match all documents
-      { $set: { isActive: false } }
-    );
+    // const resultOrganizationProfile = await OrganizationProfile.updateMany(
+    //   {}, // match all documents
+    //   { $set: { isActive: false } }
+    // );
 
     const message = `
 Hello ${orgName},

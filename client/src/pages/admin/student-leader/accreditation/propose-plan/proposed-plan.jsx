@@ -20,7 +20,6 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
-  const [editForm, setEditForm] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -69,15 +68,7 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
 
   const handleEdit = (proposal) => {
     setSelectedProposal(proposal);
-    setEditForm({
-      activityTitle: proposal.activityTitle,
-      proposedDate: proposal.proposedDate.split("T")[0],
-      briefDetails: proposal.briefDetails,
-      overallStatus: proposal.overallStatus,
-      alignedOrgObjectives: proposal.alignedOrgObjectives,
-      venue: proposal.venue,
-      budgetaryRequirements: proposal.budgetaryRequirements,
-    });
+
     setShowEditModal(true);
   };
 

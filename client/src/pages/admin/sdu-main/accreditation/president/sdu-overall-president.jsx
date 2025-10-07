@@ -349,184 +349,143 @@ export function SduMainOverallPresident({ onSelectOrg }) {
       </div>
 
       {/* President Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
-        {filteredPresidents.map((president) => (
-          <div
-            key={president._id}
-            className="bg-white  rounded-lg shadow-md overflow-hidden"
-            onClick={() => {
-              onSelectOrg(president.organizationProfile);
-            }}
-          >
-            <div className="p-6">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
-                    {president.profilePicture ? (
-                      <img
-                        src={`${DOCU_API_ROUTER}/${president.organizationProfile._id}/${president.profilePicture}`}
-                        alt="Profile"
-                        className="w-full h-full rounded-full object-cover border"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        No Image
+      {/* Presidents Table */}
+      {filteredPresidents.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl shadow-lg">
+          <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Presidents Found
+          </h3>
+          <p className="text-gray-500">
+            Try adjusting your search or filter criteria.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+          <table className="min-w-full border-collapse">
+            <thead className="bg-cnsc-primary text-cnsc-white text-sm uppercase">
+              <tr>
+                <th className="px-4 py-3 text-left">President</th>
+                <th className="px-4 py-3 text-left">Course / Year</th>
+                <th className="px-4 py-3 text-left">Contact</th>
+                <th className="px-4 py-3 text-left">Organization</th>
+                <th className="px-4 py-3 text-left">Department</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Org Activity</th>
+                <th className="px-4 py-3 text-center">Updated</th>
+              </tr>
+            </thead>
+
+            <tbody className="text-sm text-gray-800 divide-y divide-gray-100">
+              {filteredPresidents.map((president) => {
+                const org = president.organizationProfile || {};
+
+                return (
+                  <tr
+                    key={president._id}
+                    onClick={() => onSelectOrg(org)}
+                    className="hover:bg-cnsc-primary/5 transition cursor-pointer"
+                  >
+                    {/* President Info */}
+                    <td className="px-4 py-3 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
+                        {president.profilePicture ? (
+                          <img
+                            src={`${DOCU_API_ROUTER}/${org._id}/${president.profilePicture}`}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-xs text-gray-500">
+                            N/A
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">
-                      {president.name}
-                    </h3>
-                    <p className="text-sm text-gray-600">{president.course}</p>
-                    <p className="text-sm text-gray-500">{president.year}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end space-y-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      president.overAllStatus === "Approved"
-                        ? "bg-green-100 text-green-800"
-                        : president.overAllStatus === "Pending"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {president.overAllStatus}
-                  </span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      president.organizationProfile.isActive
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {president.organizationProfile.isActive
-                      ? "Active Org"
-                      : "Inactive Org"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Organization Info */}
-              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-2">
-                  {president.organizationProfile.orgName} (
-                  {president.organizationProfile.orgAcronym})
-                </h4>
-                <p className="text-sm text-gray-600">
-                  {president.organizationProfile.orgDepartment}
-                </p>
-              </div>
-
-              {/* Personal Info */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">
-                    Age: {president.age}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{president.sex}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">
-                    {president.nationality}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Phone className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">
-                    {president.contactNo}
-                  </span>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="mb-4">
-                <div className="flex items-start space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Present Address:
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {president.presentAddress.fullAddress}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Skills */}
-              {president.talentSkills && president.talentSkills.length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-sm font-medium text-gray-700 mb-2">
-                    Skills & Talents:
-                  </h5>
-                  <div className="flex flex-wrap gap-2">
-                    {president.talentSkills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md"
-                      >
-                        {skill.skill} ({skill.level})
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Class Schedule */}
-              <div className="mb-4">
-                <h5 className="text-sm font-medium text-gray-700 mb-2">
-                  Class Schedule:
-                </h5>
-                <div className="space-y-2">
-                  {president.classSchedule.map((schedule) => (
-                    <div
-                      key={schedule._id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                    >
                       <div>
-                        <span className="text-sm font-medium text-gray-700">
-                          {schedule.subject}
-                        </span>
-                        <span className="text-xs text-gray-500 ml-2">
-                          @ {schedule.place}
-                        </span>
+                        <p className="font-semibold text-gray-900">
+                          {president.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Age: {president.age} • {president.sex}
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-600">
-                          {schedule.day}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {typeof schedule.time === "object"
-                            ? `${schedule.time.start} - ${schedule.time.end}`
-                            : schedule.time}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    </td>
 
-              {/* Footer */}
-              <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                <span className="text-xs text-gray-500">
-                  Financial Support: {president.sourceOfFinancialSupport}
-                </span>
-                <span className="text-xs text-gray-500">
-                  Updated: {new Date(president.updatedAt).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                    {/* Course / Year */}
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-700">
+                          {president.course || "N/A"}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {president.year || "N/A"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Contact */}
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm">{president.contactNo}</span>
+                        <span className="text-xs text-gray-500">
+                          {president.nationality}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Organization */}
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-900">
+                        {org.orgName || "N/A"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {org.orgAcronym ? `(${org.orgAcronym})` : ""}
+                      </p>
+                    </td>
+
+                    {/* Department */}
+                    <td className="px-4 py-3">{org.orgDepartment || "N/A"}</td>
+
+                    {/* President Status */}
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          president.overAllStatus === "Approved"
+                            ? "bg-green-100 text-green-800"
+                            : president.overAllStatus === "Pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {president.overAllStatus}
+                      </span>
+                    </td>
+
+                    {/* Active Org */}
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          org.isActive
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {org.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+
+                    {/* Updated Date */}
+                    <td className="px-4 py-3 text-center text-gray-500">
+                      {new Date(president.updatedAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {filteredPresidents.length === 0 && (
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <p className="text-gray-600">
