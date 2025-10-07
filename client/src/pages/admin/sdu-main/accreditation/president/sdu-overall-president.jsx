@@ -112,7 +112,7 @@ export function SduMainOverallPresident({ onSelectOrg }) {
       });
 
       // 📨 Send POST request to backend
-      const res = await axios.post(`${API_ROUTER}/NotifyPresidentOrganization`);
+      const res = await axios.post(API_ROUTER);
 
       console.log("✅ Notification Sent:", res.data.message);
 

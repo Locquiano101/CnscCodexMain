@@ -122,7 +122,7 @@ export function SduMainNavigation() {
       key: "proposal-approval",
       icon: <CheckCircle className="w-4 h-4" />,
       label: "System-wide Approval",
-      path: "/SDU/proposal/system-wide-approval",
+      path: "/SDU/proposal/approval",
     },
   ];
 
