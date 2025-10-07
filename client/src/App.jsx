@@ -22,7 +22,7 @@ import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
 
 const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
 export const API_ROUTER = `${MAIN_API_ROUTER}`;
-export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/server/uploads`;
+export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
 
 export default function App() {
   return (
