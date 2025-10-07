@@ -93,7 +93,7 @@ export function SduMainComponents({ user }) {
     );
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-gray-300">
+    <div className="flex flex-col  h-full w-full overflow-hidden bg-gray-300">
       {showSelector && (
         <OrganizationSelector
           orgs={orgs}
@@ -103,131 +103,136 @@ export function SduMainComponents({ user }) {
           }}
         />
       )}
+      <div className="flex flex-col  h-full w-full overflow-hidden bg-gray-300">
+        <Routes>
+          {/* Dashboard/Home */}
+          <Route path="/" element={<UnderDevelopment />} />
 
-      <Routes>
-        {/* Dashboard/Home */}
-        <Route path="/" element={<UnderDevelopment />} />
-
-        {/* Proposals */}
-        <Route path="/proposal">
-          <Route
-            index
-            element={renderRoute(
-              <SduMainIndividualProposeActionPlan selectedOrg={selectedOrg} />,
-              <SduMainOverallProposedActioPlanConduct
-                onSelectOrg={setSelectedOrg}
-              />
-            )}
-          />
-          <Route path="system-wide" element={<UnderDevelopment />} />
-        </Route>
-
-        {/* Accreditation */}
-        <Route path="/accreditation" element={<Outlet />}>
-          <Route
-            index
-            element={renderRoute(
-              <SduMainIndividualAccreditationView selectedOrg={selectedOrg} />,
-              <SduAccreditationOverview onSelectOrg={setSelectedOrg} />
-            )}
-          />
-
-          <Route
-            path="financial-report"
-            element={renderRoute(
-              <SduMainFinancialReport selectedOrg={selectedOrg} />,
-              <SduMainFinancialReportOverall
-                orgs={orgs}
-                selectedOrg={selectedOrg}
-                onSelectOrg={setSelectedOrg}
-              />
-            )}
-          />
-
-          <Route
-            path="roster-of-members"
-            element={renderRoute(
-              <SduMainIndividualRosterView selectedOrg={selectedOrg} />,
-              <SduMainRosterOverview
-                orgs={orgs}
-                selectedOrg={selectedOrg}
-                onSelectOrg={setSelectedOrg}
-              />
-            )}
-          />
-
-          <Route
-            path="document"
-            element={renderRoute(
-              <SduMainAccreditationDocumentIndividualOrganization
-                selectedOrg={selectedOrg}
-                user={user}
-              />,
-              <SduMainAccreditationDocumentOverview
-                orgs={orgs}
-                selectedOrg={selectedOrg}
-                onSelectOrg={setSelectedOrg}
-              />
-            )}
-          />
-
-          <Route
-            path="proposed-action-plan"
-            element={renderRoute(
-              <SduMainProposedActionPlanOrganization
-                selectedOrg={selectedOrg}
-              />,
-              <SduMainOverallProposedActioPlan onSelectOrg={setSelectedOrg} />
-            )}
-          />
-
-          <Route
-            path="president-information"
-            element={renderRoute(
-              <SduMainIndividualOrganizationPresident
-                selectedOrg={selectedOrg}
-              />,
-              <SduMainOverallPresident onSelectOrg={setSelectedOrg} />
-            )}
-          />
-
-          <Route path="settings" element={<SduMainAccreditationSettings />} />
-        </Route>
-
-        {/* Accomplishments */}
-        <Route
-          path="/accomplishment"
-          element={renderRoute(
-            <SduMainAccomplishmentOrganization selectedOrg={selectedOrg} />,
-            <SduMainAccomplishment
-              orgs={orgs}
-              selectedOrg={selectedOrg}
-              onSelectOrg={setSelectedOrg}
+          {/* Proposals */}
+          <Route path="/proposal">
+            <Route
+              index
+              element={renderRoute(
+                <SduMainIndividualProposeActionPlan
+                  selectedOrg={selectedOrg}
+                />,
+                <SduMainOverallProposedActioPlanConduct
+                  onSelectOrg={setSelectedOrg}
+                />
+              )}
             />
-          )}
-        />
-        {/* Organizations */}
-        <Route
-          path="/organization"
-          element={renderRoute(
-            <SduIndividualOrganizationView selectedOrg={selectedOrg} />,
-            <SduMainOrganizationsComponent
-              orgs={orgs}
-              selectedOrg={selectedOrg}
-              onSelectOrg={setSelectedOrg}
+            <Route path="system-wide" element={<UnderDevelopment />} />
+          </Route>
+
+          {/* Accreditation */}
+          <Route path="/accreditation" element={<Outlet />}>
+            <Route
+              index
+              element={renderRoute(
+                <SduMainIndividualAccreditationView
+                  selectedOrg={selectedOrg}
+                />,
+                <SduAccreditationOverview onSelectOrg={setSelectedOrg} />
+              )}
             />
-          )}
-        />
 
-        {/* Reports */}
-        <Route path="/report" element={<UnderDevelopment />} />
+            <Route
+              path="financial-report"
+              element={renderRoute(
+                <SduMainFinancialReport selectedOrg={selectedOrg} />,
+                <SduMainFinancialReportOverall
+                  orgs={orgs}
+                  selectedOrg={selectedOrg}
+                  onSelectOrg={setSelectedOrg}
+                />
+              )}
+            />
 
-        {/* Posts */}
-        <Route path="/post" element={<UnderDevelopment />} />
+            <Route
+              path="roster-of-members"
+              element={renderRoute(
+                <SduMainIndividualRosterView selectedOrg={selectedOrg} />,
+                <SduMainRosterOverview
+                  orgs={orgs}
+                  selectedOrg={selectedOrg}
+                  onSelectOrg={setSelectedOrg}
+                />
+              )}
+            />
 
-        {/* User Management */}
-        <Route path="/user-management" element={<SduUserManagement />} />
-      </Routes>
+            <Route
+              path="document"
+              element={renderRoute(
+                <SduMainAccreditationDocumentIndividualOrganization
+                  selectedOrg={selectedOrg}
+                  user={user}
+                />,
+                <SduMainAccreditationDocumentOverview
+                  orgs={orgs}
+                  selectedOrg={selectedOrg}
+                  onSelectOrg={setSelectedOrg}
+                />
+              )}
+            />
+
+            <Route
+              path="proposed-action-plan"
+              element={renderRoute(
+                <SduMainProposedActionPlanOrganization
+                  selectedOrg={selectedOrg}
+                />,
+                <SduMainOverallProposedActioPlan onSelectOrg={setSelectedOrg} />
+              )}
+            />
+
+            <Route
+              path="president-information"
+              element={renderRoute(
+                <SduMainIndividualOrganizationPresident
+                  selectedOrg={selectedOrg}
+                />,
+                <SduMainOverallPresident onSelectOrg={setSelectedOrg} />
+              )}
+            />
+
+            <Route path="settings" element={<SduMainAccreditationSettings />} />
+          </Route>
+
+          {/* Accomplishments */}
+          <Route
+            path="/accomplishment"
+            element={renderRoute(
+              <SduMainAccomplishmentOrganization selectedOrg={selectedOrg} />,
+              <SduMainAccomplishment
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+          {/* Organizations */}
+          <Route
+            path="/organization"
+            element={renderRoute(
+              <SduIndividualOrganizationView selectedOrg={selectedOrg} />,
+              <SduMainOrganizationsComponent
+                orgs={orgs}
+                selectedOrg={selectedOrg}
+                onSelectOrg={setSelectedOrg}
+              />
+            )}
+          />
+
+          {/* Reports */}
+          <Route path="/report" element={<UnderDevelopment />} />
+
+          {/* Posts */}
+          <Route path="/post" element={<UnderDevelopment />} />
+
+          {/* User Management */}
+          <Route path="/user-management" element={<SduUserManagement />} />
+        </Routes>
+      </div>
     </div>
   );
 }
