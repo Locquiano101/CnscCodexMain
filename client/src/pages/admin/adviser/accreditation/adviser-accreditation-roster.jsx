@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import axios from "axios";
-import { MoreHorizontal, Search, X } from "lucide-react";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+import { MoreHorizontal, Search } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 import { EmailModal } from "../../../../components/accreditation-email";
 
@@ -12,18 +10,15 @@ export function AdviserRosterData({ orgData, user }) {
   const [alertModal, setAlertModal] = useState(false);
   const [revisionModal, setRevisionModal] = useState(false);
   const [approvalModal, setApprovalModal] = useState(false);
-  const [exportModal, setExportModal] = useState(false);
   const [incompleteModal, setIncompleteModal] = useState(false);
   const [popup, setPopup] = useState(null);
   const [rosterData, setRosterData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // ✅ search state
-  // In your AdviserRosterData component, add this state
-
-  // Add loading states
+  const [searchQuery, setSearchQuery] = useState("");
   const [approvalLoading, setApprovalLoading] = useState(false);
 
+  // Fetch roster members
   const fetchRosterMembers = async () => {
     try {
       setLoading(true);
@@ -33,7 +28,7 @@ export function AdviserRosterData({ orgData, user }) {
       setRosterData(response.data);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch organization info:", err);
+      console.error("Failed to fetch roster members:", err);
       setError("Failed to load roster members");
     } finally {
       setLoading(false);
@@ -41,9 +36,7 @@ export function AdviserRosterData({ orgData, user }) {
   };
 
   useEffect(() => {
-    if (orgData._id) {
-      fetchRosterMembers();
-    }
+    if (orgData._id) fetchRosterMembers();
   }, [orgData._id]);
 
   // Close dropdown when clicking outside
@@ -53,13 +46,13 @@ export function AdviserRosterData({ orgData, user }) {
         setShowDropdown(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
 
+  // Handle approval
   const handleApproval = async ({ status, revisionNotes }) => {
     if (!rosterData?.roster?.isComplete) {
       setIncompleteModal(true);
@@ -67,17 +60,24 @@ export function AdviserRosterData({ orgData, user }) {
     }
 
     try {
-      setApprovalLoading(true); // ✅ Set approval loading
+      setApprovalLoading(true);
 
       const payload = { overAllStatus: status };
-      if (revisionNotes && revisionNotes.trim() !== "") {
-        payload.revisionNotes = revisionNotes;
-      }
+      if (revisionNotes?.trim()) payload.revisionNotes = revisionNotes;
 
-      const response = await axios.post(
+      await axios.post(
         `${API_ROUTER}/postApproveRoster/${rosterData.roster._id}`,
         payload
       );
+
+      // Update local state so UI reflects new status
+      setRosterData((prev) => ({
+        ...prev,
+        roster: {
+          ...prev.roster,
+          overAllStatus: status,
+        },
+      }));
 
       setPopup({
         type: "success",
@@ -85,22 +85,20 @@ export function AdviserRosterData({ orgData, user }) {
       });
       setError(null);
     } catch (err) {
-      console.error("❌ Failed to approve:", err);
+      console.error("Failed to approve:", err);
       setPopup({
         type: "error",
         message: "Something went wrong while processing your request.",
       });
     } finally {
-      setApprovalLoading(false); // ✅ Reset approval loading
+      setApprovalLoading(false);
     }
   };
 
   if (loading) {
     return (
       <div className="p-4 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Loading roster members...</p>
-        </div>
+        <p className="text-gray-600">Loading roster members...</p>
       </div>
     );
   }
@@ -123,17 +121,11 @@ export function AdviserRosterData({ orgData, user }) {
 
   const handleDropdownAction = (id) => {
     setShowDropdown(false);
-
-    if (id === "revision") {
-      setRevisionModal(true);
-    } else if (id === "Approval") {
-      setApprovalModal(true);
-    }
+    if (id === "revision") setRevisionModal(true);
+    else if (id === "Approval") setApprovalModal(true);
   };
 
   const rosterMembers = rosterData?.rosterMembers || [];
-
-  // ✅ Filter roster based on search query
   const filteredRoster = rosterMembers.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -167,12 +159,12 @@ export function AdviserRosterData({ orgData, user }) {
             <p className="text-sm font-medium text-gray-600">
               Approval Status:{" "}
               <span className="text-indigo-600">
-                {rosterData.roster.overAllStatus}
+                {rosterData.roster.overAllStatus || "Pending"}
               </span>
             </p>
           </div>
 
-          {/* Dropdown Container */}
+          {/* Dropdown */}
           <div className="relative dropdown-container">
             <button
               className="p-2 rounded-full hover:bg-gray-100 transition"
@@ -183,23 +175,21 @@ export function AdviserRosterData({ orgData, user }) {
 
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg border border-gray-300 z-10 rounded-lg overflow-hidden">
-                <div className="flex flex-col">
-                  {dropdownItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleDropdownAction(item.id)}
-                      className="px-4 py-3 text-left hover:bg-amber-200 transition-colors duration-200"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
+                {dropdownItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleDropdownAction(item.id)}
+                    className="px-4 py-3 text-left hover:bg-amber-200 transition-colors duration-200"
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* ✅ Search Bar */}
+        {/* Search */}
         <div className="flex items-center gap-2 w-full max-w-md">
           <Search className="text-gray-500" size={20} />
           <input
@@ -211,6 +201,7 @@ export function AdviserRosterData({ orgData, user }) {
           />
         </div>
       </div>
+
       {/* Content */}
       <div className="h-full overflow-auto">
         {!rosterData || filteredRoster.length === 0 ? (
@@ -247,7 +238,8 @@ export function AdviserRosterData({ orgData, user }) {
           </div>
         )}
       </div>
-      {/* Revision Modal → EmailModal */}
+
+      {/* Revision Modal */}
       <EmailModal
         open={revisionModal}
         onClose={() => setRevisionModal(false)}
@@ -265,7 +257,7 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {/* Incomplete Modal → EmailModal */}
+      {/* Incomplete Modal */}
       <EmailModal
         open={incompleteModal}
         onClose={() => setIncompleteModal(false)}
@@ -274,7 +266,6 @@ export function AdviserRosterData({ orgData, user }) {
         description="The roster is incomplete. Notify the organization to finish their submission."
         sendButtonLabel="Notify Organization"
         orgData={orgData}
-        Subject="Incomplete Roster"
         user={user}
         onSuccess={() =>
           setPopup({
@@ -290,13 +281,12 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {/* Existing Alert Modal → stays the same */}
+      {/* Alert Modal */}
       <EmailModal
         open={alertModal}
         onClose={() => setAlertModal(false)}
         route="accreditationEmailInquiry"
-        Subject="The roster is has not “The roster has not been initiated. Please notify the organization to complete their submission."
-        title="Notify Organization About Modal"
+        title="Roster List Notification"
         sendButtonLabel="Notify President"
         orgData={orgData}
         user={user}
@@ -306,29 +296,14 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {/* No Roster Email */}
-      <EmailModal
-        open={alertModal}
-        onClose={() => setAlertModal(false)}
-        Subject="Roster Initiation"
-        route="accreditationEmailInquiry"
-        title="Roster List Notification"
-        sendButtonLabel="Notify President"
-        orgData={orgData} // ✅ pass org data
-        user={user} // ✅ pass adviser/user data
-        onSuccess={() => setPopup({ type: "success", message: "Email sent!" })}
-        onError={() =>
-          setPopup({ type: "error", message: "Failed to send email" })
-        }
-      />
+      {/* Approval Modal */}
       {approvalModal && (
         <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
           <div className="h-fit bg-white w-1/4 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            {/* Close Button */}
             <button
               onClick={() => setApprovalModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-              disabled={approvalLoading} // ✅ Disable when loading
+              disabled={approvalLoading}
             >
               ✕
             </button>
@@ -338,29 +313,29 @@ export function AdviserRosterData({ orgData, user }) {
             </h1>
 
             <p className="mb-4 text-gray-700">
-              By approving this section of the accreditation, you confirm that
-              you have reviewed the information provided and consent to its
-              approval. Would you like to proceed?
+              By approving this roster, you confirm that you have reviewed the
+              information provided and consent to its approval. Would you like
+              to proceed?
             </p>
 
             <button
               onClick={() => {
-                handleApproval("Approved By the Adviser"); // 👈 call with "Approved"
+                handleApproval({ status: "Approved By the Adviser" });
                 setApprovalModal(false);
               }}
-              disabled={approvalLoading} // ✅ Disable when loading
+              disabled={approvalLoading}
               className={`mt-6 px-6 py-2 rounded-lg text-sm font-medium shadow-md transition ${
                 approvalLoading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700 text-white"
               }`}
             >
-              {approvalLoading ? "Processing..." : "Confirm Approval"}{" "}
-              {/* ✅ Loading text */}
+              {approvalLoading ? "Processing..." : "Confirm Approval"}
             </button>
           </div>
         </div>
       )}
+
       {popup && (
         <DonePopUp
           type={popup.type}
@@ -372,38 +347,34 @@ export function AdviserRosterData({ orgData, user }) {
   );
 }
 
-const RosterMemberCard = ({ member, orgId }) => {
-  return (
-    <div className="bg-white w-full h-full rounded-lg flex flex-col gap-2 items-center shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
-        <img
-          src={
-            member.profilePicture
-              ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
-              : "/cnsc-logo.png"
-          }
-          alt="Profile"
-          className="max-h-32 aspect-square border object-cover rounded"
-        />
-      </div>
+const RosterMemberCard = ({ member, orgId }) => (
+  <div className="bg-white w-full h-full rounded-lg flex flex-col gap-2 items-center shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+    <img
+      src={
+        member.profilePicture
+          ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
+          : "/cnsc-logo.png"
+      }
+      alt="Profile"
+      className="max-h-32 aspect-square border object-cover rounded"
+    />
 
-      <div className="space-y-1 text-center">
-        <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
-        <p className="text-sm font-medium text-indigo-600">{member.position}</p>
-        <p className="text-sm text-gray-600">{member.email}</p>
-        <p className="text-sm text-gray-600">{member.contactNumber}</p>
-        <p className="text-sm text-gray-500">{member.address}</p>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-gray-100 w-full text-center">
-        <p className="text-xs text-gray-500">
-          Birth Date:{" "}
-          {member.birthDate
-            ? new Date(member.birthDate).toLocaleDateString()
-            : "Not provided"}
-        </p>
-        <p className="text-xs text-gray-500">Status: {member.status}</p>
-      </div>
+    <div className="space-y-1 text-center">
+      <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
+      <p className="text-sm font-medium text-indigo-600">{member.position}</p>
+      <p className="text-sm text-gray-600">{member.email}</p>
+      <p className="text-sm text-gray-600">{member.contactNumber}</p>
+      <p className="text-sm text-gray-500">{member.address}</p>
     </div>
-  );
-};
+
+    <div className="mt-4 pt-4 border-t border-gray-100 w-full text-center">
+      <p className="text-xs text-gray-500">
+        Birth Date:{" "}
+        {member.birthDate
+          ? new Date(member.birthDate).toLocaleDateString()
+          : "Not provided"}
+      </p>
+      <p className="text-xs text-gray-500">Status: {member.status}</p>
+    </div>
+  </div>
+);

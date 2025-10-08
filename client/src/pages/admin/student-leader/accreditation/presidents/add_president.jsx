@@ -870,7 +870,7 @@ function PresidentPersonalInfo({
   ];
   // Constants
   const financialSupportOptions = [
-    "Parents/Family",
+    "Allowance",
     "Scholarship",
     "Part-time Job",
     "Student Loan",
@@ -1200,10 +1200,11 @@ function PresidentGuardianInfo({
       <h3 className="text-lg font-semibold mb-4 text-yellow-800">
         Guardian Information
       </h3>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-600">
-            Guardian First Name
+            Guardian First Name *
           </label>
           <input
             type="text"
@@ -1213,9 +1214,10 @@ function PresidentGuardianInfo({
             className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-600">
-            Guardian Middle Name
+            Guardian Middle Name (optional)
           </label>
           <input
             type="text"
@@ -1225,9 +1227,10 @@ function PresidentGuardianInfo({
             className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-600">
-            Guardian Last Name
+            Guardian Last Name *
           </label>
           <input
             type="text"
@@ -1238,6 +1241,7 @@ function PresidentGuardianInfo({
           />
         </div>
       </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-600">
           Address Phone Number (Optional)
@@ -1246,7 +1250,26 @@ function PresidentGuardianInfo({
           type="tel"
           name="addressPhoneNo"
           value={formData.addressPhoneNo}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            let value = e.target.value.replace(/\D/g, ""); // remove non-digits
+            if (value.startsWith("63")) value = value.slice(2); // remove duplicate 63
+            if (value.length > 10) value = value.slice(0, 10); // limit to 10 digits
+
+            // Only allow numbers starting with 9
+            if (value && !value.startsWith("9")) {
+              return; // ignore input if it doesn’t start with 9
+            }
+
+            const formatted = `+63 ${value.replace(
+              /(\d{3})(\d{3})(\d{0,4})/,
+              (_, a, b, c) => `${a} ${b}${c ? " " + c : ""}`
+            )}`;
+
+            handleInputChange({
+              target: { name: "addressPhoneNo", value: formatted },
+            });
+          }}
+          placeholder="+63 9XX XXX XXXX"
           className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
         />
       </div>
@@ -1773,13 +1796,14 @@ export const PhilippineAddressForm = forwardRef(
             {/* Region */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Region
+                Region <span className="text-red-500">*</span>
               </label>
               <select
                 value={addressData.region}
                 onChange={(e) =>
                   handleAddressChange(addressType, "region", e.target.value)
                 }
+                required
                 className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={loading.regions || isDisabled}
               >
@@ -1795,13 +1819,14 @@ export const PhilippineAddressForm = forwardRef(
             {/* Province */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Province
+                Province <span className="text-red-500">*</span>
               </label>
               <select
                 value={addressData.province}
                 onChange={(e) =>
                   handleAddressChange(addressType, "province", e.target.value)
                 }
+                required
                 className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={
                   loading.provinces || !addressData.region || isDisabled
@@ -1819,13 +1844,14 @@ export const PhilippineAddressForm = forwardRef(
             {/* City/Municipality */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                City/Municipality
+                City/Municipality <span className="text-red-500">*</span>
               </label>
               <select
                 value={addressData.city}
                 onChange={(e) =>
                   handleAddressChange(addressType, "city", e.target.value)
                 }
+                required
                 className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={loading.cities || !addressData.province || isDisabled}
               >
@@ -1841,13 +1867,14 @@ export const PhilippineAddressForm = forwardRef(
             {/* Barangay */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Barangay
+                Barangay <span className="text-red-500">*</span>
               </label>
               <select
                 value={addressData.barangay}
                 onChange={(e) =>
                   handleAddressChange(addressType, "barangay", e.target.value)
                 }
+                required
                 className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={loading.barangays || !addressData.city || isDisabled}
               >
@@ -1863,7 +1890,7 @@ export const PhilippineAddressForm = forwardRef(
             {/* Purok */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Purok/Street
+                Purok/Street <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -1871,16 +1898,17 @@ export const PhilippineAddressForm = forwardRef(
                 onChange={(e) =>
                   handleAddressChange(addressType, "purok", e.target.value)
                 }
+                required
                 className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="Enter purok/Street"
+                placeholder="Enter purok/street"
                 disabled={isDisabled}
               />
             </div>
 
-            {/* Street */}
+            {/* House No. / Residence (Optional) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                house No. / Residence
+                House No. / Residence (optional)
               </label>
               <input
                 type="text"
@@ -1889,7 +1917,7 @@ export const PhilippineAddressForm = forwardRef(
                   handleAddressChange(addressType, "street", e.target.value)
                 }
                 className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="Enter street name"
+                placeholder="Enter house number or residence (optional)"
                 disabled={isDisabled}
               />
             </div>
