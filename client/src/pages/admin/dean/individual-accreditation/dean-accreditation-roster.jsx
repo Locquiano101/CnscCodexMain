@@ -357,7 +357,7 @@ export function DeanRosterData({ selectedOrg }) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 ">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2">
             {rosterMembers.map((member) => (
               <RosterMemberCard
                 key={member._id}
