@@ -425,65 +425,98 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
 // ----------------------
 export default function AccreditationTable({ data = [] }) {
   return (
-    <div className="w-full overflow-x-auto border border-gray-400 shadow-sm">
-      <div className="max-h-[400px] overflow-y-auto">
+    <div className="w-full overflow-x-auto border border-gray-300 rounded-xl shadow-md bg-white">
+      <div className="max-h-[420px] overflow-y-auto rounded-b-xl">
         <table className="min-w-[900px] w-full table-fixed border-separate border-spacing-0">
-          <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+          {/* 🧭 Table Header */}
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10 shadow-sm">
             <tr>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                NO.
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Name of the Organization
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Nature
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Status of Accreditation
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Adviser
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                President
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Validation of Accreditation
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                APESOC Result (Total)
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Final Status
-              </th>
+              {[
+                "No.",
+                "Name of the Organization",
+                "Nature",
+                "Status of Accreditation",
+                "Adviser",
+                "President",
+                "Validation of Accreditation",
+                "APESOC Result (Total)",
+                "Final Status",
+              ].map((header, i) => (
+                <th
+                  key={i}
+                  className="border border-gray-300 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
+                >
+                  {header}
+                </th>
+              ))}
             </tr>
           </thead>
 
+          {/* 📋 Table Body */}
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center py-6 text-gray-500">
-                  No data available
+                <td
+                  colSpan={9}
+                  className="text-center py-10 text-gray-500 text-sm bg-gray-50"
+                >
+                  No accreditation records available.
                 </td>
               </tr>
             ) : (
               data.map((row, idx) => (
-                <tr key={idx} className="odd:bg-white even:bg-gray-50/40">
-                  <td className="border border-gray-400 px-3 py-2 text-center">
+                <tr
+                  key={idx}
+                  className="odd:bg-white even:bg-gray-50 hover:bg-blue-50/40 transition-colors"
+                >
+                  <td className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">
                     {idx + 1}
                   </td>
-                  <td className="border border-gray-400 px-3 py-2">{row.name}</td>
-                  <td className="border border-gray-400 px-3 py-2">{row.nature}</td>
-                  <td className="border border-gray-400 px-3 py-2">{row.accreditationStatus}</td>
-                  <td className="border border-gray-400 px-3 py-2">{row.adviser}</td>
-                  <td className="border border-gray-400 px-3 py-2">{row.president}</td>
-                  <td className="border border-gray-400 px-3 py-2 text-center">{row.validationDate}</td>
-                  <td className="border border-gray-400 px-3 py-2 text-center font-semibold text-indigo-700">
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-800">
+                    {row.name}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700 text-center">
+                    {row.nature}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-center">
+                    <span
+                      className={`inline-flex items-center justify-center px-2 py-1 text-[11px] rounded-full font-semibold
+                        ${
+                          row.accreditationStatus === "Accredited"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : row.accreditationStatus === "Pending"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                    >
+                      {row.accreditationStatus}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700">
+                    {row.adviser}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700">
+                    {row.president}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700 text-center">
+                    {row.validationDate}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm font-semibold text-indigo-700 text-center">
                     {row.apesocTotal}
                   </td>
-                  <td className="border border-gray-400 px-3 py-2 text-center">
-                    {row.finalStatus}
+                  <td className="border border-gray-300 px-3 py-2 text-sm text-center">
+                    <span
+                      className={`inline-flex items-center justify-center px-3 py-1 text-[11px] rounded-full font-semibold
+                        ${
+                          row.finalStatus === "Approved"
+                            ? "bg-green-100 text-green-700"
+                            : row.finalStatus === "For Review"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                    >
+                      {row.finalStatus}
+                    </span>
                   </td>
                 </tr>
               ))
@@ -494,6 +527,7 @@ export default function AccreditationTable({ data = [] }) {
     </div>
   );
 }
+
 
 
 
