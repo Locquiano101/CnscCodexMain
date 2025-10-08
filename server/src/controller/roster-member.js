@@ -1,4 +1,10 @@
-import { RosterMember, Accreditation, Roster, User } from "../models/index.js";
+import {
+  RosterMember,
+  Accreditation,
+  Roster,
+  User,
+  Notification,
+} from "../models/index.js";
 import { NodeEmail } from "../middleware/emailer.js";
 
 export const ApprovedRosterList = async (req, res) => {
@@ -6,26 +12,110 @@ export const ApprovedRosterList = async (req, res) => {
     const { rosterId } = req.params;
     const { overAllStatus, revisionNotes, isComplete } = req.body;
 
-    // Build an update object only with fields that were passed
+    if (!rosterId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Roster ID is required." });
+    }
+
+    // 🔹 Build an update object only with provided fields
     const updateFields = {};
     if (overAllStatus) updateFields.overAllStatus = overAllStatus;
     if (revisionNotes !== undefined) updateFields.revisionNotes = revisionNotes;
     if (isComplete !== undefined) updateFields.isComplete = isComplete;
 
+    // 🔹 Update and populate the roster (assuming roster links to an organizationProfile)
     const updatedRoster = await Roster.findByIdAndUpdate(
       rosterId,
       updateFields,
-      { new: true }
-    );
+      {
+        new: true,
+      }
+    ).populate("organizationProfile");
 
     if (!updatedRoster) {
-      return res.status(404).json({ message: "Roster not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Roster not found." });
     }
 
-    res.status(200).json(updatedRoster);
+    // 🔹 Find all connected users under the same organizationProfile
+    const connectedUsers = await User.find({
+      organizationProfile: updatedRoster.organizationProfile?._id,
+    }).select("email name");
+
+    if (!connectedUsers.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No connected users found for this roster.",
+      });
+    }
+
+    const recipientEmails = connectedUsers.map((u) => u.email);
+
+    // ✅ Prepare email message
+    const subject = `Roster Status Update — ${overAllStatus || "Updated"}`;
+    const message = `
+Hello,
+
+The roster linked to "${
+      updatedRoster.organizationProfile?.orgName || "your organization"
+    }" has been updated.
+
+📋 Status: ${overAllStatus || "N/A"}
+${revisionNotes ? `📝 Revision Notes: ${revisionNotes}` : ""}
+${
+  isComplete !== undefined
+    ? `✅ Completion Status: ${isComplete ? "Complete" : "Incomplete"}`
+    : ""
+}
+
+Please log in to the accreditation system to view the full details.
+
+Thank you,
+Accreditation Support Team
+`;
+
+    // ✅ Send emails to all connected users
+    await NodeEmail(recipientEmails, subject, message);
+
+    // ✅ Create a Notification record
+    const notifMessage = `Roster for "${
+      updatedRoster.organizationProfile?.orgName || "Organization"
+    }" has been updated — Status: "${overAllStatus || "Updated"}".`;
+
+    const notification = new Notification({
+      organizationProfile: updatedRoster.organizationProfile?._id,
+      department: updatedRoster.organizationProfile?.orgDepartment || "N/A",
+      type: "Accreditation Update",
+      message: notifMessage,
+      data: {
+        rosterId,
+        status: overAllStatus || "Updated",
+        revisionNotes: revisionNotes || null,
+        isComplete: isComplete ?? null,
+      },
+    });
+
+    await notification.save();
+
+    // ✅ Respond
+    return res.status(200).json({
+      success: true,
+      message: `Roster ${
+        overAllStatus?.toLowerCase() || "updated"
+      } successfully, notifications sent, and log recorded.`,
+      updatedRoster,
+      notifiedUsers: recipientEmails,
+      notificationLog: notification,
+    });
   } catch (error) {
-    console.error("Error updating roster:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("❌ Error updating roster:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      error: error.message,
+    });
   }
 };
 

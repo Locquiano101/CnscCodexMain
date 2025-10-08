@@ -87,37 +87,105 @@ export const UpdatePresidentProfileStatus = async (req, res) => {
   const { overallStatus, revisionNotes } = req.body;
 
   if (!presidentId) {
-    return res.status(400).json({ message: "President ID is required." });
+    return res
+      .status(400)
+      .json({ success: false, message: "President ID is required." });
   }
 
   if (!overallStatus) {
-    return res.status(400).json({ message: "Overall status is required." });
+    return res
+      .status(400)
+      .json({ success: false, message: "Overall status is required." });
   }
 
   try {
-    const profile = await PresidentProfile.findById(presidentId);
+    // 🔹 Find the president profile and linked organizationProfile
+    const profile = await PresidentProfile.findById(presidentId).populate(
+      "organizationProfile"
+    );
 
     if (!profile) {
-      return res.status(404).json({ message: "President profile not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "President profile not found." });
     }
 
-    // ✅ Update status
+    // 🔹 Update status and revision notes
     profile.overAllStatus = overallStatus;
-
-    // ✅ Save revision notes if provided
     if (revisionNotes && revisionNotes.trim() !== "") {
       profile.revisionNotes = revisionNotes;
     }
 
     await profile.save();
 
+    // 🔹 Find all users linked to the same organizationProfile
+    const connectedUsers = await User.find({
+      organizationProfile: profile.organizationProfile?._id,
+    }).select("email name");
+
+    if (!connectedUsers.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No connected users found for this president profile.",
+      });
+    }
+
+    const recipientEmails = connectedUsers.map((user) => user.email);
+
+    // ✅ Prepare email content
+    const subject = `President Profile Status Updated — ${overallStatus}`;
+    const message = `
+Hello,
+
+The President Profile for "${
+      profile.name || "your organization president"
+    }" has been updated.
+
+📋 Status: ${overallStatus}
+${revisionNotes ? `📝 Revision Notes: ${revisionNotes}` : ""}
+
+Please log in to the accreditation system to view the full details.
+
+Thank you,
+Accreditation Support Team
+`;
+
+    // ✅ Send email to all connected users
+    await NodeEmail(recipientEmails, subject, message);
+
+    // ✅ Create a notification record (for internal tracking or in-app alerts)
+    const notifMessage = `President Profile for "${
+      profile.name || "Organization President"
+    }" was updated to "${overallStatus}".`;
+    const notification = new Notification({
+      organizationProfile: profile.organizationProfile?._id,
+      department: profile.organizationProfile?.orgDepartment || "N/A",
+      type: "Accreditation Update",
+      message: notifMessage,
+      data: {
+        presidentId,
+        status: overallStatus,
+        revisionNotes: revisionNotes || null,
+      },
+    });
+
+    await notification.save();
+
+    // ✅ Response
     return res.status(200).json({
-      message: `President profile ${overallStatus.toLowerCase()} successfully.`,
+      success: true,
+      message: `President profile ${overallStatus.toLowerCase()} successfully, notifications sent, and log recorded.`,
       updatedProfile: profile,
+      notifiedUsers: recipientEmails,
+      notificationLog: notification,
     });
   } catch (error) {
-    console.log("❌ Error updating president profile:", error);
-    return res.status(500).json({ message: "Internal server error." });
+    console.error("❌ Error updating president profile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      error: error.message,
+    });
   }
 };
 

@@ -85,10 +85,10 @@ export function AddProposal({ proposals = [], onClose, onAddLog }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl  flex flex-col">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm h-full w-full  border-12 flex items-center justify-center z-100 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex justify-between  items-center p-6 border-b border-gray-200">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800">Add New Proposal</h2>
           <button
             onClick={onClose}

@@ -8,7 +8,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">

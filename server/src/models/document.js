@@ -11,7 +11,7 @@ export const documentSchema = new Schema(
 
     organizationProfile: {
       type: Schema.Types.ObjectId,
-      ref: "organizationProfile",
+      ref: "OrganizationProfile",
       require: true,
     },
 

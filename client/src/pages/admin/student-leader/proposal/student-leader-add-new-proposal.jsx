@@ -174,7 +174,7 @@ export function AddNewProposal({ onClose, orgData }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3/4 max-h-[95vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800">
@@ -364,7 +364,9 @@ export function AddNewProposal({ onClose, orgData }) {
                 <label className="block text-sm font-medium text-black mb-2">
                   Aligned SDG *
                 </label>
-                <div className="flex flex-wrap gap-2">
+
+                {/* Grid instead of flex-wrap */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     { value: "SDG 1", label: "SDG 1: No Poverty" },
                     { value: "SDG 2", label: "SDG 2: Zero Hunger" },
@@ -411,19 +413,21 @@ export function AddNewProposal({ onClose, orgData }) {
                       label: "SDG 17: Partnerships for the Goals",
                     },
                   ].map((sdg) => (
-                    <div key={sdg.value} className="bg-gray-200 rounded-full">
-                      <label className="flex items-center space-x-1 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.alignedSDG.includes(sdg.value)}
-                          onChange={() => handleSDGChange(sdg.value)}
-                          className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer"
-                        />
-                        <span className="text-sm">{sdg.label}</span>
-                      </label>
+                    <div
+                      key={sdg.value}
+                      className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.alignedSDG.includes(sdg.value)}
+                        onChange={() => handleSDGChange(sdg.value)}
+                        className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer mr-2"
+                      />
+                      <span className="text-sm">{sdg.label}</span>
                     </div>
                   ))}
                 </div>
+
                 {errors.alignedSDG && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.alignedSDG}
