@@ -15,6 +15,9 @@ import {
   Cell
 } from "recharts";
 
+import axios from "axios";
+import { API_ROUTER } from "../../../App";
+
 import { UpdateStatusProposal } from "../../../components/update-status-proposal";
 import { DeanFinancialReport } from "./individual-accreditation/dean-accreditation-financial-report";
 import { DeanRosterData } from "./individual-accreditation/dean-accreditation-roster";
@@ -336,80 +339,123 @@ const completedRequirements = requirements.filter((req) => {
   );
 }
 
+export function OrgAccreditation({ org, accreditationData, baseOrg }) {
+  const [accomplishment, setAccomplishment] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // ✅ Determine the organization profile ID
+  const orgProfileId =
+    org?._id ||
+    org?.organizationProfile ||
+    baseOrg?._id ||
+    baseOrg?.organizationProfile;
+
+  useEffect(() => {
+    if (!orgProfileId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchAccomplishment = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`${API_ROUTER}/getAccomplishment/${orgProfileId}`);
+        setAccomplishment(res.data);
+      } catch (err) {
+        console.error("❌ Error fetching accomplishment report:", err);
+        setError("Failed to load accomplishment report.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccomplishment();
+  }, [orgProfileId]);
+
+  // ----------------------
+  // Prepare Data for Table
+  // ----------------------
+  const orgData = [
+    {
+      name: org?.orgName || baseOrg?.orgName || "N/A",
+      nature: org?.orgClass || baseOrg?.orgClass || "N/A",
+      accreditationStatus:
+        accreditationData?.overallStatus ||
+        baseOrg?.accreditation?.overallStatus ||
+        "Pending",
+      adviser: org?.adviser?.name || baseOrg?.adviser?.name || "N/A",
+      president: org?.orgPresident?.name || baseOrg?.orgPresident?.name || "N/A",
+      validationDate: accreditationData?.updatedAt
+        ? new Date(accreditationData.updatedAt).toLocaleDateString()
+        : "N/A",
+      apesocTotal:
+        accomplishment?.grandTotal ||
+        baseOrg?.latestProfile?.apesocTotal ||
+        0,
+      finalStatus:
+        baseOrg?.latestProfile?.overAllStatus ||
+        accreditationData?.overallStatus ||
+        "Pending",
+    },
+  ];
+
+  // ----------------------
+  // UI RENDERING
+  // ----------------------
+  return (
+    <>
+      <div className="p-4">
+        <h2 className="text-xl font-semibold mb-2">Accreditations</h2>
+
+        {loading && <p className="text-sm text-gray-500">Loading accomplishment data...</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
+      </div>
+
+      <div className="px-4 w-full h-fit">
+        <AccreditationTable data={orgData} />
+      </div>
+    </>
+  );
+}
+
+// ----------------------
+// TABLE COMPONENT
+// ----------------------
 export default function AccreditationTable({ data = [] }) {
   return (
-    <div className="w-full overflow-x-auto border border-gray-400  shadow-sm">
-
-
+    <div className="w-full overflow-x-auto border border-gray-400 shadow-sm">
       <div className="max-h-[400px] overflow-y-auto">
-        <table className="min-w-[1100px] w-full table-fixed border-separate border-spacing-0">
+        <table className="min-w-[900px] w-full table-fixed border-separate border-spacing-0">
           <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
             <tr>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 NO.
               </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 Name of the Organization
               </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 Nature
               </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 Status of Accreditation
               </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 Adviser
               </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 President
               </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
+              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
                 Validation of Accreditation
               </th>
-              <th
-                colSpan={3}
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-              >
-                APESOC Result
-              </th>
-              <th
-                className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                rowSpan={2}
-              >
-                Status of Accreditation
-              </th>
-            </tr>
-            <tr>
               <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                1st Sem
+                APESOC Result (Total)
               </th>
               <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                2nd Sem
-              </th>
-              <th className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center">
-                Total
+                Final Status
               </th>
             </tr>
           </thead>
@@ -417,7 +463,7 @@ export default function AccreditationTable({ data = [] }) {
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={11} className="text-center py-6 text-gray-500">
+                <td colSpan={9} className="text-center py-6 text-gray-500">
                   No data available
                 </td>
               </tr>
@@ -429,16 +475,16 @@ export default function AccreditationTable({ data = [] }) {
                   </td>
                   <td className="border border-gray-400 px-3 py-2">{row.name}</td>
                   <td className="border border-gray-400 px-3 py-2">{row.nature}</td>
-                  <td className="border border-gray-400 px-3 py-2">
-                    {row.accreditationStatus}
-                  </td>
+                  <td className="border border-gray-400 px-3 py-2">{row.accreditationStatus}</td>
                   <td className="border border-gray-400 px-3 py-2">{row.adviser}</td>
                   <td className="border border-gray-400 px-3 py-2">{row.president}</td>
-                  <td className="border border-gray-400 px-3 py-2">{row.validationDate}</td>
-                  <td className="border border-gray-400 px-3 py-2 text-center">{row.apesoc1}</td>
-                  <td className="border border-gray-400 px-3 py-2 text-center">{row.apesoc2}</td>
-                  <td className="border border-gray-400 px-3 py-2 text-center">{row.apesocTotal}</td>
-                  <td className="border border-gray-400 px-3 py-2">{row.finalStatus}</td>
+                  <td className="border border-gray-400 px-3 py-2 text-center">{row.validationDate}</td>
+                  <td className="border border-gray-400 px-3 py-2 text-center font-semibold text-indigo-700">
+                    {row.apesocTotal}
+                  </td>
+                  <td className="border border-gray-400 px-3 py-2 text-center">
+                    {row.finalStatus}
+                  </td>
                 </tr>
               ))
             )}
@@ -446,57 +492,6 @@ export default function AccreditationTable({ data = [] }) {
         </table>
       </div>
     </div>
-  );
-}
-
-export function OrgAccreditation({ org, accreditationData, baseOrg }) {
-  // Parse/normalize the data
-  const orgData = [
-    {
-      name: org?.orgName || baseOrg?.orgName || "N/A",
-      nature: org?.orgClass || baseOrg?.orgClass || "N/A",
-      accreditationStatus:
-        accreditationData?.overallStatus ||
-        baseOrg?.accreditation?.overallStatus ||
-        "Pending",
-      adviser:
-        org?.adviser?.name ||
-        baseOrg?.adviser?.name ||
-        "N/A",
-      president:
-        org?.orgPresident?.name ||
-        baseOrg?.orgPresident?.name ||
-        "N/A",
-      validationDate: accreditationData?.updatedAt
-        ? new Date(accreditationData.updatedAt).toLocaleDateString()
-        : "N/A",
-      apesoc1: baseOrg?.latestProfile?.apesoc1 || 0,
-      apesoc2: baseOrg?.latestProfile?.apesoc2 || 0,
-      apesocTotal:
-        (baseOrg?.latestProfile?.apesoc1 || 0) +
-        (baseOrg?.latestProfile?.apesoc2 || 0),
-      finalStatus:
-        baseOrg?.latestProfile?.overAllStatus ||
-        accreditationData?.overallStatus ||
-        "Pending",
-    },
-  ];
-
-  return (
-    <>
-      <div className="p-4">
-        <h2 className="text-xl font-semibold">Accreditations</h2>
-        <p>
-          {org?.isAllowedForAccreditation
-            ? "This organization is allowed for accreditation."
-            : "Not allowed for accreditation."}
-        </p>
-      </div>
-
-      <div className="px-4 w-full h-fit">
-        <AccreditationTable data={orgData} />
-      </div>
-    </>
   );
 }
 
