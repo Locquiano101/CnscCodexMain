@@ -106,28 +106,33 @@ export function SduAccreditationOverview({ onSelectOrg }) {
       {/* Summary Cards + Main Panels */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Summary Cards Column */}
-        <div className="flex flex-row lg:flex-col gap-4 overflow-x-auto lg:overflow-x-visible lg:min-w-[280px]">
+        <div className="flex flex-row lg:flex-col gap-6 overflow-x-auto lg:overflow-x-visible lg:min-w-[280px]">
           {/* Total Organizations */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">
+                <p className="text-gray-500 text-base mb-2">
+                  {" "}
+                  {/* text-sm → text-base */}
                   Total Organizations
                 </p>
-                <p className="text-3xl font-bold text-cnsc-primary-color">
+                <p className="text-4xl font-extrabold text-cnsc-primary-color">
+                  {" "}
+                  {/* text-3xl → text-4xl */}
                   {activeOrganization.length}
                 </p>
               </div>
-              <Users className="w-12 h-12 text-cnsc-primary-color" />
+              <Users className="w-14 h-14 text-cnsc-primary-color" />{" "}
+              {/* 12 → 14 */}
             </div>
           </div>
 
           {/* Active */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Active</p>
-                <p className="text-3xl font-bold text-cnsc-primary-color">
+                <p className="text-gray-500 text-base mb-2">Active</p>
+                <p className="text-4xl font-extrabold text-cnsc-primary-color">
                   {
                     activeOrganization.filter(
                       (org) => org.organizationProfile?.isActive
@@ -135,16 +140,16 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   }
                 </p>
               </div>
-              <CheckCircle className="w-12 h-12 text-cnsc-primary-color" />
+              <CheckCircle className="w-14 h-14 text-cnsc-primary-color" />
             </div>
           </div>
 
           {/* Pending */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Pending</p>
-                <p className="text-3xl font-bold text-amber-600">
+                <p className="text-gray-500 text-base mb-2">Pending</p>
+                <p className="text-4xl font-extrabold text-amber-600">
                   {
                     activeOrganization.filter(
                       (org) => org.overallStatus === "Pending"
@@ -152,16 +157,16 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   }
                 </p>
               </div>
-              <Clock className="w-12 h-12 text-amber-500" />
+              <Clock className="w-14 h-14 text-amber-500" />
             </div>
           </div>
 
           {/* Completion Rate */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Completion Rate</p>
-                <p className="text-3xl font-bold text-cnsc-primary-color">
+                <p className="text-gray-500 text-base mb-2">Completion Rate</p>
+                <p className="text-4xl font-extrabold text-cnsc-primary-color">
                   {(
                     (activeOrganization.filter(
                       (org) => org.overallStatus === "Approved"
@@ -172,7 +177,7 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   %
                 </p>
               </div>
-              <TrendingUp className="w-12 h-12 text-cnsc-primary-color" />
+              <TrendingUp className="w-14 h-14 text-cnsc-primary-color" />
             </div>
           </div>
         </div>
