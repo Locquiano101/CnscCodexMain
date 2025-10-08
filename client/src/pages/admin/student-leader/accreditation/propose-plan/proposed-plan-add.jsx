@@ -102,7 +102,7 @@ export function AddProposedActionPlan({
     try {
       // Send as regular JSON object
       const response = await axios.post(
-        `${API_ROUTER}/postStudentLeaderProposal/`,
+        `${API_ROUTER}/postStudentLeaderProposal`,
         formData, // Send formData directly as JSON
         {
           headers: {
