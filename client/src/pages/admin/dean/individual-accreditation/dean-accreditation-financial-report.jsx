@@ -378,7 +378,8 @@ export function DeanFinancialReport({ selectedOrg, user }) {
             <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-purple-100 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
+                  <span className="w-8 h-8 text-blue-600 text-2xl font-bold">₱</span>
+
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
                   Expense Breakdown
