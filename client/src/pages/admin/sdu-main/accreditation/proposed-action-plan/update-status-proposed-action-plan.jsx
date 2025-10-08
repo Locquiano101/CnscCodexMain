@@ -143,7 +143,7 @@ export function ApprovalModal({
 
           <div className="flex gap-3 pt-4">
             <button
-              onClick={() => submitUpdate({ status: "Approved" })}
+              onClick={() => submitUpdate({ status: "Intent Approved" })}
               className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
             >
               <CheckCircle size={18} />
@@ -170,7 +170,6 @@ export function ViewProposalModal({
   handleApproval,
   formatDate,
   formatCurrency,
-  getStatusIcon,
 }) {
   if (!show || !selectedProposal) return null;
 
