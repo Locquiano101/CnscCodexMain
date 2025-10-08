@@ -39,27 +39,55 @@ export function DeanProposedPlan({ selectedOrg }) {
     message: "",
   });
 
-  const fetchProposals = async () => {
-    setLoading(false);
-    try {
-      const response = await axios.get(
-        `${API_ROUTER}/getAdviserProposals/${selectedOrg._id}`
-      );
-      console.log(response.data);
-      setProposals(response.data);
+const fetchProposals = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${API_ROUTER}/getStudentLeaderProposalConduct/${selectedOrg._id}`
+    );
+    console.log("✅ Student Leader Proposals:", response.data);
+
+    // 🧩 Flatten the nested structure
+    const formattedData = response.data.map((item) => {
+      const plan = item.ProposedIndividualActionPlan || {};
+      return {
+        _id: item._id,
+        activityTitle: plan.activityTitle || "Untitled",
+        alignedSDG: Array.isArray(plan.alignedSDG)
+          ? plan.alignedSDG
+          : JSON.parse(plan.alignedSDG || "[]"),
+        budgetaryRequirements: plan.budgetaryRequirements || 0,
+        venue: plan.venue || "N/A",
+        briefDetails: plan.briefDetails || "",
+        AlignedObjective: plan.AlignedObjective || "",
+        proposedDate: plan.proposedDate || item.createdAt,
+        overallStatus: item.overallStatus || "Pending",
+        documents: item.document || [],
+        organization: item.organization || "",
+        organizationProfile: item.organizationProfile || "",
+        isActive: item.isActive,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      };
+    });
+
+    setProposals(formattedData);
+    setError(null);
+  } catch (err) {
+    console.error("❌ Failed to fetch proposals:", err);
+    if (err.status === 404 || err.response?.status === 404) {
+      setProposals([]);
       setError(null);
-    } catch (err) {
-      console.error("Failed to fetch proposals:", err);
-      if (err.status === 404 || err.response?.status === 404) {
-        setProposals([]);
-        setError(null);
-      } else {
-        setError("Failed to load proposals");
-      }
-    } finally {
-      setLoading(false);
+    } else {
+      setError("Failed to load proposals");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  console.log(proposals, "proposal")
 
   useEffect(() => {
     if (selectedOrg._id) {
@@ -318,7 +346,7 @@ export function DeanProposedPlan({ selectedOrg }) {
               Proposals Analysis
             </h3>
             <div className="flex gap-4 ">
-              <div className="flex flex-col gap-2 ">
+              <div className="flex  gap-2 ">
                 {/* Total Proposals */}
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                   <h4 className="text-sm font-medium text-blue-800">
@@ -336,14 +364,14 @@ export function DeanProposedPlan({ selectedOrg }) {
                   </h4>
                   <p className="text-3xl font-bold text-green-900">
                     {proposals.length > 0
-                      ? "$" +
+                      ? "₱" +
                         Math.round(
                           proposals.reduce(
                             (sum, p) => sum + (p.budgetaryRequirements || 0),
                             0
                           ) / proposals.length
                         )
-                      : "$0"}
+                      : "₱0"}
                   </p>
                 </div>
 
@@ -381,48 +409,9 @@ export function DeanProposedPlan({ selectedOrg }) {
                 </div>
               </div>
 
-              {/* SDG Frequency */}
-              <div className="flex-1 h-full bg-white p-6 rounded-2xl shadow-xl">
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                  Proposals SDG Analysis
-                </h3>
 
-                {/* Count SDGs */}
-                {(() => {
-                  const sdgCounts = proposals
-                    .flatMap((p) => p.alignedSDG || [])
-                    .reduce((acc, sdg) => {
-                      acc[sdg] = (acc[sdg] || 0) + 1;
-                      return acc;
-                    }, {});
-                  const maxCount = Math.max(...Object.values(sdgCounts), 1);
 
-                  return (
-                    <div className="space-y-3">
-                      {Object.entries(sdgCounts)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([sdg, count]) => (
-                          <div key={sdg} className="flex items-center gap-4">
-                            <span className="w-24 text-sm font-medium text-slate-700">
-                              {sdg}
-                            </span>
-                            <div className="flex-1 h-4 bg-slate-200 rounded-full overflow-hidden">
-                              <div
-                                className="h-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-                                style={{
-                                  width: `${(count / maxCount) * 100}%`,
-                                }}
-                              ></div>
-                            </div>
-                            <span className="w-8 text-sm font-medium text-slate-700 text-right">
-                              {count}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  );
-                })()}
-              </div>
+
             </div>
           </div>
 
