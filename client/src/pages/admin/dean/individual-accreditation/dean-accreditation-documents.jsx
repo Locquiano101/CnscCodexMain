@@ -125,7 +125,7 @@ export function DeanAccreditationDocument({ selectedOrg }) {
     return doc?.fileName ? (
       <div
         onClick={() => openDocumentDetails(doc, label, docKey)}
-        className="flex-1 h-full  transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
+        className="flex-1 min-h-180 h-full  transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
       >
         <div className=" h-full flex flex-col  bg-white rounded-lg shadow-md  hover:shadow-md transition-all duration-300">
           {/* Header */}

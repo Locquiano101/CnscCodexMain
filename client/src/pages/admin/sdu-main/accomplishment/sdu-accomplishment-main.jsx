@@ -1,32 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  ResponsiveContainer,
-} from "recharts";
 import axios from "axios";
 import { API_ROUTER } from "../../../../App";
-
-const COLORS = [
-  "#8884d8",
-  "#82ca9d",
-  "#ffc658",
-  "#ff7300",
-  "#00ff00",
-  "#ff00ff",
-  "#00ffff",
-  "#ff8042",
-];
 
 export function SduMainAccomplishment({ onSelectOrg }) {
   const [data, setData] = useState([]);
@@ -89,6 +63,7 @@ export function SduMainAccomplishment({ onSelectOrg }) {
     return data
       .map((org) => ({
         orgId: org._id,
+        orgName: org.organizationProfile?.orgName || "Unknown Organization",
         totalPoints: org.grandTotal || 0,
         accomplishmentCount: org.accomplishments?.length || 0,
       }))
@@ -146,36 +121,45 @@ export function SduMainAccomplishment({ onSelectOrg }) {
     }));
   };
 
-  const getTotalStats = () => {
+  // Calculate total statistics
+  const calculateTotalStats = () => {
     if (!data || data.length === 0) {
       return {
-        totalOrgs: 0,
+        totalOrganizations: 0,
         totalAccomplishments: 0,
         totalPoints: 0,
         totalDocuments: 0,
       };
     }
 
-    const totalOrgs = data.length;
     const totalAccomplishments = data.reduce(
       (sum, org) => sum + (org.accomplishments?.length || 0),
       0
     );
+
     const totalPoints = data.reduce(
       (sum, org) => sum + (org.grandTotal || 0),
       0
     );
-    const totalDocuments = data.reduce(
-      (sum, org) =>
-        sum +
-        (org.accomplishments?.reduce(
-          (docSum, acc) => docSum + (acc.documents?.length || 0),
-          0
-        ) || 0),
-      0
-    );
 
-    return { totalOrgs, totalAccomplishments, totalPoints, totalDocuments };
+    const totalDocuments = data.reduce((sum, org) => {
+      if (org.accomplishments && Array.isArray(org.accomplishments)) {
+        return (
+          sum +
+          org.accomplishments.reduce((accSum, acc) => {
+            return accSum + (acc.documents?.length || 0);
+          }, 0)
+        );
+      }
+      return sum;
+    }, 0);
+
+    return {
+      totalOrganizations: data.length,
+      totalAccomplishments,
+      totalPoints,
+      totalDocuments,
+    };
   };
 
   // Check if we have any meaningful data
@@ -183,6 +167,12 @@ export function SduMainAccomplishment({ onSelectOrg }) {
   const hasAccomplishments =
     hasData &&
     data.some((org) => org.accomplishments && org.accomplishments.length > 0);
+
+  const stats = calculateTotalStats();
+  const categoryData = getAccomplishmentsByCategory();
+  const orgPointsData = getPointsByOrganization();
+  const docTypeData = getDocumentTypeBreakdown();
+  const pointsDistData = getPointsDistribution();
 
   if (loading) {
     return (
@@ -208,7 +198,6 @@ export function SduMainAccomplishment({ onSelectOrg }) {
     );
   }
 
-  // Enhanced no data state
   if (!hasData) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -228,7 +217,7 @@ export function SduMainAccomplishment({ onSelectOrg }) {
             <h2 className="text-2xl font-semibold text-gray-700 mb-2">
               No Data Available Yet
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className=" mb-6">
               There are currently no accomplishment records to display. Data
               will appear here once organizations start submitting their
               accomplishments.
@@ -262,28 +251,28 @@ export function SduMainAccomplishment({ onSelectOrg }) {
         {/* Summary Stats - showing organizations but no accomplishments */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Total Organizations
-            </h3>
-            <p className="text-3xl font-bold text-blue-600">{data.length}</p>
+            <h3 className="text-sm font-bold mb-1">Total Organizations</h3>
+            <p className="text-3xl font-bold text-blue-600">
+              {stats.totalOrganizations}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Total Accomplishments
-            </h3>
-            <p className="text-3xl font-bold text-gray-400">0</p>
+            <h3 className="text-sm font-bold mb-1">Total Accomplishments</h3>
+            <p className="text-3xl font-bold text-gray-400">
+              {stats.totalAccomplishments}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Total Points Awarded
-            </h3>
-            <p className="text-3xl font-bold text-gray-400">0</p>
+            <h3 className="text-sm font-bold mb-1">Total Points Awarded</h3>
+            <p className="text-3xl font-bold text-gray-400">
+              {stats.totalPoints}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Total Documents
-            </h3>
-            <p className="text-3xl font-bold text-gray-400">0</p>
+            <h3 className="text-sm font-bold mb-1">Total Documents</h3>
+            <p className="text-3xl font-bold text-gray-400">
+              {stats.totalDocuments}
+            </p>
           </div>
         </div>
 
@@ -293,7 +282,7 @@ export function SduMainAccomplishment({ onSelectOrg }) {
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
               No Accomplishments Yet
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className=" mb-6">
               Organizations are registered but haven't submitted any
               accomplishments yet.
             </p>
@@ -310,20 +299,18 @@ export function SduMainAccomplishment({ onSelectOrg }) {
               <div
                 key={org._id}
                 onClick={() => onSelectOrg(org.organizationProfile)}
-                className="bg-white rounded-lg hover:scale-105 transition-all border border-white hover:border-amber-500 duration-200 shadow hover:shadow-lg p-6"
+                className="bg-white rounded-lg hover:scale-105 transition-all border border-white hover:border-amber-500 duration-200 shadow hover:shadow-lg p-6 cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 truncate">
                     {org.organizationProfile.orgName || "Unnamed Organization"}
                   </h3>
-                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500">
+                  <span className="px-3 py-1 rounded-full text-sm font-boldbg-gray-100 ">
                     No data
                   </span>
                 </div>
                 <div className="text-center py-4">
-                  <p className="text-gray-500 text-sm">
-                    No accomplishments submitted yet
-                  </p>
+                  <p className=" text-sm">No accomplishments submitted yet</p>
                 </div>
               </div>
             ))}
@@ -333,81 +320,60 @@ export function SduMainAccomplishment({ onSelectOrg }) {
     );
   }
 
-  // Original component logic for when data exists
-  const categoryData = getAccomplishmentsByCategory();
-  const orgPointsData = getPointsByOrganization();
-  const docTypeData = getDocumentTypeBreakdown();
-  const pointsDistData = getPointsDistribution();
-  const stats = getTotalStats();
-
+  // Main component with data
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          SDU Accomplishment Analytics
-        </h1>
-        <p className="text-gray-600">
-          Comprehensive view of organizational accomplishments and performance
-          metrics
-        </p>
-      </header>
-
+    <div className="overflow-auto flex flex-col p-4 pt-0 gap-4">
+      <h1 className="text-3xl font-bold text-gray-900 ">SDU Accomplishment</h1>
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">
-            Total Organizations
-          </h3>
-          <p className="text-3xl font-bold text-blue-600">{stats.totalOrgs}</p>
+          <h3 className="text-sm font-bold mb-1">Total Organizations</h3>
+          <p className="text-3xl font-bold text-blue-600">
+            {stats.totalOrganizations}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">
-            Total Accomplishments
-          </h3>
+          <h3 className="text-sm font-bold mb-1">Total Accomplishments</h3>
           <p className="text-3xl font-bold text-green-600">
             {stats.totalAccomplishments}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">
-            Total Points Awarded
-          </h3>
-          <p className="text-3xl font-bold text-purple-600">
+          <h3 className="text-sm font-bold mb-1">Total Points Awarded</h3>
+          <p className="text-3xl font-bold text-orange-600">
             {stats.totalPoints}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">
-            Total Documents
-          </h3>
-          <p className="text-3xl font-bold text-orange-600">
+          <h3 className="text-sm font-bold mb-1">Total Documents</h3>
+          <p className="text-3xl font-bold text-purple-600">
             {stats.totalDocuments}
           </p>
         </div>
       </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      {/* Numerical Data Grids */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Accomplishments by Category */}
         {categoryData.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">
               Accomplishments by Category
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="category"
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {categoryData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded"
+                >
+                  <span className="font-boldtext-gray-700">
+                    {item.category}
+                  </span>
+                  <span className="text-2xl font-bold text-blue-600">
+                    {item.count}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -417,30 +383,19 @@ export function SduMainAccomplishment({ onSelectOrg }) {
             <h2 className="text-xl font-semibold mb-4">
               Document Types Distribution
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={docTypeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ type, percent }) =>
-                    `${type} ${(percent * 100).toFixed(0)}%`
-                  }
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
+            <div className="space-y-3">
+              {docTypeData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded"
                 >
-                  {docTypeData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+                  <span className="font-boldtext-gray-700">{item.type}</span>
+                  <span className="text-2xl font-bold text-purple-600">
+                    {item.count}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -450,143 +405,160 @@ export function SduMainAccomplishment({ onSelectOrg }) {
             <h2 className="text-xl font-semibold mb-4">
               Points Distribution Range
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={pointsDistData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="range" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {pointsDistData
+                .filter((d) => d.count > 0)
+                .map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded"
+                  >
+                    <span className="font-boldtext-gray-700">{item.range}</span>
+                    <span className="text-2xl font-bold text-green-600">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+            </div>
           </div>
         )}
 
-        {/* Organization Performance */}
+        {/* Organization Performance Summary */}
         {orgPointsData.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">
-              Organization Performance
+              Organization Performance Summary
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={orgPointsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="orgId" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="totalPoints"
-                  stroke="#8884d8"
-                  name="Total Points"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="accomplishmentCount"
-                  stroke="#82ca9d"
-                  name="Accomplishments"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="space-y-2">
+              <div className="flex justify-between p-2 border-b">
+                <span className="font-boldtext-gray-600">Total Points:</span>
+                <span className="text-xl font-bold text-blue-600">
+                  {orgPointsData.reduce((sum, org) => sum + org.totalPoints, 0)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2 border-b">
+                <span className="font-boldtext-gray-600">
+                  Total Accomplishments:
+                </span>
+                <span className="text-xl font-bold text-green-600">
+                  {orgPointsData.reduce(
+                    (sum, org) => sum + org.accomplishmentCount,
+                    0
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between p-2">
+                <span className="font-boldtext-gray-600">
+                  Average Points/Org:
+                </span>
+                <span className="text-xl font-bold text-orange-600">
+                  {(
+                    orgPointsData.reduce(
+                      (sum, org) => sum + org.totalPoints,
+                      0
+                    ) / orgPointsData.length
+                  ).toFixed(1)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Top Performing Organizations */}
+        {orgPointsData.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-6 col-span-2">
+            <h2 className="text-xl font-semibold mb-4">
+              Top Performing Organizations
+            </h2>
+            <div className="space-y-4">
+              {orgPointsData
+                .sort((a, b) => b.totalPoints - a.totalPoints)
+                .slice(0, 5)
+                .map((org, index) => (
+                  <div
+                    key={org.orgId}
+                    className="flex justify-between items-center p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      <span className="text-lg font-bold text-gray-700 mr-4">
+                        #{index + 1}
+                      </span>
+                      <span className="font-boldtext-gray-900">
+                        {org.orgName}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-blue-600">
+                        {org.totalPoints} pts
+                      </div>
+                      <div className="text-sm ">
+                        {org.accomplishmentCount} accomplishments
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Organization Cards */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-6">Organization Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <table className="min-w-full min-h-fit divide-gray-200 rounded-xl">
+        <thead className="bg-gray-100 ">
+          <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
+            Organization Name
+          </th>
+          <th className="px-6 py-6 text-left text-xs font-bold uppercase tracking-wider">
+            Accomplishments
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+            Points
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+            Status
+          </th>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
           {data.map((org) => {
-            const accomplishmentCount = org.accomplishments?.length || 0;
-            const categories = [
-              ...new Set(
-                org.accomplishments?.map((acc) => acc.category).filter(Boolean)
-              ),
-            ];
-            const documentCount =
-              org.accomplishments?.reduce(
-                (sum, acc) => sum + (acc.documents?.length || 0),
-                0
-              ) || 0;
-            const avgPointsPerAccomplishment =
-              accomplishmentCount > 0
-                ? (org.grandTotal / accomplishmentCount).toFixed(1)
-                : 0;
+            const orgAccomplishments = org.accomplishments?.length || 0;
+            const orgPoints = org.grandTotal || 0;
 
             return (
-              <div
+              <tr
                 key={org._id}
                 onClick={() => onSelectOrg(org.organizationProfile)}
-                className="bg-white rounded-lg hover:scale-105 transition-all border border-white hover:border-amber-500 duration-200 shadow hover:shadow-lg p-6"
+                className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
-                    {org.organizationProfile?.orgName || "Unnamed Organization"}
-                  </h3>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-boldtext-gray-900">
+                    {org.organizationProfile.orgName || "Unnamed Organization"}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {orgAccomplishments} accomplishment
+                    {orgAccomplishments !== 1 ? "s" : ""}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-semibold text-blue-600">
+                    {orgPoints} points
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      org.grandTotal > 50
+                    className={`inline-flex px-3 py-1 rounded-full text-xs font-bold${
+                      orgAccomplishments > 0
                         ? "bg-green-100 text-green-800"
-                        : org.grandTotal > 20
-                        ? "bg-yellow-100 text-yellow-800"
-                        : org.grandTotal > 0
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
+                        : "bg-gray-100 "
                     }`}
                   >
-                    {org.grandTotal || 0} pts
+                    {orgAccomplishments > 0 ? "Active" : "No data"}
                   </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Accomplishments:</span>
-                    <span className="font-medium">{accomplishmentCount}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Documents:</span>
-                    <span className="font-medium">{documentCount}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Avg Points:</span>
-                    <span className="font-medium">
-                      {avgPointsPerAccomplishment}
-                    </span>
-                  </div>
-
-                  {categories.length > 0 && (
-                    <div className="pt-2 border-t">
-                      <span className="text-sm text-gray-500 mb-2 block">
-                        Categories:
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {categories.slice(0, 3).map((category, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                          >
-                            {category.length > 15
-                              ? `${category.substring(0, 15)}...`
-                              : category}
-                          </span>
-                        ))}
-                        {categories.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                            +{categories.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                </td>
+              </tr>
             );
           })}
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
   );
 }

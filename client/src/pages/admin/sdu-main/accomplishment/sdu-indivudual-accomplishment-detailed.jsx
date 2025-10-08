@@ -245,13 +245,12 @@ export function SduAccomplishmentReportDetailed({
               {getCategoryIcon(selectedAccomplishment.category)}
               <span>{selectedAccomplishment.category}</span>
             </div>
-
             <div className="flex items-center gap-4 relative">
               {/* Grading Display */}
               {gradingData.totalPoints > 0 && (
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-purple-200 border border-purple-300 shadow-sm">
-                  <Calculator className="w-5 h-5 text-purple-700" />
-                  <span className="text-sm font-semibold text-purple-800">
+                  <Calculator className="w-5 h-5 text-amber-700" />
+                  <span className="text-sm font-semibold text-amber-800">
                     {gradingData.totalPoints}/
                     {currentGrading?.maxPoints ||
                       selectedAccomplishment.awardedPoints}{" "}
@@ -276,38 +275,15 @@ export function SduAccomplishmentReportDetailed({
                 </div>
               )}
 
-              {/* More Options Dropdown */}
-              <div className="relative">
+              {/* Action Buttons (Replaces MoreHorizontal dropdown) */}
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowDropdown((prev) => !prev)}
-                  className="p-2 rounded-full hover:bg-gray-100 border border-gray-200 transition"
+                  onClick={handleGrading}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition"
                 >
-                  <MoreHorizontal className="text-gray-600" />
+                  <Calculator className="w-4 h-4" />
+                  Grade Accomplishment
                 </button>
-
-                {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition items-center gap-2"
-                      onClick={() => {
-                        handleGrading();
-                        setShowDropdown(false);
-                      }}
-                    >
-                      <Calculator className="w-4 h-4" />
-                      Grade Accomplishment
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition"
-                      onClick={() => {
-                        console.log("View detailed breakdown");
-                        setShowDropdown(false);
-                      }}
-                    >
-                      View Details
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -485,8 +461,9 @@ export function SduAccomplishmentReportDetailed({
 
       {/* Grading Modal */}
       {showGradingModal && currentGrading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Calculator className="w-5 h-5" />
@@ -498,12 +475,10 @@ export function SduAccomplishmentReportDetailed({
               </p>
             </div>
 
+            {/* Body */}
             <div className="p-6 space-y-4">
               {currentGrading.criteria.map((criteria, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-4"
-                >
+                <div key={index}>
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm font-medium text-gray-700">
                       {criteria.name}
@@ -536,7 +511,7 @@ export function SduAccomplishmentReportDetailed({
                 </div>
               ))}
 
-              <div className="border border-gray-200 rounded-lg p-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Comments (Optional)
                 </label>
@@ -586,6 +561,7 @@ export function SduAccomplishmentReportDetailed({
               </div>
             </div>
 
+            {/* Footer */}
             <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={() => setShowGradingModal(false)}
@@ -603,6 +579,7 @@ export function SduAccomplishmentReportDetailed({
           </div>
         </div>
       )}
+
       {showDocModal && selectedDocFile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
