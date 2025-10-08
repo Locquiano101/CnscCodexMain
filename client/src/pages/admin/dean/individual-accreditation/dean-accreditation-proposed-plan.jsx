@@ -190,42 +190,73 @@ const fetchProposals = async () => {
     setShowRevisionModal(true);
   };
 
-  const handleApproval = () => {
-    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
-    const adviserStatuses = [
-      "Approved by the Adviser",
-      "Revision from the Adviser",
-    ];
+  // const handleApproval = () => {
+  //   const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+  //   const adviserStatuses = [
+  //     "Approved by the Adviser",
+  //     "Revision from the Adviser",
+  //   ];
 
-    const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
+  //   const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
 
-    const isDeanUpdated = deanStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
+  //   const isDeanUpdated = deanStatuses.some(
+  //     (status) => status.toLowerCase().trim() === currentStatus
+  //   );
 
-    const isAdviserValid = adviserStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
+  //   const isAdviserValid = adviserStatuses.some(
+  //     (status) => status.toLowerCase().trim() === currentStatus
+  //   );
 
-    if (isDeanUpdated || !isAdviserValid) {
-      setPendingAction("Approval");
+  //   if (isDeanUpdated || !isAdviserValid) {
+  //     setPendingAction("Approval");
 
-      if (isDeanUpdated) {
-        setConfirmMessage(
-          "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
-        );
-      } else if (!isAdviserValid) {
-        setConfirmMessage(
-          "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
-        );
-      }
+  //     if (isDeanUpdated) {
+  //       setConfirmMessage(
+  //         "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
+  //       );
+  //     } else if (!isAdviserValid) {
+  //       setConfirmMessage(
+  //         "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
+  //       );
+  //     }
 
-      setConfirmUpdateModal(true);
-      return;
-    }
+  //     setConfirmUpdateModal(true);
+  //     return;
+  //   }
 
-    setShowApprovalModal(true);
+  //   setShowApprovalModal(true);
+  // };
+
+const handleApproval = async (proposal, status) => {
+  if (!proposal?._id) {
+    console.error("🚨 Missing proposal._id!", proposal);
+    alert("Cannot update proposal: Missing ID.");
+    return;
+  }
+
+  const payload = {
+    proposalId: proposal._id,
+    overallStatus: status,
+    activityTitle: proposal?.ProposedIndividualActionPlan?.activityTitle || "",
+    orgProfileId: selectedOrg?._id || "",
+    orgName: selectedOrg?.orgName || "",
   };
+
+  try {
+    console.log("📤 Sending payload:", payload);
+
+    const response = await axios.post(
+      `${API_ROUTER}/updateStatusProposalConduct/${proposal._id}`,
+      payload
+    );
+
+    console.log("✅ Server response:", response.data);
+  } catch (err) {
+    console.error("❌ Failed to update proposal:", err);
+  }
+};
+
+
 
   const submitUpdate = async ({ status }) => {
     try {
@@ -324,20 +355,19 @@ const fetchProposals = async () => {
         </div>
       )}
 
-      {/* Empty State */}
-      {!loading && !error && proposals.length === 0 && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold text-slate-800 mb-3">
-              No Proposals Found
-            </h3>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto">
-              There are currently no proposed action plans for this
-              organization.
-            </p>
-          </div>
-        </div>
-      )}
+{/* Empty State */}
+{!loading && !error && proposals.length === 0 && (
+  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-slate-800 mb-3">
+        No Proposals Found
+      </h3>
+      <p className="text-slate-600 mb-8 max-w-md mx-auto">
+        There are currently no proposed action plans for this organization.
+      </p>
+    </div>
+  </div>
+)}
 
       {/* Enhanced Table */}
       {!loading && !error && proposals.length > 0 && (
@@ -671,12 +701,10 @@ const fetchProposals = async () => {
               </div>
 
               {/* Action Buttons */}
-              {!["Approved by the Dean", "Completed"].includes(
-                selectedProposal.overallStatus
-              ) && (
+              {!["Approved by the Dean", "Completed", "Approved"].includes(selectedProposal.overallStatus) && (
                 <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
                   <button
-                    onClick={handleRevision}
+                    onClick={() => handleApproval(selectedProposal, "Revision")}
                     className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
                   >
                     <AlertTriangle size={18} />
@@ -684,7 +712,7 @@ const fetchProposals = async () => {
                   </button>
 
                   <button
-                    onClick={handleApproval}
+                    onClick={() => handleApproval(selectedProposal, "Approved")}
                     className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
                   >
                     <CheckCircle size={18} />
@@ -692,6 +720,10 @@ const fetchProposals = async () => {
                   </button>
                 </div>
               )}
+
+
+
+
             </div>
           </div>
         </div>

@@ -105,7 +105,7 @@ export function DeanFinancialReport({ selectedOrg, user }) {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "php",
     }).format(amount);
   };
 
@@ -280,7 +280,8 @@ export function DeanFinancialReport({ selectedOrg, user }) {
           {/* Left Section: Icon and Title */}
           <div className="flex items-center gap-4">
             <div className="p-2 bg-blue-100 ">
-              <DollarSign className="w-6 h-6 text-blue-600" />
+              <span className="w-8 h-8 text-blue-600 text-2xl font-bold">₱</span>
+
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">
               Financial Report
@@ -288,9 +289,9 @@ export function DeanFinancialReport({ selectedOrg, user }) {
           </div>
 
           {/* Right Section: Button */}
-          <button className="bg-amber-500 text-white px-5 py-2.5 font-semibold ">
+          {/* <button className="bg-amber-500 text-white px-5 py-2.5 font-semibold ">
             Summarize Report
-          </button>
+          </button> */}
         </div>
 
         {/* Summary Cards */}
@@ -306,7 +307,8 @@ export function DeanFinancialReport({ selectedOrg, user }) {
                   {formatCurrency(currentBalance)}
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-600" />
+             <span className="w-8 h-8 text-blue-600 text-2xl font-bold">₱</span>
+
             </div>
           </div>
 

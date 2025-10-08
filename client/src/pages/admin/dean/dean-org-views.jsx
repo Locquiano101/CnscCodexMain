@@ -344,7 +344,7 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Determine the organization profile ID
+  //  Determine the organization profile ID
   const orgProfileId =
     org?._id ||
     org?.organizationProfile ||
@@ -364,7 +364,7 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
         const res = await axios.get(`${API_ROUTER}/getAccomplishment/${orgProfileId}`);
         setAccomplishment(res.data);
       } catch (err) {
-        console.error("❌ Error fetching accomplishment report:", err);
+        console.error(" Error fetching accomplishment report:", err);
         setError("Failed to load accomplishment report.");
       } finally {
         setLoading(false);
