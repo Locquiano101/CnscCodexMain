@@ -480,12 +480,12 @@ function StudentNavigation({ orgData }) {
               label: "Notifications",
               path: "/student-leader/notifications",
             },
-            {
-              key: "logs",
-              icon: <Clock className="mr-3 w-5 h-5" />,
-              label: "Logs",
-              path: "/student-leader/log",
-            },
+            // {
+            //   key: "logs",
+            //   icon: <Clock className="mr-3 w-5 h-5" />,
+            //   label: "Logs",
+            //   path: "/student-leader/log",
+            // },
           ].map((item) => (
             <NavLink
               key={item.key}
