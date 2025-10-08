@@ -453,7 +453,7 @@ function StudentNavigation({ orgData }) {
             {
               key: "home",
               icon: <Home className="mr-3 w-5 h-5" />,
-              label: "Reports / Dashboard",
+              label: "Dashboard",
               path: "/student-leader",
             },
             {

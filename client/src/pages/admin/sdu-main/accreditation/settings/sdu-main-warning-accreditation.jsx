@@ -26,6 +26,7 @@ export function SduMainAccreditationWarning({ onCancel }) {
         setIsLoading(true);
         setError(null);
         const res = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`);
+
         setOrgs(res.data || []);
       } catch (err) {
         console.error("Error fetching orgs:", err);
@@ -61,6 +62,12 @@ export function SduMainAccreditationWarning({ onCancel }) {
 
     setIsSubmitting(true); // ⬅️ disable button immediately
     setError(null);
+
+    console.log({
+      organizationProfileId: selectedOrg._id,
+      organizationId: selectedOrg.organization,
+      warningNote: warningNote.trim(),
+    });
 
     try {
       const res = await axios.post(

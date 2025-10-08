@@ -160,8 +160,8 @@ const { user } = useOutletContext();
   return (
     <div className="h-full w-full grid grid-cols-[18%_1fr]">
       {/* Sidebar */}
-      <div className="bg-white text-cnsc-primary-color pt-4 pb-1 flex flex-col border-r border-gray-400">
-        <div className="w-full h-fit mb-1 bg-gray-50 flex p-2 gap-x-2 items-center border-b border-gray-400">
+      <div className="bg-cnsc-primary-color text-white pt-4 pb-1 flex flex-col border-r border-gray-400 px-2 gap-y-2">
+        <div className="w-full h-fit mb-1 bg-cnsc-primary-color flex p-2 gap-x-2 items-center border-b border-gray-400">
           {displayOrg?.orgLogo && (
             <img
               src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
@@ -187,10 +187,10 @@ const { user } = useOutletContext();
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+              `flex items-center py-4 px-6 rounded-xl text-base font-medium transition-all duration-300 shadow-sm ${
                 isActive
-                  ? "bg-cnsc-primary-color text-white shadow-md"
-                  : "text-cnsc-primary-color hover:bg-gray-100"
+                  ? "bg-white text-cnsc-primary-color shadow-md"
+                  : "text-white hover:bg-gray-100 hover:text-cnsc-primary-color"
               }`
             }
           >
@@ -200,9 +200,9 @@ const { user } = useOutletContext();
 
         <button
           onClick={onClose}
-          className="mt-auto px-4 py-2 bg-amber-500 text-white hover:bg-amber-600 transition"
+          className="mt-auto px-4 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition"
         >
-          Close Org
+          Close
         </button>
       </div>
 
@@ -309,25 +309,27 @@ export function DeanPage() {
 
 
 
-  const organizationSummary = [
-    {
-      label: "Total Organizations",
-      value: String(orgs.filter(o => o?.isAllowedForAccreditation).length),
-    },
-    {
-      label: "Accredited Organizations",
-      value: String(
-        orgs.filter(o =>
-          o?.accreditation &&
-          o.accreditation.status === "Accredited" // or whatever field your API uses
-        ).length
-      ),
-    },
-    {
-      label: "Inactive Organizations",
-      value: String(orgs.filter(o => o?.status === "inactive").length),
-    },
-  ];
+const organizationSummary = useMemo(() => [
+  {
+    label: "Total Organizations",
+    value: String(orgs.filter(o => o?.isAllowedForAccreditation).length),
+  },
+  {
+    label: "Accredited Organizations",
+    value: String(
+      orgs.filter(o =>
+        o?.accreditation &&
+        o.accreditation.status === "Accredited"
+      ).length
+    ),
+  },
+{
+  label: "Pending Organizations",
+  value: String(orgs.filter(o => o?.overAllStatus === "Pending").length),
+},
+
+], [orgs]);
+
 
 
   return (
@@ -381,102 +383,102 @@ export function DeanPage() {
     // </div>
 
 
-function DeanMainNavigation() {
-  const [activeKey, setActiveKey] = useState("home");
-  const navigate = useNavigate();
-  const location = useLocation();
+// function DeanMainNavigation() {
+//   const [activeKey, setActiveKey] = useState("home");
+//   const navigate = useNavigate();
+//   const location = useLocation();
 
-  useEffect(() => {
-    const path = location.pathname;
-    if (path === "/dean" || path === "/dean/") {
-      setActiveKey("home");
-    } else if (path.includes("/dean/accreditation")) {
-      setActiveKey("accreditations");
-    } else if (path.includes("/dean/accomplishment")) {
-      setActiveKey("accomplishments");
-    } else if (path.includes("/dean/proposal")) {
-      setActiveKey("proposals");
-    } else if (path.includes("/dean/post")) {
-      setActiveKey("post");
-    } else if (path.includes("/dean/log")) {
-      setActiveKey("logs");
-    }
-  }, [location.pathname]);
+//   useEffect(() => {
+//     const path = location.pathname;
+//     if (path === "/dean" || path === "/dean/") {
+//       setActiveKey("home");
+//     } else if (path.includes("/dean/accreditation")) {
+//       setActiveKey("accreditations");
+//     } else if (path.includes("/dean/accomplishment")) {
+//       setActiveKey("accomplishments");
+//     } else if (path.includes("/dean/proposal")) {
+//       setActiveKey("proposals");
+//     } else if (path.includes("/dean/post")) {
+//       setActiveKey("post");
+//     } else if (path.includes("/dean/log")) {
+//       setActiveKey("logs");
+//     }
+//   }, [location.pathname]);
 
-  const navigationItems = [
-    {
-      key: "home",
-      icon: <Home className="w-5 h-5" />,
-      label: "Reports/Dashboard",
-      path: "/dean",
-    },
-    {
-      key: "accreditations",
-      icon: <FolderOpen className="w-5 h-5" />,
-      label: "Accreditations",
-      path: "/dean/accreditation",
-    },
-    {
-      key: "accomplishments",
-      icon: <BookMarked className="w-5 h-5" />,
-      label: "Accomplishments",
-      path: "/dean/accomplishment",
-    },
-    {
-      key: "proposals",
-      icon: <FileText className="w-5 h-5" />,
-      label: "Proposals",
-      path: "/dean/proposal",
-    },
+//   const navigationItems = [
+//     {
+//       key: "home",
+//       icon: <Home className="w-5 h-5" />,
+//       label: "Reports/Dashboard",
+//       path: "/dean",
+//     },
+//     {
+//       key: "accreditations",
+//       icon: <FolderOpen className="w-5 h-5" />,
+//       label: "Accreditations",
+//       path: "/dean/accreditation",
+//     },
+//     {
+//       key: "accomplishments",
+//       icon: <BookMarked className="w-5 h-5" />,
+//       label: "Accomplishments",
+//       path: "/dean/accomplishment",
+//     },
+//     {
+//       key: "proposals",
+//       icon: <FileText className="w-5 h-5" />,
+//       label: "Proposals",
+//       path: "/dean/proposal",
+//     },
 
-    {
-      key: "logs",
-      icon: <Clock className="w-5 h-5" />,
-      label: "Logs",
-      path: "/dean/log",
-    },
-  ];
+//     {
+//       key: "logs",
+//       icon: <Clock className="w-5 h-5" />,
+//       label: "Logs",
+//       path: "/dean/log",
+//     },
+//   ];
 
-  return (
-    <div className="w-full h-full flex flex-col">
-      {/* Top header with welcome text */}
-      <div className="h-28 bg-cnsc-secondary-color flex flex-col items-center justify-center shadow-md">
-        <h1 className="text-white text-xl font-bold tracking-wide">
-          Welcome Dean
-        </h1>
-        <p className="text-amber-300 text-sm font-medium">
-          Manage your dashboard
-        </p>
-      </div>
+//   return (
+//     <div className="w-full h-full flex flex-col">
+//       {/* Top header with welcome text */}
+//       <div className="h-28 bg-cnsc-secondary-color flex flex-col items-center justify-center shadow-md">
+//         <h1 className="text-white text-xl font-bold tracking-wide">
+//           Welcome Dean
+//         </h1>
+//         <p className="text-amber-300 text-sm font-medium">
+//           Manage your dashboard
+//         </p>
+//       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-col gap-2 w-full flex-grow mt-5 px-2">
-        {navigationItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => {
-              setActiveKey(item.key);
-              navigate(item.path);
-            }}
-            className={`flex items-center rounded-xl py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
-              activeKey === item.key
-                ? "bg-white text-cnsc-primary-color shadow-md"
-                : "text-white hover:bg-amber-500/90 hover:pl-8"
-            }`}
-          >
-            <span className="mr-3 w-5 h-5">{item.icon}</span>
-            <span className="tracking-wide">{item.label}</span>
-          </button>
-        ))}
-      </nav>
+//       {/* Navigation */}
+//       <nav className="flex flex-col gap-2 w-full flex-grow mt-5 px-2">
+//         {navigationItems.map((item) => (
+//           <button
+//             key={item.key}
+//             onClick={() => {
+//               setActiveKey(item.key);
+//               navigate(item.path);
+//             }}
+//             className={`flex items-center rounded-xl py-4 px-6 text-base font-medium transition-all duration-300 shadow-sm ${
+//               activeKey === item.key
+//                 ? "bg-white text-cnsc-primary-color shadow-md"
+//                 : "text-white hover:bg-amber-500/90 hover:pl-8"
+//             }`}
+//           >
+//             <span className="mr-3 w-5 h-5">{item.icon}</span>
+//             <span className="tracking-wide">{item.label}</span>
+//           </button>
+//         ))}
+//       </nav>
 
-      {/* Logout at bottom */}
-      <div className="px-2 mb-4">
-        <LogoutButton />
-      </div>
-    </div>
-  );
-}
+//       {/* Logout at bottom */}
+//       <div className="px-2 mb-4">
+//         <LogoutButton />
+//       </div>
+//     </div>
+//   );
+// }
 
 export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

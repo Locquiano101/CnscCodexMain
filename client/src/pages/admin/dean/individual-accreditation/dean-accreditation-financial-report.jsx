@@ -273,7 +273,7 @@ export function DeanFinancialReport({ selectedOrg, user }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full w-full pt-4 bg-gray-200 p-4 flex gap-4 ">
+    <div className="h-full max-h-240  w-full pt-4 bg-gray-200 p-4 flex gap-4 ">
       <div className="bg-white shadow-lg flex flex-col flex-1 p-6    border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
