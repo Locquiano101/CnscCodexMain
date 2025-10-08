@@ -91,6 +91,8 @@ export const GetNotificationsByOrgProfile = async (req, res) => {
 
 // ⚠️ Accreditation Warning
 export const NotifcationWarningAccreditation = async (req, res) => {
+  const { organizationProfileId, organizationId, warningNote } = req.body;
+
   try {
     if (!organizationProfileId || !organizationId) {
       return res.status(400).json({
