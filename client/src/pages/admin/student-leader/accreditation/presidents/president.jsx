@@ -342,7 +342,7 @@ const CurrentPresidentCard = ({ currentPresident, orgData }) => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Contact:</span>
-              <span className="font-medium">{contactNo}</span>
+              <span className="font-medium">+63{contactNo}</span>
             </div>
           </div>
         </div>

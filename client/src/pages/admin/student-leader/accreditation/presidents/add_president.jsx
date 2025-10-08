@@ -1004,21 +1004,31 @@ function PresidentPersonalInfo({
           <label className="block text-sm font-medium text-gray-600">
             Contact Number *
           </label>
-          <input
-            type="tel"
-            name="contactNo"
-            value={formData.contactNo}
-            onChange={(e) => {
-              let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
-              if (value.length > 11) value = value.slice(0, 11); // Limit to 11 digits
-              handleInputChange({ target: { name: "contactNo", value } });
-            }}
-            placeholder="09XXXXXXXXX"
-            maxLength={11}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
-              "contactNo"
-            )}`}
-          />
+          <div className="flex items-center">
+            <span className="px-3 py-2 border border-r-0 rounded-l-md bg-gray-100 text-gray-700 text-sm">
+              +63
+            </span>
+            <input
+              type="tel"
+              name="contactNo"
+              value={formData.contactNo}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+
+                // Allow only if starts with 9 and up to 10 digits
+                if (/^9[0-9]{0,9}$/.test(value) || value === "") {
+                  handleInputChange({ target: { name: "contactNo", value } });
+                }
+              }}
+              placeholder="9XXXXXXXXX"
+              maxLength={10}
+              className={`w-full p-2 border rounded-r-md focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
+                "contactNo"
+              )}`}
+              inputMode="numeric"
+              required
+            />
+          </div>
           {renderFieldError("contactNo")}
         </div>
       </div>

@@ -448,24 +448,37 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Contact Number <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={rosterData.rosterMember.contactNumber}
-                onChange={(e) => {
-                  if (
-                    /^[0-9]*$/.test(e.target.value) &&
-                    e.target.value.length <= 11
-                  ) {
-                    updateMember("contactNumber", e.target.value);
+              <div className="flex items-center">
+                <span className="px-3 py-2 border border-r-0 rounded-l-md bg-gray-100 text-gray-700 text-sm">
+                  +63
+                </span>
+                <input
+                  type="text"
+                  value={
+                    rosterData.rosterMember.contactNumber
+                      ? rosterData.rosterMember.contactNumber.replace(
+                          /^(\+?63)?\s?/,
+                          ""
+                        )
+                      : ""
                   }
-                }}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.contactNumber ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Enter 11-digit contact number"
-                required
-                inputMode="numeric"
-              />
+                  onChange={(e) => {
+                    let input = e.target.value.replace(/\D/g, ""); // remove non-numeric chars
+
+                    // only allow starting with 9 and up to 10 digits
+                    if (/^9[0-9]{0,9}$/.test(input) || input === "") {
+                      const formatted = input ? `+63 ${input}` : "";
+                      updateMember("contactNumber", formatted);
+                    }
+                  }}
+                  className={`w-full px-3 py-2 border rounded-r-md ${
+                    errors.contactNumber ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="9XXXXXXXXX"
+                  required
+                  inputMode="numeric"
+                />
+              </div>
               {errors.contactNumber && (
                 <p className="text-red-500 text-sm">{errors.contactNumber}</p>
               )}

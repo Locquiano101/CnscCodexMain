@@ -106,28 +106,33 @@ export function SduAccreditationOverview({ onSelectOrg }) {
       {/* Summary Cards + Main Panels */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Summary Cards Column */}
-        <div className="flex flex-row lg:flex-col gap-4 overflow-x-auto lg:overflow-x-visible lg:min-w-[280px]">
+        <div className="flex flex-row lg:flex-col gap-6 overflow-x-auto lg:overflow-x-visible lg:min-w-[280px]">
           {/* Total Organizations */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">
+                <p className="text-gray-500 text-base mb-2">
+                  {" "}
+                  {/* text-sm → text-base */}
                   Total Organizations
                 </p>
-                <p className="text-3xl font-bold text-cnsc-primary-color">
+                <p className="text-4xl font-extrabold text-cnsc-primary-color">
+                  {" "}
+                  {/* text-3xl → text-4xl */}
                   {activeOrganization.length}
                 </p>
               </div>
-              <Users className="w-12 h-12 text-cnsc-primary-color" />
+              <Users className="w-14 h-14 text-cnsc-primary-color" />{" "}
+              {/* 12 → 14 */}
             </div>
           </div>
 
           {/* Active */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Active</p>
-                <p className="text-3xl font-bold text-cnsc-primary-color">
+                <p className="text-gray-500 text-base mb-2">Active</p>
+                <p className="text-4xl font-extrabold text-cnsc-primary-color">
                   {
                     activeOrganization.filter(
                       (org) => org.organizationProfile?.isActive
@@ -135,16 +140,16 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   }
                 </p>
               </div>
-              <CheckCircle className="w-12 h-12 text-cnsc-primary-color" />
+              <CheckCircle className="w-14 h-14 text-cnsc-primary-color" />
             </div>
           </div>
 
           {/* Pending */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Pending</p>
-                <p className="text-3xl font-bold text-amber-600">
+                <p className="text-gray-500 text-base mb-2">Pending</p>
+                <p className="text-4xl font-extrabold text-amber-600">
                   {
                     activeOrganization.filter(
                       (org) => org.overallStatus === "Pending"
@@ -152,16 +157,16 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   }
                 </p>
               </div>
-              <Clock className="w-12 h-12 text-amber-500" />
+              <Clock className="w-14 h-14 text-amber-500" />
             </div>
           </div>
 
           {/* Completion Rate */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Completion Rate</p>
-                <p className="text-3xl font-bold text-cnsc-primary-color">
+                <p className="text-gray-500 text-base mb-2">Completion Rate</p>
+                <p className="text-4xl font-extrabold text-cnsc-primary-color">
                   {(
                     (activeOrganization.filter(
                       (org) => org.overallStatus === "Approved"
@@ -172,7 +177,7 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   %
                 </p>
               </div>
-              <TrendingUp className="w-12 h-12 text-cnsc-primary-color" />
+              <TrendingUp className="w-14 h-14 text-cnsc-primary-color" />
             </div>
           </div>
         </div>
@@ -316,9 +321,8 @@ export function SduAccreditationOverview({ onSelectOrg }) {
               <tr>
                 <th className="px-6 py-3 font-semibold">Organization Name</th>
                 <th className="px-6 py-3 font-semibold">Acronym</th>
-                <th className="px-6 py-3 font-semibold">Department</th>
-                <th className="px-6 py-3 font-semibold">Course</th>
-                <th className="px-6 py-3 font-semibold">Class</th>
+                <th className="px-6 py-3 font-semibold">Classification</th>
+
                 <th className="px-6 py-3 font-semibold">Overall Status</th>
                 <th className="px-6 py-3 font-semibold">Roster Status</th>
                 <th className="px-6 py-3 font-semibold">Financial Report</th>
@@ -326,59 +330,87 @@ export function SduAccreditationOverview({ onSelectOrg }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {activeOrganization.map((org, index) => {
-                const profile = org.organizationProfile;
-                const roster = org.Roster;
-                const financial = org.FinancialReport;
-                return (
-                  <tr
-                    key={index}
-                    onClick={() => {
-                      console.log("Selected org:", org);
-                      onSelectOrg(org.organizationProfile);
-                    }}
-                    className="hover:bg-gray-50 transition"
-                  >
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {profile?.orgName || "—"}
-                    </td>
-                    <td className="px-6 py-4">{profile?.orgAcronym || "—"}</td>
-                    <td className="px-6 py-4">
-                      {profile?.orgDepartment || "—"}
-                    </td>
-                    <td className="px-6 py-4">{profile?.orgCourse || "—"}</td>
-                    <td className="px-6 py-4">{profile?.orgClass || "—"}</td>
-                    <td
-                      className={`px-6 py-4 font-semibold ${
-                        org.overallStatus === "Pending"
-                          ? "text-amber-600"
-                          : org.overallStatus === "Approved"
-                          ? "text-green-600"
-                          : "text-gray-600"
-                      }`}
+              {activeOrganization
+                .filter(
+                  (org) =>
+                    org &&
+                    org.organizationProfile &&
+                    org.organizationProfile.orgName && // Must have org name
+                    org.overallStatus // Must have a status
+                )
+                .map((org, index) => {
+                  const profile = org.organizationProfile;
+                  const roster = org.Roster;
+                  const financial = org.FinancialReport;
+                  return (
+                    <tr
+                      key={index}
+                      onClick={() => {
+                        console.log("Selected org:", org);
+                        onSelectOrg(org.organizationProfile);
+                      }}
+                      className="hover:bg-gray-50 transition"
                     >
-                      {org.overallStatus}
-                    </td>
-                    <td className="px-6 py-4">
-                      {roster?.isComplete ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Complete
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                          Incomplete
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-medium">
-                      ₱{financial?.endingBalance?.toLocaleString() || 0}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">
-                      {new Date(org.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {profile?.orgName || "—"}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {profile?.orgAcronym || "—"}
+                      </td>
+                      <td className="px-6 py-4">
+                        {profile?.orgClass === "Local" ? (
+                          <>
+                            <div className="font-medium text-gray-800">
+                              {profile?.orgDepartment || "—"}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {profile?.orgCourse || "—"}
+                            </div>
+                          </>
+                        ) : profile?.orgClass === "System-wide" ? (
+                          <>
+                            <div className="font-medium text-gray-800">
+                              {profile?.orgSpecialization || "—"}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {profile?.orgClass || "—"}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-gray-400">—</div>
+                        )}
+                      </td>
+                      <td
+                        className={`px-6 py-4 font-semibold ${
+                          org.overallStatus === "Pending"
+                            ? "text-amber-600"
+                            : org.overallStatus === "Approved"
+                            ? "text-green-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {org.overallStatus}
+                      </td>
+                      <td className="px-6 py-4">
+                        {roster?.isComplete ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Complete
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                            Incomplete
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-medium">
+                        ₱{financial?.endingBalance?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 text-xs">
+                        {new Date(org.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
