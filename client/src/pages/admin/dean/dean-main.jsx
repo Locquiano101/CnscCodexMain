@@ -335,7 +335,7 @@ const organizationSummary = useMemo(() => [
   return (
     <div className="w-screen h-screen grid grid-cols-1 grid-rows-[4rem_1fr] gap-0">
       {/* Header */}
-      <div className="bg-cnsc-primary-color w-full h-full flex items-center justify-between px-5">
+      <div className="bg-cnsc-secondary-color w-full h-full flex items-center justify-between px-5">
         <div className="flex gap-x-3 items-center">
           <img src={Logo} alt="CNSC Logo" className="w-15 h-15" />
           <h1 className="text-3xl text-white">Welcome, Dean</h1>

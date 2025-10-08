@@ -361,52 +361,40 @@ export function AddNewProposal({ onClose, orgData }) {
             <div className="space-y-6">
               {/* SDG Section */}
               <div className="md:col-span-2 text-black">
-                <label className="block text-sm font-medium text-black mb-2">
-                  Aligned SDG *
+                <label className="block text-sm font-semibold text-gray-800 mb-3">
+                  Aligned Sustainable Development Goals (SDGs){" "}
+                  <span className="text-red-500">*</span>
                 </label>
 
-                {/* Grid instead of flex-wrap */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
                   {[
-                    { value: "SDG 1", label: "SDG 1: No Poverty" },
-                    { value: "SDG 2", label: "SDG 2: Zero Hunger" },
-                    {
-                      value: "SDG 3",
-                      label: "SDG 3: Good Health and Well-being",
-                    },
-                    { value: "SDG 4", label: "SDG 4: Quality Education" },
-                    { value: "SDG 5", label: "SDG 5: Gender Equality" },
-                    {
-                      value: "SDG 6",
-                      label: "SDG 6: Clean Water and Sanitation",
-                    },
-                    {
-                      value: "SDG 7",
-                      label: "SDG 7: Affordable and Clean Energy",
-                    },
-                    {
-                      value: "SDG 8",
-                      label: "SDG 8: Decent Work and Economic Growth",
-                    },
+                    { value: "SDG 1", label: "No Poverty" },
+                    { value: "SDG 2", label: "Zero Hunger" },
+                    { value: "SDG 3", label: "Good Health & Well-being" },
+                    { value: "SDG 4", label: "Quality Education" },
+                    { value: "SDG 5", label: "Gender Equality" },
+                    { value: "SDG 6", label: "Clean Water & Sanitation" },
+                    { value: "SDG 7", label: "Affordable & Clean Energy" },
+                    { value: "SDG 8", label: "Decent Work & Economic Growth" },
                     {
                       value: "SDG 9",
-                      label: "SDG 9: Industry, Innovation and Infrastructure",
+                      label: "Industry, Innovation & Infrastructure",
                     },
-                    { value: "SDG 10", label: "SDG 10: Reduced Inequalities" },
+                    { value: "SDG 10", label: "Reduced Inequalities" },
                     {
                       value: "SDG 11",
-                      label: "SDG 11: Sustainable Cities and Communities",
+                      label: "Sustainable Cities & Communities",
                     },
                     {
                       value: "SDG 12",
-                      label: "SDG 12: Responsible Consumption and Production",
+                      label: "Responsible Consumption & Production",
                     },
-                    { value: "SDG 13", label: "SDG 13: Climate Action" },
-                    { value: "SDG 14", label: "SDG 14: Life Below Water" },
-                    { value: "SDG 15", label: "SDG 15: Life on Land" },
+                    { value: "SDG 13", label: "Climate Action" },
+                    { value: "SDG 14", label: "Life Below Water" },
+                    { value: "SDG 15", label: "Life on Land" },
                     {
                       value: "SDG 16",
-                      label: "SDG 16: Peace, Justice and Strong Institutions",
+                      label: "Peace, Justice & Strong Institutions",
                     },
                     {
                       value: "SDG 17",
@@ -429,7 +417,7 @@ export function AddNewProposal({ onClose, orgData }) {
                 </div>
 
                 {errors.alignedSDG && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-sm mt-2">
                     {errors.alignedSDG}
                   </p>
                 )}

@@ -190,42 +190,74 @@ const fetchProposals = async () => {
     setShowRevisionModal(true);
   };
 
-  const handleApproval = () => {
-    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
-    const adviserStatuses = [
-      "Approved by the Adviser",
-      "Revision from the Adviser",
-    ];
+  // const handleApproval = () => {
+  //   const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+  //   const adviserStatuses = [
+  //     "Approved by the Adviser",
+  //     "Revision from the Adviser",
+  //   ];
 
-    const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
+  //   const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
 
-    const isDeanUpdated = deanStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
+  //   const isDeanUpdated = deanStatuses.some(
+  //     (status) => status.toLowerCase().trim() === currentStatus
+  //   );
 
-    const isAdviserValid = adviserStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
+  //   const isAdviserValid = adviserStatuses.some(
+  //     (status) => status.toLowerCase().trim() === currentStatus
+  //   );
 
-    if (isDeanUpdated || !isAdviserValid) {
-      setPendingAction("Approval");
+  //   if (isDeanUpdated || !isAdviserValid) {
+  //     setPendingAction("Approval");
 
-      if (isDeanUpdated) {
-        setConfirmMessage(
-          "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
-        );
-      } else if (!isAdviserValid) {
-        setConfirmMessage(
-          "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
-        );
-      }
+  //     if (isDeanUpdated) {
+  //       setConfirmMessage(
+  //         "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
+  //       );
+  //     } else if (!isAdviserValid) {
+  //       setConfirmMessage(
+  //         "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
+  //       );
+  //     }
 
-      setConfirmUpdateModal(true);
-      return;
-    }
+  //     setConfirmUpdateModal(true);
+  //     return;
+  //   }
 
-    setShowApprovalModal(true);
+  //   setShowApprovalModal(true);
+  // };
+
+const handleApproval = async (proposal, status) => {
+  if (!proposal?._id) {
+    console.error("Missing proposal._id!", proposal);
+    alert("Cannot update proposal: Missing ID.");
+    return;
+  }
+
+  const payload = {
+    proposalId: proposal._id,
+    overallStatus: status,
+    activityTitle: proposal?.ProposedIndividualActionPlan?.activityTitle || "",
+    orgProfileId: selectedOrg?._id || "",
+    orgName: selectedOrg?.orgName || "",
   };
+
+  try {
+    console.log("Sending payload:", payload);
+
+    const response = await axios.post(
+      `${API_ROUTER}/updateStatusProposalConduct/${proposal._id}`,
+      payload
+    );
+
+    console.log("Server response:", response.data);
+    window.location.reload();
+  } catch (err) {
+    console.error("Failed to update proposal:", err);
+  }
+};
+
+
 
   const submitUpdate = async ({ status }) => {
     try {
@@ -669,26 +701,27 @@ const fetchProposals = async () => {
                   )}
               </div>
 
-{/* Action Buttons */}
-{!["Approved by the Dean", "Completed"].includes(selectedProposal.overallStatus) && (
-  <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
-    <button
-      onClick={handleRevision}
-      className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-    >
-      <AlertTriangle size={18} />
-      Notify Revision
-    </button>
+              {/* Action Buttons */}
+              {!["Approved by the Dean", "Completed", "Approved"].includes(selectedProposal.overallStatus) && (
+                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
+                  <button
+                    onClick={() => handleApproval(selectedProposal, "Revision from the Dean")}
+                    className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                  >
+                    <AlertTriangle size={18} />
+                    Notify Revision
+                  </button>
 
-    <button
-      onClick={handleApproval}
-      className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-    >
-      <CheckCircle size={18} />
-      Approve Proposal
-    </button>
-  </div>
-)}
+                  <button
+                    onClick={() => handleApproval(selectedProposal, "Approved by the Dean")}
+                    className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                  >
+                    <CheckCircle size={18} />
+                    Approve Proposal
+                  </button>
+                </div>
+              )}
+
 
 
 

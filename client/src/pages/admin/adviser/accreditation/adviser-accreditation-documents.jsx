@@ -213,8 +213,9 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                   accreditationDocumentData.JointStatement,
                   accreditationDocumentData.ConstitutionAndByLaws,
                   accreditationDocumentData.PledgeAgainstHazing,
-                  accreditationDocumentData.PresidentProfile,
-                ].filter((doc) => doc?.status === "Approved").length
+                ].filter((doc) =>
+                  doc?.status?.toLowerCase().includes("approved")
+                ).length
               }
             </div>
             <div className="text-sm text-emerald-700 mt-1">
@@ -230,8 +231,9 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                   accreditationDocumentData.JointStatement,
                   accreditationDocumentData.ConstitutionAndByLaws,
                   accreditationDocumentData.PledgeAgainstHazing,
-                  accreditationDocumentData.PresidentProfile,
-                ].filter((doc) => doc?.status === "Pending").length
+                ].filter((doc) =>
+                  doc?.status?.toLowerCase().includes("pending")
+                ).length
               }
             </div>
             <div className="text-sm text-amber-700 mt-1">Pending Review</div>
@@ -245,8 +247,7 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                   accreditationDocumentData.JointStatement,
                   accreditationDocumentData.ConstitutionAndByLaws,
                   accreditationDocumentData.PledgeAgainstHazing,
-                  accreditationDocumentData.PresidentProfile,
-                ].filter((doc) => doc === null).length
+                ].filter((doc) => !doc?.fileName).length
               }
             </div>
             <div className="text-sm text-gray-600 mt-1">Missing Documents</div>
@@ -255,7 +256,7 @@ export function AdviserAccreditationDocument({ orgData, user }) {
           {/* Organization Status */}
           <div className="bg-blue-50 rounded-xl p-4 text-center shadow-sm border border-blue-100">
             <div className="text-3xl font-extrabold text-blue-600">
-              {accreditationDocumentData.isActive ? "Active" : "Inactive"}
+              {orgData.isActive ? "Active" : "Inactive"}
             </div>
             <div className="text-sm text-blue-700 mt-1">
               Organization Status
