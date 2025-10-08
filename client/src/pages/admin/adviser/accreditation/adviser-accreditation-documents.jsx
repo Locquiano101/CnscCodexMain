@@ -199,13 +199,15 @@ export function AdviserAccreditationDocument({ orgData, user }) {
   return (
     <div className="w-full  p-4 gap-4 flex flex-col h-full">
       {/* Summary Stats */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-2xl shadow-lg border-slate-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Accreditation Summary
         </h2>
-        <div className="grid grid-cols-2  md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Approved Documents */}
+          <div className="bg-emerald-50 rounded-xl p-4 text-center shadow-sm border border-emerald-100">
+            <div className="text-3xl font-extrabold text-emerald-600">
               {
                 [
                   accreditationDocumentData.JointStatement,
@@ -215,10 +217,14 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                 ].filter((doc) => doc?.status === "Approved").length
               }
             </div>
-            <div className="text-sm text-gray-600">Approved Documents</div>
+            <div className="text-sm text-emerald-700 mt-1">
+              Approved Documents
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">
+
+          {/* Pending Review */}
+          <div className="bg-amber-50 rounded-xl p-4 text-center shadow-sm border border-amber-100">
+            <div className="text-3xl font-extrabold text-amber-500">
               {
                 [
                   accreditationDocumentData.JointStatement,
@@ -228,10 +234,12 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                 ].filter((doc) => doc?.status === "Pending").length
               }
             </div>
-            <div className="text-sm text-gray-600">Pending Review</div>
+            <div className="text-sm text-amber-700 mt-1">Pending Review</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-600">
+
+          {/* Missing Documents */}
+          <div className="bg-gray-100 rounded-xl p-4 text-center shadow-sm border border-gray-200">
+            <div className="text-3xl font-extrabold text-gray-700">
               {
                 [
                   accreditationDocumentData.JointStatement,
@@ -241,16 +249,21 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                 ].filter((doc) => doc === null).length
               }
             </div>
-            <div className="text-sm text-gray-600">Missing Documents</div>
+            <div className="text-sm text-gray-600 mt-1">Missing Documents</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+
+          {/* Organization Status */}
+          <div className="bg-blue-50 rounded-xl p-4 text-center shadow-sm border border-blue-100">
+            <div className="text-3xl font-extrabold text-blue-600">
               {accreditationDocumentData.isActive ? "Active" : "Inactive"}
             </div>
-            <div className="text-sm text-gray-600">Organization Status</div>
+            <div className="text-sm text-blue-700 mt-1">
+              Organization Status
+            </div>
           </div>
         </div>
       </div>
+
       {/* Documents Grid */}
       <div className="grid h-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Joint Statement */}

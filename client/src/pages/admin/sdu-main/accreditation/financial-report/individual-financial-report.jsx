@@ -364,7 +364,7 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
       {/* Right Panel (Transactions) */}
       <div className="flex flex-col flex-1 gap-4 h-full overflow-hidden">
         {/* Reimbursements */}
-        <div className="bg-white shadow-lg border overflow-hidden flex-1 flex flex-col">
+        <div className="bg-white shadow-lg overflow-hidden flex-1 flex flex-col">
           <div className="sticky top-0 bg-white p-6 border-b border-gray-400 flex items-center gap-3 justify-between">
             <div className="flex gap-2 items-center">
               <div className="p-2.5 bg-green-100 rounded-lg">
@@ -405,7 +405,7 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
         </div>
 
         {/* Disbursements */}
-        <div className="bg-white shadow-lg border flex-1 flex flex-col overflow-hidden">
+        <div className="bg-white shadow-lg flex-1 flex flex-col overflow-hidden">
           <div className="sticky top-0 bg-white p-4 border-b border-gray-400 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-2.5 bg-red-100 rounded-lg">
