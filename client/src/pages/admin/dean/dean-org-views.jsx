@@ -374,7 +374,7 @@ export default function AccreditationTable({ data = [] }) {
                 className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
                 rowSpan={2}
               >
-                Adviser/s
+                Adviser
               </th>
               <th
                 className="border border-gray-400 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
