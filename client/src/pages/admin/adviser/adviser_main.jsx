@@ -217,12 +217,12 @@ function AdviserNavigation({ orgData }) {
               label: "Post",
               path: "/adviser/post",
             },
-            {
-              key: "logs",
-              icon: <Clock className="mr-3 w-5 h-5" />,
-              label: "Logs",
-              path: "/adviser/log",
-            },
+            // {
+            //   key: "logs",
+            //   icon: <Clock className="mr-3 w-5 h-5" />,
+            //   label: "Logs",
+            //   path: "/adviser/log",
+            // },
           ].map((item) => (
             <NavLink
               key={item.key}

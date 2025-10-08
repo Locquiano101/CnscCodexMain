@@ -322,9 +322,11 @@ export function AddProposedActionPlan({
         {/* Aligned SDG */}
         <div className="md:col-span-2 text-black">
           <label className="block text-sm font-semibold text-gray-800 mb-3">
-            Aligned SDG *
+            Aligned Sustainable Development Goals (SDGs){" "}
+            <span className="text-red-500">*</span>
           </label>
-          <div className="flex flex-wrap gap-3">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
               { value: "SDG 1", label: "No Poverty" },
               { value: "SDG 2", label: "Zero Hunger" },
@@ -355,20 +357,23 @@ export function AddProposedActionPlan({
             ].map((sdg) => (
               <label
                 key={sdg.value}
-                className={`flex items-center gap-2 p-2 px-3 rounded-full cursor-pointer transition-all duration-200
+                className={`flex flex-col items-start gap-1 p-3 rounded-lg border cursor-pointer transition-all duration-200 shadow-sm
           ${
             formData.alignedSDG.includes(sdg.value)
-              ? "bg-amber-500 text-black font-medium"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ? "border-amber-500 bg-amber-50 text-amber-700 shadow"
+              : "border-gray-200 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
           }`}
               >
-                <input
-                  type="checkbox"
-                  checked={formData.alignedSDG.includes(sdg.value)}
-                  onChange={() => handleSDGChange(sdg.value)}
-                  className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-white checked:border-white cursor-pointer"
-                />
-                <span className="text-sm md:text-base">{sdg.label}</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.alignedSDG.includes(sdg.value)}
+                    onChange={() => handleSDGChange(sdg.value)}
+                    className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 checked:border-amber-500 cursor-pointer"
+                  />
+                  <span className="font-semibold text-sm">{sdg.value}</span>
+                </div>
+                <span className="text-xs text-gray-600">{sdg.label}</span>
               </label>
             ))}
           </div>
