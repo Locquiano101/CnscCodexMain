@@ -29,7 +29,6 @@ export function SduAccomplishmentReportDetailed({
   });
 
   const [loading, setLoading] = useState(true);
-  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (selectedAccomplishment) {
