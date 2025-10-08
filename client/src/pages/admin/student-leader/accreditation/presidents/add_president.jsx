@@ -1005,7 +1005,7 @@ function PresidentPersonalInfo({
             Contact Number *
           </label>
           <div className="flex items-center">
-            <span className="px-3 py-2 border border-r-0 rounded-l bg-gray-100 text-gray-700 text-sm">
+            <span className="px-3 py-2 border border-r-0 rounded-l-md bg-gray-100 text-gray-700 text-sm">
               +63
             </span>
             <input
@@ -1013,17 +1013,16 @@ function PresidentPersonalInfo({
               name="contactNo"
               value={formData.contactNo}
               onChange={(e) => {
-                // Remove non-digits
-                let value = e.target.value.replace(/\D/g, "");
+                let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
 
-                // Only allow starting with 9 and up to 10 digits
+                // Allow only if starts with 9 and up to 10 digits
                 if (/^9[0-9]{0,9}$/.test(value) || value === "") {
                   handleInputChange({ target: { name: "contactNo", value } });
                 }
               }}
               placeholder="9XXXXXXXXX"
               maxLength={10}
-              className={`w-full p-2 border rounded-r focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
+              className={`w-full p-2 border rounded-r-md focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
                 "contactNo"
               )}`}
               inputMode="numeric"
