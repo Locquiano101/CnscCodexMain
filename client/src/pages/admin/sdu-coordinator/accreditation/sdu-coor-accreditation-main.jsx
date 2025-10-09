@@ -30,9 +30,10 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
   const [AccreditationData, setAccreditationData] = useState(null);
   const [presidentMoreHorizontal, setPresidentMoreHorizontal] = useState(false);
   const [revisionNotes, setRevisionNotes] = useState("");
-  const [popup, setPopup] = useState(null); // holds type & message
   const [organizationProfileApproval, setOrganizationProfileApproval] =
     useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const [organizationProfileRevision, setOrganizationProfileRevision] =
     useState(false);
 
@@ -60,24 +61,33 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
     }
   }, [selectedOrg?._id]);
 
-  const submitUpdate = async ({ status }) => {
+  const submitUpdate = async ({ status, revisionNotes }) => {
     try {
-      const payload = { orgId: selectedOrg._id, overAllStatus: status };
+      setActionLoading(true); // ⏳ Show loading modal
 
+      const payload = { orgId: selectedOrg._id, overAllStatus: status };
       if (revisionNotes && revisionNotes.trim() !== "") {
         payload.revisionNotes = revisionNotes;
       }
 
       const response = await axios.post(
-        `${API_ROUTER}/updateOrganizationProfileStatus/`, // 👈 change to correct proposal/org id
+        `${API_ROUTER}/updateOrganizationProfileStatus/`,
         payload
       );
 
       console.log("✅ Update success:", response.data);
+
+      // Refetch updated data
+      await fetchAccreditation();
     } catch (error) {
       console.log("❌ Update failed:", error);
+    } finally {
+      setActionLoading(false); // ✅ Hide loading modal
+      setOrganizationProfileRevision(false);
+      setOrganizationProfileApproval(false);
     }
   };
+
   // Helper function to get status badge color
   const getStatusBadgeColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -94,17 +104,17 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
       return (
         <button
           onClick={() => navigate(path)}
-          className="flex-1  border-12 bg-red-500 text-left rounded-lg p-4 hover:shadow-md transition-shadow"
+          className="w-full text-left p-4 border border-red-200 bg-red-50 rounded-lg hover:shadow-sm transition-shadow"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {icon}
               <div>
-                <h4 className="font-medium text-gray-800">{title}</h4>
+                <h4 className="font-medium text-gray-900">{title}</h4>
                 <p className="text-sm text-red-600">Not submitted</p>
               </div>
             </div>
-            <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+            <span className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">
               Missing
             </span>
           </div>
@@ -112,43 +122,55 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
       );
     }
 
-    const isComplete = document.isComplete || false;
-    const status = document.overAllStatus || "Pending";
+    const {
+      isComplete = false,
+      overAllStatus = "Pending",
+      revisionNotes,
+    } = document;
+    const isApproved = overAllStatus.toLowerCase().includes("approve");
 
     return (
       <button
         onClick={() => navigate(path)}
-        className=" flex flex-col flex-1 text-left shadow-md rounded-lg p-4 hover:shadow-md transition-shadow"
+        className="w-full text-left p-4 border border-gray-200 bg-white rounded-lg hover:shadow-sm transition-shadow"
       >
-        <div className="h-full w-full flex flex-col justify-evenly">
+        <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-3">
             {icon}
             <div>
-              <h4 className="font-medium text-gray-800">{title}</h4>
+              <h4 className="font-medium text-gray-900">{title}</h4>
               <p className="text-sm text-gray-600">
                 {isComplete ? "Complete" : "Incomplete"}
               </p>
             </div>
           </div>
           <span
-            className={`px-3 py-1 text-xs rounded-full font-semibold ${getStatusBadgeColor(
-              status
+            className={`px-3 py-1 text-sm rounded-full font-medium ${getStatusColor(
+              overAllStatus
             )}`}
           >
-            {status}
+            {overAllStatus}
           </span>
         </div>
 
-        {document.revisionNotes &&
-          !status.toLowerCase().includes("approve") && (
-            <div className="mt-3 p-2 rounded text-sm text-blue-700">
-              <strong>Notes:</strong> {document.revisionNotes}
-            </div>
-          )}
+        {revisionNotes && !isApproved && (
+          <div className="mt-3 p-3 bg-blue-50 rounded text-sm text-blue-800">
+            <strong>Notes:</strong> {revisionNotes}
+          </div>
+        )}
       </button>
     );
   };
 
+  // Helper function for status colors
+  const getStatusColor = (status) => {
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes("approve")) return "bg-green-100 text-green-800";
+    if (statusLower.includes("reject") || statusLower.includes("deny"))
+      return "bg-red-100 text-red-800";
+    if (statusLower.includes("pending")) return "bg-yellow-100 text-yellow-800";
+    return "bg-gray-100 text-gray-800";
+  };
   if (!selectedOrg) {
     return (
       <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 text-center">
@@ -240,7 +262,7 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
               {isManagePresidentProfileOpen && (
                 <div className="absolute w-full right-0 bg-white border border-gray-200 rounded-b-lg shadow-xl z-10 overflow-hidden">
                   <button
-                    onClick={(e) => {
+                    onClick={() => {
                       setOrganizationProfileApproval(true);
                     }}
                     className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-green-50 text-sm text-gray-700 transition-colors duration-200"
@@ -249,7 +271,7 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
                     Approve Organization Profile
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={() => {
                       setOrganizationProfileRevision(true);
                     }}
                     className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-blue-50 text-sm text-gray-700 transition-colors duration-200"
@@ -264,185 +286,137 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
         </div>
       </div>
       {/* Content Body */}
-      <div className="grid grid-cols-5 gap-4 h-full w-full ">
-        {/* Organization Details Grid */}
-        <div className="col-span-2 flex flex-col bg-white shadow-md rounded-xl p-4">
-          <h2 className="p-1 text-xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <Earth />
-            Organization Details
-          </h2>
+      <div className="flex flex-col gap-6 h-full w-full  overflow-y-auto">
+        {/* Top Section — Organization & President */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Organization Details */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+              <Earth className="text-cnsc-primary-color" />
+              Organization Details
+            </h2>
 
-          {/* Main content card */}
-          <div className="h-full flex flex-col rounded-lg ">
-            {[
-              {
-                key: "orgClass",
-                label: "Classification",
-                value: orgProfile.orgClass,
-                icon: <Layers className="w-4 h-4 mr-2 text-blue-500" />,
-              },
-              {
-                key: "orgDepartment",
-                label: "Department",
-                value: orgProfile.orgDepartment,
-                icon: <Building className="w-4 h-4 mr-2 text-purple-500" />,
-              },
-              {
-                key: "isActive",
-                label: "Active Status",
-                value: orgProfile.isActive,
-                icon: orgProfile.isActive ? (
-                  <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                ) : (
-                  <XCircle className="w-4 h-4 mr-2 text-red-500" />
-                ),
-              },
-              {
-                key: "orgSpecialization",
-                label: "Specialization",
-                value: orgProfile.orgSpecialization,
-                icon: (
-                  <GraduationCap className="w-4 h-4 mr-2 text-indigo-500" />
-                ),
-              },
-              {
-                key: "orgCourse",
-                label: "Course",
-                value: orgProfile.orgCourse,
-                icon: (
-                  <GraduationCap className="w-4 h-4 mr-2 text-emerald-500" />
-                ),
-              },
-              {
-                key: "adviser",
-                label: "Adviser",
-                value: orgProfile.adviser?.name,
-                icon: <User className="w-4 h-4 mr-2 text-orange-500" />,
-              },
-            ].map((item, index) => {
-              // Skip rendering if value doesn't exist or is empty
-              if (
-                !item.value ||
-                (typeof item.value === "string" && !item.value.trim())
-              ) {
-                return null;
-              }
-
-              return (
-                <div
-                  key={item.key}
-                  className="group  flex items-center px-4 py-2  rounded-lg"
-                >
-                  {/* Icon */}
-                  <div className="flex-shrink-0 mt-0.5">{item.icon}</div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+            <div className="space-y-3">
+              {[
+                {
+                  key: "orgClass",
+                  label: "Classification",
+                  value: orgProfile.orgClass,
+                  icon: <Layers className="w-4 h-4 text-blue-500" />,
+                },
+                {
+                  key: "orgDepartment",
+                  label: "Department",
+                  value: orgProfile.orgDepartment,
+                  icon: <Building className="w-4 h-4 text-purple-500" />,
+                },
+                {
+                  key: "isActive",
+                  label: "Active Status",
+                  value: orgProfile.isActive,
+                  icon: orgProfile.isActive ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-500" />
+                  ),
+                },
+                {
+                  key: "orgSpecialization",
+                  label: "Specialization",
+                  value: orgProfile.orgSpecialization,
+                  icon: <GraduationCap className="w-4 h-4 text-indigo-500" />,
+                },
+                {
+                  key: "orgCourse",
+                  label: "Course",
+                  value: orgProfile.orgCourse,
+                  icon: <GraduationCap className="w-4 h-4 text-emerald-500" />,
+                },
+                {
+                  key: "adviser",
+                  label: "Adviser",
+                  value: orgProfile.adviser?.name,
+                  icon: <User className="w-4 h-4 text-orange-500" />,
+                },
+              ]
+                .filter(
+                  (item) =>
+                    item.value &&
+                    !(typeof item.value === "string" && !item.value.trim())
+                )
+                .map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    {item.icon}
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                         {item.label}
-                      </span>
-
-                      {/* Value rendering */}
-                      <div className="flex items-center gap-2">
-                        {item.key === "isActive" ? (
-                          <>
-                            <div
-                              className={`w-3 h-3 rounded-full  animate-pulse`}
-                            />
-                            <span
-                              className={`font-semibold text-sm px-3 py-1 rounded-full ${
-                                item.value
-                                  ? "text-green-800 bg-green-100"
-                                  : "text-red-800 bg-red-100"
-                              }`}
-                            >
-                              {item.value ? "Active" : "Inactive"}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-gray-900 font-semibold text-sm sm:text-base text-right sm:text-left">
-                            {item.value}
-                          </span>
-                        )}
-                      </div>
+                      </p>
+                      {item.key === "isActive" ? (
+                        <span
+                          className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${
+                            item.value
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {item.value ? "Active" : "Inactive"}
+                        </span>
+                      ) : (
+                        <p className="text-gray-900 font-semibold text-sm">
+                          {item.value}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                ))}
+            </div>
           </div>
-        </div>
 
-        {/* President Profile */}
-        <div className="col-span-3 relative flex flex-col p-6 bg-white rounded-xl shadow-md">
-          <h2 className="p-1 text-xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <User />
-            President Profile
-          </h2>
-          {AccreditationData?.PresidentProfile ? (
-            <div className="flex flex-col ">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <span className="text-sm font-medium text-gray-500">
-                    Name
-                  </span>
-                  <p className="text-gray-800 font-semibold mt-1">
-                    {AccreditationData.PresidentProfile.name}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">
-                    Year & Course
-                  </span>
-                  <p className="text-gray-800 font-semibold mt-1">
-                    {AccreditationData.PresidentProfile.year} -{" "}
-                    {AccreditationData.PresidentProfile.course}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Age</span>
-                  <p className="text-gray-800 font-semibold mt-1">
-                    {AccreditationData.PresidentProfile.age} years old
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">
-                    Contact
-                  </span>
-                  <p className="text-gray-800 font-semibold mt-1">
-                    {AccreditationData.PresidentProfile.contactNo}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">
-                    Religion
-                  </span>
-                  <p className="text-gray-800 font-semibold mt-1">
-                    {AccreditationData.PresidentProfile.religion}
-                  </p>
-                </div>
-                <div className="flex flex-col text-sm">
-                  <span className="text-sm font-medium text-gray-500">
-                    Status
-                  </span>
-                  <span className="font-bold">
-                    {AccreditationData.PresidentProfile.overAllStatus}
-                  </span>
-                </div>
-                <div className="col-span-3  flex justify-between items-start ">
+          {/* President Profile */}
+          <div className="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-md p-4 border-gray-100 relative">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+              <User className="text-cnsc-primary-color" />
+              President Profile
+            </h2>
+
+            {AccreditationData?.PresidentProfile ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-800">
+                {[
+                  ["Name", AccreditationData.PresidentProfile.name],
+                  [
+                    "Year & Course",
+                    `${AccreditationData.PresidentProfile.year} - ${AccreditationData.PresidentProfile.course}`,
+                  ],
+                  [
+                    "Age",
+                    `${AccreditationData.PresidentProfile.age} years old`,
+                  ],
+                  ["Contact", AccreditationData.PresidentProfile.contactNo],
+                  ["Religion", AccreditationData.PresidentProfile.religion],
+                  ["Status", AccreditationData.PresidentProfile.overAllStatus],
+                ].map(([label, value], idx) => (
+                  <div key={idx}>
+                    <p className="text-gray-500 font-medium">{label}</p>
+                    <p className="font-semibold mt-1">{value}</p>
+                  </div>
+                ))}
+
+                <div className="col-span-3 flex flex-wrap justify-between gap-6 mt-2">
                   {AccreditationData.PresidentProfile.talentSkills?.length >
                     0 && (
                     <div>
-                      <span className="text-sm font-medium text-gray-500">
+                      <p className="text-gray-500 font-medium">
                         Talents & Skills
-                      </span>
+                      </p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {AccreditationData.PresidentProfile.talentSkills.map(
                           (talent, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full"
+                              className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-semibold"
                             >
                               {talent.skill} ({talent.level})
                             </span>
@@ -452,13 +426,12 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
                     </div>
                   )}
 
-                  {/* Address */}
                   {AccreditationData.PresidentProfile.presentAddress && (
                     <div>
-                      <span className="text-sm font-medium text-gray-500">
+                      <p className="text-gray-500 font-medium">
                         Present Address
-                      </span>
-                      <p className="text-gray-800 mt-1">
+                      </p>
+                      <p className="font-semibold mt-1">
                         {
                           AccreditationData.PresidentProfile.presentAddress
                             .fullAddress
@@ -468,16 +441,26 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
                   )}
                 </div>
               </div>
-              {/* Action menu */}
-              <div className="absolute top-4 right-4" ref={dropdownRef}>
+            ) : (
+              <div className="h-full flex items-center justify-center text-red-600 bg-red-50 rounded-lg p-6">
+                No president profile has been submitted.
+              </div>
+            )}
+
+            {/* Action Button */}
+            {AccreditationData?.PresidentProfile && (
+              <div className="absolute top-4 right-4">
                 <button
-                  onClick={() => setPresidentMoreHorizontal(true)}
-                  className="p-2 rounded-full hover:bg-gray-100"
+                  onClick={() =>
+                    setPresidentMoreHorizontal(!presidentMoreHorizontal)
+                  }
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <MoreHorizontal />
                 </button>
+
                 {presidentMoreHorizontal && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50">
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-50">
                     <button
                       onClick={() => navigate("./president-information")}
                       className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
@@ -487,21 +470,18 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
                   </div>
                 )}
               </div>
-            </div>
-          ) : (
-            <div className="bg-cnsc-secondary-color/10 h-full  flex justify-center items-center text-red-700 p-4 rounded-xl">
-              No president profile has been submitted.
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        <div className="col-span-5 flex flex-col h-fit p-4 bg-white rounded-xl shadow-md">
+        {/* Accreditation Requirements */}
+        <div className="bg-white rounded-xl  shadow-md p-6 border border-gray-100">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-cnsc-primary-color" />
             Accreditation Requirements
           </h2>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {renderDocumentStatus(
               AccreditationData?.Roster,
               "Organization Roster",
@@ -530,37 +510,35 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
               `/sdu-coordinator/accreditation/document`
             )}
 
-            {/* Financial Report */}
             {AccreditationData?.FinancialReport && (
               <button
                 onClick={() =>
                   navigate(`/sdu-coordinator/accreditation/financial-report`)
                 }
-                className=" text-left bg-white shadow-md rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="flex flex-col items-start gap-2 bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all"
               >
-                <div className="flex flex-col flex-1 items-center justify-evenly h-full w-full">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-yellow-600" />
-                    <div>
-                      <h4 className="font-medium text-gray-800">
-                        Financial Report
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Initial Balance: ₱
-                        {AccreditationData.FinancialReport.initialBalance?.toLocaleString() ||
-                          "0"}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <h4 className="font-semibold text-gray-800">
+                      Financial Report
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Initial Balance: ₱
+                      {AccreditationData.FinancialReport.initialBalance?.toLocaleString() ||
+                        "0"}
+                    </p>
                   </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-semibold">
-                    Available
-                  </span>
                 </div>
+                <span className="self-end px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-semibold">
+                  Available
+                </span>
               </button>
             )}
           </div>
         </div>
       </div>
+
       {/* Revision Modal */}
       {organizationProfileRevision && (
         <div className="absolute z-100 bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
@@ -592,15 +570,21 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
             </div>
 
             <button
-              onClick={() => {
+              onClick={() =>
                 submitUpdate({
                   status: "Revision From the SDU Coordinator",
                   revisionNotes,
-                }); // 👈 call with "Revision"
-              }}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+                })
+              }
+              disabled={actionLoading}
+              className={`mt-6 px-6 py-2 rounded-lg text-sm font-medium shadow-md transition
+    ${
+      actionLoading
+        ? "bg-indigo-400 cursor-not-allowed opacity-70 blur-[0.3px]"
+        : "bg-indigo-600 hover:bg-indigo-700 text-white"
+    }`}
             >
-              Send
+              {actionLoading ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
@@ -629,14 +613,23 @@ export function SduCoorMainAccreditation({ selectedOrg }) {
             </p>
 
             <button
-              onClick={() => {
+              onClick={() =>
                 submitUpdate({
                   status: "Approved by the SDU Coordinator",
-                }); // 👈 call with "Revision" // 👈 call with "Approved"
-              }}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+                })
+              }
+              disabled={actionLoading}
+              className={`mt-6 flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-medium shadow-md transition
+    ${
+      actionLoading
+        ? "bg-indigo-400 cursor-not-allowed opacity-70 blur-[0.3px]"
+        : "bg-indigo-600 hover:bg-indigo-700 text-white"
+    }`}
             >
-              Confirm Approval
+              {actionLoading && (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              )}
+              {actionLoading ? "Processing..." : "Confirm Approval"}
             </button>
           </div>
         </div>

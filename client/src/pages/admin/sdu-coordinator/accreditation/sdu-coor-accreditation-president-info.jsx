@@ -13,13 +13,12 @@ import {
   MoreHorizontal,
   AlertTriangle,
 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import { DonePopUp } from "../../../../components/components";
 
 export function SduCoorPresident({ selectedOrg }) {
-  const [presidents, setPresidents] = useState([]);
   const [currentPresident, setCurrentPresident] = useState(null);
   const [remainingPresidents, setRemainingPresidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,8 +38,6 @@ export function SduCoorPresident({ selectedOrg }) {
           `${API_ROUTER}/getPresidents/${orgId}`
         );
         const data = response.data;
-
-        setPresidents(data);
 
         if (selectedOrg?.orgPresident?._id) {
           const orgPresidentId = selectedOrg.orgPresident._id;
@@ -154,7 +151,7 @@ export function SduCoorPresident({ selectedOrg }) {
   }
 
   return (
-    <div className="flex flex-col mt-4 h-full w-full gap-4 overflow-auto">
+    <div className="flex flex-col mt-4 h-full w-full p-4 gap-4 overflow-auto">
       <div className="grid grid-cols-4 gap-4">
         {/* Current President (4 columns) */}
         <div className="col-span-4">
@@ -167,12 +164,12 @@ export function SduCoorPresident({ selectedOrg }) {
               selectedOrg={selectedOrg}
             />
           ) : (
-            <div className="bg-white gap-4 flex flex-col justify-center items-center p-6 relative cursor-pointer group border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-all duration-300">
+            <div className="bg-white gap-4 flex flex-col justify-center items-center p-6 relative cursor-pointer group border-2 border-dashed border-gray-300 hover:border-amber-400 transition-all duration-300">
               <AlertTriangle
                 size={48}
                 className="text-yellow-600 group-hover:text-yellow-700 transition-colors duration-300"
               />
-              <h3 className="text-xl font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors duration-300">
+              <h3 className="text-xl font-semibold text-gray-800 group-hover:text-amber-700 transition-colors duration-300">
                 No Current President
               </h3>
             </div>

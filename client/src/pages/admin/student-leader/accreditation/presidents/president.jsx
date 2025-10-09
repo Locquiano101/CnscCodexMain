@@ -52,8 +52,6 @@ export default function StudentLeaderPresidentListComponent({
   accreditationData,
 }) {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [uploadComplete, setUploadComplete] = useState(false);
-  const [presidents, setPresidents] = useState([]);
   const [currentPresident, setCurrentPresident] = useState(null);
   const [remainingPresidents, setRemainingPresidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +70,6 @@ export default function StudentLeaderPresidentListComponent({
           `${API_ROUTER}/getPresidents/${orgId}`
         );
         const data = response.data;
-
-        setPresidents(data);
 
         console.log(orgData);
         if (orgData?.orgPresident?._id) {
@@ -248,9 +244,7 @@ export default function StudentLeaderPresidentListComponent({
             onClose={() => setShowAddForm(false)}
             onSuccess={() => {
               setShowAddForm(false);
-              setUploadComplete(true);
               window.location.reload();
-              setTimeout(() => setUploadComplete(false), 3000);
             }}
           />
         </div>

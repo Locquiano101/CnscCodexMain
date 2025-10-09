@@ -3,7 +3,7 @@ import {
   Accreditation,
   Document,
   OrganizationProfile,
-  Adviser,
+  Notification,
   User,
 } from "../models/index.js";
 
@@ -67,43 +67,53 @@ export const GetAccreditationDocumentsAll = async (req, res) => {
 
 export const DeactivateAllAccreditations = async (req, res) => {
   try {
-    // const result = await Accreditation.updateMany(
-    //   {}, // match all documents
-    //   { $set: { isActive: false } }
-    // );
-    // Find all non-adviser users in the organization
-    const users = await User.find({}).select("email");
+    // Deactivate all accreditation records
+    const result = await Accreditation.updateMany(
+      {},
+      { $set: { isActive: false } }
+    );
 
-    // const resultOrganizationProfile = await OrganizationProfile.updateMany(
-    //   {}, // match all documents
-    //   { $set: { isActive: false } }
-    // );
+    // Deactivate all organization profiles
+    const resultOrganizationProfile = await OrganizationProfile.updateMany(
+      {},
+      { $set: { isActive: false } }
+    );
 
+    // Get all users (only their email)
+    const users = await User.find().select("email");
+
+    // Extract all emails into an array
+    const recipientEmails = users.map((user) => user.email);
+
+    // Email content
+    const subject =
+      "Accreditation System Notice: All Accreditations Deactivated";
     const message = `
-Hello ${orgName},
+Hello,
 
-A new inquiry has been submitted regarding your accreditation documents.
+Please be informed that all accreditations and organization profiles have been temporarily deactivated by the system administrator.
 
-Inquiry Details:
-- From: ${senderInfo}
-- Message: 
-${inquiryText}
-
-Please log in to the system to review and respond.
+If you have any questions or require clarification, please contact the SDU Main Office.
 
 Thank you,
 Accreditation Support Team
     `;
 
-    await NodeEmail(recipientEmails, inquirySubject, message);
+    // Send email notification to all users
+    await NodeEmail(recipientEmails, subject, message);
 
+    // Respond to client
     res.status(200).json({
-      message: "All accreditations have been deactivated",
-      modifiedCount: result.modifiedCount,
+      success: true,
+      message:
+        "All accreditations and organization profiles have been deactivated, and notifications sent.",
+      modifiedAccreditations: result.modifiedCount,
+      modifiedOrganizations: resultOrganizationProfile.modifiedCount,
+      notifiedUsers: recipientEmails.length,
     });
   } catch (error) {
     console.error("Error deactivating accreditations:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ success: false, error: "Server error" });
   }
 };
 
@@ -170,54 +180,115 @@ export const UpdateDocumentStatus = async (req, res) => {
     const { status, revisionNotes } = req.body;
 
     if (!documentId) {
-      return res.status(400).json({ error: "Missing documentId" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Document ID is required." });
     }
     if (!status) {
-      return res.status(400).json({ error: "Missing status" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Status is required." });
     }
 
-    // If status contains "revision", ensure notes exist
+    // 🔹 Fetch the document with its linked organization profile
+    const document = await Document.findById(documentId).populate(
+      "organizationProfile"
+    );
+    console.log(`+++++++++${document}++++++++`);
+
+    if (!document) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Document not found." });
+    }
+
+    // 🔹 Handle revision validation
     if (status.toLowerCase().includes("revision")) {
       if (!revisionNotes || revisionNotes.trim() === "") {
-        return res
-          .status(400)
-          .json({ error: "Missing revision notes for revision status" });
+        return res.status(400).json({
+          success: false,
+          message:
+            "Revision notes are required when setting status to revision.",
+        });
       }
+    }
 
-      const updatedDoc = await Document.findByIdAndUpdate(
-        documentId,
-        { status, revisionNotes },
-        { new: true }
-      );
+    // 🔹 Update the document
+    document.status = status;
+    if (revisionNotes && revisionNotes.trim() !== "") {
+      document.revisionNotes = revisionNotes;
+    }
+    await document.save();
 
-      if (!updatedDoc) {
-        return res.status(404).json({ error: "Document not found" });
-      }
+    // 🔹 Find all users linked to this organization profile
+    const connectedUsers = await User.find({
+      organizationProfile: document.organizationProfile?._id,
+    }).select("email name");
 
-      return res.status(200).json({
-        message: `Document status updated to ${status} with revision notes`,
-        document: updatedDoc,
+    if (!connectedUsers.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No connected users found for this document.",
       });
     }
 
-    // Normal status update (no revision)
-    const updatedDoc = await Document.findByIdAndUpdate(
-      documentId,
-      { status },
-      { new: true }
-    );
+    const recipientEmails = connectedUsers.map((u) => u.email);
 
-    if (!updatedDoc) {
-      return res.status(404).json({ error: "Document not found" });
-    }
+    // ✅ Prepare email content
+    const subject = `Document Status Updated — ${status}`;
+    const message = `
+Hello,
 
-    res.status(200).json({
-      message: `Document status updated to ${status}`,
-      document: updatedDoc,
+The document titled "${
+      document.fileName || "an organization document"
+    }" has been updated.
+
+📋 Status: ${status}
+${revisionNotes ? `📝 Revision Notes: ${revisionNotes}` : ""}
+
+Please log in to the accreditation system to view the full details.
+
+Thank you,
+Accreditation Support Team
+`;
+
+    // ✅ Send email to all connected users
+    await NodeEmail(recipientEmails, subject, message);
+
+    // ✅ Create notification record
+    const notifMessage = `Document "${
+      document.fileName || "Untitled"
+    }" status updated to "${status}".`;
+
+    const notification = new Notification({
+      organizationProfile: document.organizationProfile?._id,
+      department: document.organizationProfile?.orgDepartment || "N/A",
+      type: "Accreditation Update",
+      message: notifMessage,
+      data: {
+        documentId,
+        status,
+        revisionNotes: revisionNotes || null,
+      },
+    });
+
+    await notification.save();
+
+    // ✅ Respond
+    return res.status(200).json({
+      success: true,
+      message: `Document status updated to "${status}", notifications sent, and log recorded.`,
+      updatedDocument: document,
+      notifiedUsers: recipientEmails,
+      notificationLog: notification,
     });
   } catch (error) {
-    console.error("Error updating document status:", error);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error updating document status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      error: error.message,
+    });
   }
 };
 

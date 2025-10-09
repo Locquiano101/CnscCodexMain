@@ -3,12 +3,12 @@ import { DOCU_API_ROUTER } from "../../../App";
 import { X } from "lucide-react";
 import { UnderDevelopment } from "../../../components/components";
 import { SduCoordinatorAccreditationNavigationSubRoute } from "./sdu-coor-main";
-import { SduCoorMainAccreditation } from "./individual-accreditation/sdu-coor-accreditation-main";
-import { SduCoorPresident } from "./individual-accreditation/sdu-coor-accreditation-president-info";
-import { SduCoorFinancialReport } from "./individual-accreditation/sdu-coor-accreditation-financial-report";
-import { SduCoorRosterData } from "./individual-accreditation/sdu-coor-accreditation-roster";
-import { SduCoorProposedPlan } from "./individual-accreditation/sdu-coor-proposed-action-plan";
-import { SduCoorAccreditationDocument } from "./individual-accreditation/sdu-coor-accreditation-document";
+import { SduCoorMainAccreditation } from "./accreditation/sdu-coor-accreditation-main";
+import { SduCoorPresident } from "./accreditation/sdu-coor-accreditation-president-info";
+import { SduCoorFinancialReport } from "./accreditation/sdu-coor-accreditation-financial-report";
+import { SduCoorRosterData } from "./accreditation/sdu-coor-accreditation-roster";
+import { SduCoorProposedPlan } from "./accreditation/sdu-coor-proposed-action-plan";
+import { SduCoorAccreditationDocument } from "./accreditation/sdu-coor-accreditation-document";
 import { SduCoorProposalConduct } from "./proposals/sdu-coor-proposal";
 import { SduCoorAccomplishmentReport } from "./accomplishment/sdu-coor-accomplishment";
 import { School2 } from "lucide-react"; // you used <School2 /> but didn’t import it
@@ -236,7 +236,6 @@ export function SduCoordinatorComponent({
 
   return (
     <div className="flex flex-col flex-1 w-full bg-white h-full overflow-hidden">
-      {/* Selected Organization Display */}
       {selectedOrg && (
         <div className="p-4 border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -259,8 +258,7 @@ export function SduCoordinatorComponent({
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="flex-col flex flex-1 h-full ">
+      <div className="flex-col flex flex-1 min-h-0 w-full overflow-auto ">
         <Routes>
           {/* Dashboard/Home route */}
           <Route

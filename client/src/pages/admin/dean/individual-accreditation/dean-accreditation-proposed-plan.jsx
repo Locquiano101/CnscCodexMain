@@ -229,7 +229,7 @@ const fetchProposals = async () => {
 
 const handleApproval = async (proposal, status) => {
   if (!proposal?._id) {
-    console.error("🚨 Missing proposal._id!", proposal);
+    console.error("Missing proposal._id!", proposal);
     alert("Cannot update proposal: Missing ID.");
     return;
   }
@@ -243,16 +243,17 @@ const handleApproval = async (proposal, status) => {
   };
 
   try {
-    console.log("📤 Sending payload:", payload);
+    console.log("Sending payload:", payload);
 
     const response = await axios.post(
       `${API_ROUTER}/updateStatusProposalConduct/${proposal._id}`,
       payload
     );
 
-    console.log("✅ Server response:", response.data);
+    console.log("Server response:", response.data);
+    window.location.reload();
   } catch (err) {
-    console.error("❌ Failed to update proposal:", err);
+    console.error("Failed to update proposal:", err);
   }
 };
 
@@ -704,7 +705,7 @@ const handleApproval = async (proposal, status) => {
               {!["Approved by the Dean", "Completed", "Approved"].includes(selectedProposal.overallStatus) && (
                 <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
                   <button
-                    onClick={() => handleApproval(selectedProposal, "Revision")}
+                    onClick={() => handleApproval(selectedProposal, "Revision from the Dean")}
                     className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
                   >
                     <AlertTriangle size={18} />
@@ -712,7 +713,7 @@ const handleApproval = async (proposal, status) => {
                   </button>
 
                   <button
-                    onClick={() => handleApproval(selectedProposal, "Approved")}
+                    onClick={() => handleApproval(selectedProposal, "Approved by the Dean")}
                     className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
                   >
                     <CheckCircle size={18} />

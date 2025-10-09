@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Upload } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 
-export function AddProposal({ proposals = [], onClose, onAddLog }) {
+export function AddProposal({ proposals = [], onClose }) {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);

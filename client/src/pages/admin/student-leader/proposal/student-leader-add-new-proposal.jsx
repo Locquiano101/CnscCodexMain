@@ -174,7 +174,7 @@ export function AddNewProposal({ onClose, orgData }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3/4 max-h-[95vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800">
@@ -396,30 +396,24 @@ export function AddNewProposal({ onClose, orgData }) {
                       value: "SDG 16",
                       label: "Peace, Justice & Strong Institutions",
                     },
-                    { value: "SDG 17", label: "Partnerships for the Goals" },
-                  ].map((sdg) => {
-                    const isSelected = formData.alignedSDG.includes(sdg.value);
-                    return (
-                      <button
-                        key={sdg.value}
-                        type="button"
-                        onClick={() => handleSDGChange(sdg.value)}
-                        className={`flex flex-col items-start text-left gap-1 px-4 py-3 rounded-lg border transition-all duration-200
-            ${
-              isSelected
-                ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm"
-                : "border-gray-200 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
-            }`}
-                      >
-                        <span className="font-semibold text-sm">
-                          {sdg.value}
-                        </span>
-                        <span className="text-xs text-gray-600">
-                          {sdg.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                    {
+                      value: "SDG 17",
+                      label: "SDG 17: Partnerships for the Goals",
+                    },
+                  ].map((sdg) => (
+                    <div
+                      key={sdg.value}
+                      className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.alignedSDG.includes(sdg.value)}
+                        onChange={() => handleSDGChange(sdg.value)}
+                        className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer mr-2"
+                      />
+                      <span className="text-sm">{sdg.label}</span>
+                    </div>
+                  ))}
                 </div>
 
                 {errors.alignedSDG && (

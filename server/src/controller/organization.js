@@ -1,7 +1,10 @@
-import { Organization, OrganizationProfile, User } from "../models/index.js";
-import { customAlphabet } from "nanoid";
+import {
+  Notification,
+  Organization,
+  OrganizationProfile,
+  User,
+} from "../models/index.js";
 import { NodeEmail } from "../middleware/emailer.js";
-import { organizationProfileSchema } from "../models/organization.js";
 const verificationStore = {};
 
 export const PostOrganizationalLogo = async (req, res) => {
@@ -66,28 +69,79 @@ export const PostStatusUpdateOrganization = async (req, res) => {
       });
     }
 
-    // Build update object
-
-    // Update organization profile
-    const updatedOrganization = await OrganizationProfile.findByIdAndUpdate(
-      { _id: orgId },
-      {
-        overAllStatus,
-        revisionNotes,
-      },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedOrganization) {
+    // Find organization
+    const organization = await OrganizationProfile.findById(orgId);
+    if (!organization) {
       return res.status(404).json({
         success: false,
         message: "Organization not found",
       });
     }
 
+    // Update organization profile
+    const updatedOrganization = await OrganizationProfile.findByIdAndUpdate(
+      orgId,
+      { overAllStatus, revisionNotes },
+      { new: true, runValidators: true }
+    );
+
+    // 🔔 Create a new notification
+    const notifMessage =
+      overAllStatus === "Approved"
+        ? `Your organization's accreditation has been approved.`
+        : overAllStatus === "Disapproved"
+        ? `Your organization's accreditation has been disapproved. Please check the revision notes for details.`
+        : `Your organization's accreditation status has been updated to "${overAllStatus}".`;
+
+    const notification = new Notification({
+      organizationProfile: orgId,
+      department: organization.department || "N/A",
+      type: "Accreditation Update",
+      message: notifMessage,
+      data: { orgId, status: overAllStatus, revisionNotes },
+    });
+
+    await notification.save();
+
+    // 🔍 Find ALL users linked to the organization
+    const users = await User.find({
+      organizationProfile: orgId,
+    }).select("email name");
+
+    if (!users.length) {
+      console.warn(`⚠️ No users found for organization ${organization._id}`);
+    } else {
+      const emailSubject = `Organization Status Update: ${overAllStatus}`;
+      const emailMessage = `
+Dear ${organization.orgName || "Organization"},
+
+${notifMessage}
+
+${revisionNotes ? `Revision Notes: ${revisionNotes}` : ""}
+
+Thank you,
+CNSC CODEX Accreditation System
+      `;
+
+      // 📧 Send email to each user
+      for (const user of users) {
+        if (user.email) {
+          try {
+            await NodeEmail(user.email, emailSubject, emailMessage);
+          } catch (emailErr) {
+            console.error(
+              `❌ Failed to send email to ${user.email}:`,
+              emailErr
+            );
+          }
+        }
+      }
+    }
+
+    // ✅ Response
     res.status(200).json({
       success: true,
-      message: "Organization status updated successfully",
+      message: "Organization status updated. Notifications and emails sent.",
       data: updatedOrganization,
     });
   } catch (error) {
