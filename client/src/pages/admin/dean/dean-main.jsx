@@ -44,7 +44,6 @@ import {
 
 import { DeanComponent, DeanDashboard } from "./dean-route-components";
 
-
 function getLatestActiveProfile(org, allProfiles, orgs) {
   if (!org?.organization?.organizationProfile?.length) return null;
 
@@ -67,7 +66,7 @@ function getLatestActiveProfile(org, allProfiles, orgs) {
 
   return {
     ...latest,
-    profileId: latest._id,                       // actual profile _id
+    profileId: latest._id, // actual profile _id
     organizationProfile: latest.organizationProfile, // orgProfile ref for API calls
     adviser: wrapper?.adviser || org.adviser,
     orgPresident: wrapper?.orgPresident || org.orgPresident,
@@ -80,7 +79,7 @@ function getLatestActiveProfile(org, allProfiles, orgs) {
 
 function OrgLayout({ orgs, onClose }) {
   const { orgAcronym } = useParams();
-const { user } = useOutletContext();
+  const { user } = useOutletContext();
   // ✅ Always define hooks first, never inside conditionals
   const [accreditationData, setAccreditationData] = useState({});
   const [orgProfiles, setOrgProfiles] = useState([]);
@@ -109,9 +108,12 @@ const { user } = useOutletContext();
       setLoading(true);
       try {
         const [accRes, profRes] = await Promise.all([
-          axios.get(`${API_ROUTER}/getAccreditationInfo/${org.organization._id}`, {
-            withCredentials: true,
-          }),
+          axios.get(
+            `${API_ROUTER}/getAccreditationInfo/${org.organization._id}`,
+            {
+              withCredentials: true,
+            }
+          ),
           axios.get(`${API_ROUTER}/getAllOrganizationProfile`, {
             withCredentials: true,
           }),
@@ -126,8 +128,13 @@ const { user } = useOutletContext();
 
         if (profileId) {
           const [finRes, actRes] = await Promise.all([
-            axios.get(`${API_ROUTER}/getFinancialReport/${profileId}`, { withCredentials: true }),
-            axios.get(`${API_ROUTER}/getStudentLeaderProposalConduct/${profileId}`, { withCredentials: true }),
+            axios.get(`${API_ROUTER}/getFinancialReport/${profileId}`, {
+              withCredentials: true,
+            }),
+            axios.get(
+              `${API_ROUTER}/getStudentLeaderProposalConduct/${profileId}`,
+              { withCredentials: true }
+            ),
           ]);
 
           if (!cancelled) {
@@ -171,7 +178,9 @@ const { user } = useOutletContext();
           )}
           <div className="w-full h-fit flex flex-col">
             <span className="text-gray-500 text-md">Welcome!</span>
-            <span className="text-lg font-bold leading-3">{displayOrg?.orgName}</span>
+            <span className="text-lg font-bold leading-3">
+              {displayOrg?.orgName}
+            </span>
             <span className="text-xs leading-4">{displayOrg?.orgAcronym}</span>
           </div>
         </div>
@@ -181,7 +190,10 @@ const { user } = useOutletContext();
           { to: `/dean/${orgAcronym}/accreditation`, label: "Accreditation" },
           { to: `/dean/${orgAcronym}/activities`, label: "Proposals" },
           { to: `/dean/${orgAcronym}/financial`, label: "Financial Statement" },
-          { to: `/dean/${orgAcronym}/accomplishment`, label: "Accomplishments" },
+          {
+            to: `/dean/${orgAcronym}/accomplishment`,
+            label: "Accomplishments",
+          },
         ].map(({ to, label }) => (
           <NavLink
             key={to}
@@ -229,20 +241,45 @@ const { user } = useOutletContext();
                 org={displayOrg}
                 accreditationData={accreditationData}
                 baseOrg={org}
-
               />
             }
           />
-          <Route path="activities" element={<OrgActivities org={displayOrg} activities={activities} user={user}/>} />
-          <Route path="financial" element={<OrgFinancial org={displayOrg} user={user} financial={financial} displayOrg={displayOrg}/>} />
-          <Route path="accomplishment" element={<OrgAccomplishments org={displayOrg} displayOrg={displayOrg} user={user} />} />
+          <Route
+            path="activities"
+            element={
+              <OrgActivities
+                org={displayOrg}
+                activities={activities}
+                user={user}
+              />
+            }
+          />
+          <Route
+            path="financial"
+            element={
+              <OrgFinancial
+                org={displayOrg}
+                user={user}
+                financial={financial}
+                displayOrg={displayOrg}
+              />
+            }
+          />
+          <Route
+            path="accomplishment"
+            element={
+              <OrgAccomplishments
+                org={displayOrg}
+                displayOrg={displayOrg}
+                user={user}
+              />
+            }
+          />
         </Routes>
       </div>
     </div>
   );
 }
-
-
 
 export function DeanPage() {
   const { user } = useOutletContext();
@@ -260,7 +297,10 @@ export function DeanPage() {
         const baseOrgs = res.data || [];
 
         // enrich each org with latest profile + accreditation + activities + financial
-        const profRes = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`, { withCredentials: true });
+        const profRes = await axios.get(
+          `${API_ROUTER}/getAllOrganizationProfile`,
+          { withCredentials: true }
+        );
         const profiles = profRes.data;
 
         const enrichedOrgs = await Promise.all(
@@ -277,9 +317,17 @@ export function DeanPage() {
               );
 
               const [accRes, actRes, finRes] = await Promise.all([
-                axios.get(`${API_ROUTER}/getAccreditationInfo/${org.organization._id}`, { withCredentials: true }),
-                axios.get(`${API_ROUTER}/getStudentLeaderProposalConduct/${latest._id}`, { withCredentials: true }),
-                axios.get(`${API_ROUTER}/getFinancialReport/${latest._id}`, { withCredentials: true }),
+                axios.get(
+                  `${API_ROUTER}/getAccreditationInfo/${org.organization._id}`,
+                  { withCredentials: true }
+                ),
+                axios.get(
+                  `${API_ROUTER}/getStudentLeaderProposalConduct/${latest._id}`,
+                  { withCredentials: true }
+                ),
+                axios.get(`${API_ROUTER}/getFinancialReport/${latest._id}`, {
+                  withCredentials: true,
+                }),
               ]);
 
               return {
@@ -307,30 +355,29 @@ export function DeanPage() {
     fetchOrganizations();
   }, [user?.deliveryUnit]);
 
-
-
-const organizationSummary = useMemo(() => [
-  {
-    label: "Total Organizations",
-    value: String(orgs.filter(o => o?.isAllowedForAccreditation).length),
-  },
-  {
-    label: "Accredited Organizations",
-    value: String(
-      orgs.filter(o =>
-        o?.accreditation &&
-        o.accreditation.status === "Accredited"
-      ).length
-    ),
-  },
-{
-  label: "Pending Organizations",
-  value: String(orgs.filter(o => o?.overAllStatus === "Pending").length),
-},
-
-], [orgs]);
-
-
+  const organizationSummary = useMemo(
+    () => [
+      {
+        label: "Total Organizations",
+        value: String(orgs.filter((o) => o?.isAllowedForAccreditation).length),
+      },
+      {
+        label: "Accredited Organizations",
+        value: String(
+          orgs.filter(
+            (o) => o?.accreditation && o.accreditation.status === "Accredited"
+          ).length
+        ),
+      },
+      {
+        label: "Pending Organizations",
+        value: String(
+          orgs.filter((o) => o?.overAllStatus === "Pending").length
+        ),
+      },
+    ],
+    [orgs]
+  );
 
   return (
     <div className="w-screen h-screen grid grid-cols-1 grid-rows-[4rem_1fr] gap-0">
@@ -352,13 +399,18 @@ const organizationSummary = useMemo(() => [
               <DeanDashboard
                 organizationSummary={organizationSummary}
                 orgs={orgs}
-                loading={loading}   // 👈 pass it here
+                loading={loading} // 👈 pass it here
                 onSelectOrg={(org) => navigate(`/dean/${org.orgAcronym}/home`)}
               />
             }
-            />
+          />
 
-          <Route path=":orgAcronym/*" element={<OrgLayout orgs={orgs} onClose={() => navigate("/dean")} />} />
+          <Route
+            path=":orgAcronym/*"
+            element={
+              <OrgLayout orgs={orgs} onClose={() => navigate("/dean")} />
+            }
+          />
         </Routes>
       </div>
     </div>
@@ -366,22 +418,21 @@ const organizationSummary = useMemo(() => [
 }
 //depreacted
 
-    // <div className="flex h-screen w-screen bg-gray-50">
-    //   <div className="flex h-full w-1/5 justify-between bg-cnsc-primary-color overflow-hidden">
-    //     <DeanMainNavigation />
-    //   </div>
-    //   <div className="w-full h-full">
-    //     <DeanComponent
-    //       selectedOrg={selectedOrg}
-    //       orgs={orgs}
-    //       onSelectOrg={setSelectedOrg}
-    //       setLoading={setLoading}
-    //       loading={loading}
-    //       user={user}
-    //     />
-    //   </div>
-    // </div>
-
+// <div className="flex h-screen w-screen bg-gray-50">
+//   <div className="flex h-full w-1/5 justify-between bg-cnsc-primary-color overflow-hidden">
+//     <DeanMainNavigation />
+//   </div>
+//   <div className="w-full h-full">
+//     <DeanComponent
+//       selectedOrg={selectedOrg}
+//       orgs={orgs}
+//       onSelectOrg={setSelectedOrg}
+//       setLoading={setLoading}
+//       loading={loading}
+//       user={user}
+//     />
+//   </div>
+// </div>
 
 // function DeanMainNavigation() {
 //   const [activeKey, setActiveKey] = useState("home");

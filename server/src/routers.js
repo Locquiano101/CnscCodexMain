@@ -107,6 +107,7 @@ router.get(
   "/getStudentLeaderAccomplishmentReady/:orgProfileId",
   Controller.getDoneProposalConductsByOrgProfile
 );
+
 router.get(
   "/getStudentLeaderProposalById/:accreditationId",
   Controller.getStudentPpaByAccreditationId
@@ -138,6 +139,10 @@ router.get(
 /* ---------- GENERAL ---------- */
 router.post("/login", Controller.Login);
 router.post("/logout", Controller.Logout);
+router.post(
+  "/updateStatusProposalConduct/:proposalConductId",
+  Controller.updateProposalConductStatus
+);
 
 router.post("/sendVerification", Controller.SendRegistrationConfirmationCode);
 router.post(
