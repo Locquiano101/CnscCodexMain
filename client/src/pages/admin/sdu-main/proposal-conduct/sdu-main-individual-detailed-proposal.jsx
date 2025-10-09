@@ -301,7 +301,7 @@ export function SduMainDetailedProposal({ proposal, orgData, user, onClose }) {
               onClick={() =>
                 setStatusModal({
                   type: "approval",
-                  status: "Approved by SDU Main",
+                  status: "Conduct Approved",
                 })
               }
               className="px-4 py-2 text-white bg-green-700 hover:bg-green-800 rounded-md"
