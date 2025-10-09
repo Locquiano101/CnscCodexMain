@@ -54,10 +54,24 @@ export function SduMainIndividualAccreditationView({ selectedOrg }) {
       setLoading(false);
     }
   };
+  const checkAccreditationApprovalStatuses = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `${API_ROUTER}/checkAccreditationApprovalStatuses/${selectedOrg._id}`
+      );
+      console.log(res);
+    } catch (error) {
+      console.error("Failed to fetch accreditation data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedOrg?._id) {
       fetchAccreditation();
+      checkAccreditationApprovalStatuses();
     }
   }, [selectedOrg?._id]);
 
