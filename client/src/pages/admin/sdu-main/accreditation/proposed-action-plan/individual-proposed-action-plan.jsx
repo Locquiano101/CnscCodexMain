@@ -311,7 +311,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
             <h3 className="text-2xl font-bold text-slate-800">
               Proposals Analysis
             </h3>
-            <div className="relative inline-block text-left" ref={dropdownRef}>
+            {/* <div className="relative inline-block text-left" ref={dropdownRef}>
               <button
                 onClick={() => setIsManageProposedPlanOpen((prev) => !prev)}
                 className={`px-6 flex w-fit gap-2 justify-center items-center py-2 bg-cnsc-primary-color/20 text-cnsc-primary-color border border-cnsc-primary-color/30 transition-all duration-200 ${
@@ -344,7 +344,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
                   </button>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
 
           <div className="flex gap-6 mb-6">

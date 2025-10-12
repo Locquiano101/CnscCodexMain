@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from "recharts";
 
 import axios from "axios";
@@ -26,14 +26,14 @@ import { DeanAccreditationDocument } from "./individual-accreditation/dean-accre
 import { DeanAccomplishmentReport } from "./accomplishment/dean-accomplishment";
 import { DeanProposedPlan } from "./individual-accreditation/dean-accreditation-proposed-plan";
 import { DeanAccreditationMain } from "./individual-accreditation/dean-accreditation-main";
-
+import { DeanProposalConduct } from "./proposals/dean-proposal";
 
 export function OrgHome({
-  baseOrg,           // original org from list
-  displayOrg,        // latest active profile OR baseOrg
+  baseOrg, // original org from list
+  displayOrg, // latest active profile OR baseOrg
   accreditationData, // fetched in parent
-  financial,         // fetched in parent (for latest profile)
-  activities,        // fetched in parent (for latest profile)
+  financial, // fetched in parent (for latest profile)
+  activities, // fetched in parent (for latest profile)
 }) {
   const [tab, setTab] = useState("Overview");
   const [underlineStyle, setUnderlineStyle] = useState({});
@@ -69,7 +69,6 @@ export function OrgHome({
     { label: "Email", value: displayOrg?.adviser?.email ?? "—" },
   ];
 
-
   const requirements = [
     {
       name: "Joint Statement",
@@ -95,23 +94,24 @@ export function OrgHome({
     },
     {
       name: "Financial Report",
-      status: accreditationData?.FinancialReport?.isActive ? "Active" : "Inactive",
+      status: accreditationData?.FinancialReport?.isActive
+        ? "Active"
+        : "Inactive",
     },
   ];
 
-// Normalize and count completed statuses (case-insensitive + supports variations)
-const completedRequirements = requirements.filter((req) => {
-  const status = (req.status || "").toLowerCase();
-  return (
-    status.includes("approved") ||
-    status.includes("submitted") ||
-    status.includes("active") ||
-    status.includes("complete") ||
-    status.includes("accredited") ||
-    status.includes("renewal")
-  );
-}).length;
-
+  // Normalize and count completed statuses (case-insensitive + supports variations)
+  const completedRequirements = requirements.filter((req) => {
+    const status = (req.status || "").toLowerCase();
+    return (
+      status.includes("approved") ||
+      status.includes("submitted") ||
+      status.includes("active") ||
+      status.includes("complete") ||
+      status.includes("accredited") ||
+      status.includes("renewal")
+    );
+  }).length;
 
   const totalRequirements = requirements.length;
   const progressPercentage =
@@ -129,21 +129,36 @@ const completedRequirements = requirements.filter((req) => {
   financial?.collections?.forEach((item) => {
     const month = formatMonth(item.date);
     if (!monthlyDataMap[month]) {
-      monthlyDataMap[month] = { month, collections: 0, reimbursements: 0, disbursements: 0 };
+      monthlyDataMap[month] = {
+        month,
+        collections: 0,
+        reimbursements: 0,
+        disbursements: 0,
+      };
     }
     monthlyDataMap[month].collections += item.amount || 0;
   });
   financial?.reimbursements?.forEach((item) => {
     const month = formatMonth(item.date);
     if (!monthlyDataMap[month]) {
-      monthlyDataMap[month] = { month, collections: 0, reimbursements: 0, disbursements: 0 };
+      monthlyDataMap[month] = {
+        month,
+        collections: 0,
+        reimbursements: 0,
+        disbursements: 0,
+      };
     }
     monthlyDataMap[month].reimbursements += item.amount || 0;
   });
   financial?.disbursements?.forEach((item) => {
     const month = formatMonth(item.date);
     if (!monthlyDataMap[month]) {
-      monthlyDataMap[month] = { month, collections: 0, reimbursements: 0, disbursements: 0 };
+      monthlyDataMap[month] = {
+        month,
+        collections: 0,
+        reimbursements: 0,
+        disbursements: 0,
+      };
     }
     monthlyDataMap[month].disbursements += item.amount || 0;
   });
@@ -151,7 +166,7 @@ const completedRequirements = requirements.filter((req) => {
     (a, b) => new Date(a.month) - new Date(b.month)
   );
 
-  console.log(financial)
+  console.log(financial);
 
   const presidentName =
     typeof displayOrg?.orgPresident === "object"
@@ -187,7 +202,6 @@ const completedRequirements = requirements.filter((req) => {
         {tab === "Overview" && (
           <>
             <div className="flex w-full items-center gap-x-6 mb-6">
-      
               <div className="flex items-center gap-x-3 w-1/2">
                 {displayOrg?._id && displayOrg?.orgLogo ? (
                   <img
@@ -201,7 +215,9 @@ const completedRequirements = requirements.filter((req) => {
                 <h1 className="text-3xl font-bold">
                   {displayOrg?.orgName || "Organization"}{" "}
                   {displayOrg?.orgAcronym && (
-                    <span className="text-gray-600">({displayOrg.orgAcronym})</span>
+                    <span className="text-gray-600">
+                      ({displayOrg.orgAcronym})
+                    </span>
                   )}
                 </h1>
               </div>
@@ -253,7 +269,9 @@ const completedRequirements = requirements.filter((req) => {
                 </div>
                 <div className="w-full h-1/2 rounded-md p-2 bg-gray-200 flex flex-col">
                   <span className="text-gray-500 text-[12px]">Adviser</span>
-                  <span className="text-black">{displayOrg?.adviser?.name  ?? "—"}</span>
+                  <span className="text-black">
+                    {displayOrg?.adviser?.name ?? "—"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -279,7 +297,8 @@ const completedRequirements = requirements.filter((req) => {
                       className="grid grid-cols-3 py-2 text-sm text-black hover:bg-gray-300 cursor-pointer"
                     >
                       <div className="pl-2 capitalize">
-                        {act?.ProposedIndividualActionPlan?.activityTitle ?? "—"}
+                        {act?.ProposedIndividualActionPlan?.activityTitle ??
+                          "—"}
                       </div>
                       <div className="pl-2 capitalize">
                         {act?.ProposedIndividualActionPlan?.venue ?? "—"}
@@ -301,17 +320,34 @@ const completedRequirements = requirements.filter((req) => {
               </div>
 
               <div className="w-[51%] h-75 bg-white rounded-md flex flex-col">
-                <h1 className="text-lg text-black font-semibold">Financial Report</h1>
+                <h1 className="text-lg text-black font-semibold">
+                  Financial Report
+                </h1>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={financialChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <BarChart
+                    data={financialChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="collections" fill="#4caf50" name="Collections" />
-                    <Bar dataKey="reimbursements" fill="#2196f3" name="Reimbursements" />
-                    <Bar dataKey="disbursements" fill="#f44336" name="Disbursements" />
+                    <Bar
+                      dataKey="collections"
+                      fill="#4caf50"
+                      name="Collections"
+                    />
+                    <Bar
+                      dataKey="reimbursements"
+                      fill="#2196f3"
+                      name="Reimbursements"
+                    />
+                    <Bar
+                      dataKey="disbursements"
+                      fill="#f44336"
+                      name="Disbursements"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -333,7 +369,6 @@ const completedRequirements = requirements.filter((req) => {
             <DeanAccreditationDocument selectedOrg={displayOrg} />
           </div>
         )}
-
       </div>
     </>
   );
@@ -361,7 +396,9 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`${API_ROUTER}/getAccomplishment/${orgProfileId}`);
+        const res = await axios.get(
+          `${API_ROUTER}/getAccomplishment/${orgProfileId}`
+        );
         setAccomplishment(res.data);
       } catch (err) {
         console.error(" Error fetching accomplishment report:", err);
@@ -386,14 +423,13 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
         baseOrg?.accreditation?.overallStatus ||
         "Pending",
       adviser: org?.adviser?.name || baseOrg?.adviser?.name || "N/A",
-      president: org?.orgPresident?.name || baseOrg?.orgPresident?.name || "N/A",
+      president:
+        org?.orgPresident?.name || baseOrg?.orgPresident?.name || "N/A",
       validationDate: accreditationData?.updatedAt
         ? new Date(accreditationData.updatedAt).toLocaleDateString()
         : "N/A",
       apesocTotal:
-        accomplishment?.grandTotal ||
-        baseOrg?.latestProfile?.apesocTotal ||
-        0,
+        accomplishment?.grandTotal || baseOrg?.latestProfile?.apesocTotal || 0,
       finalStatus:
         baseOrg?.latestProfile?.overAllStatus ||
         accreditationData?.overallStatus ||
@@ -409,7 +445,11 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-2">Accreditations</h2>
 
-        {loading && <p className="text-sm text-gray-500">Loading accomplishment data...</p>}
+        {loading && (
+          <p className="text-sm text-gray-500">
+            Loading accomplishment data...
+          </p>
+        )}
         {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
 
@@ -528,61 +568,53 @@ export default function AccreditationTable({ data = [] }) {
   );
 }
 
-
-
-
 export function OrgActivities({ org, activities, user }) {
-//   console.log(activities)
-//   const [selected, setSelected] = useState(null);
-//   const [statusModal, setStatusModal] = useState(null); // for UpdateStatusProposal
+  //   console.log(activities)
+  //   const [selected, setSelected] = useState(null);
+  //   const [statusModal, setStatusModal] = useState(null); // for UpdateStatusProposal
 
-//   // Group activities
-// const pending = activities.filter((a) =>
-//   a.overallStatus?.toLowerCase().includes("pending")
-// );
-// const ongoing = activities.filter((a) =>
-//   a.overallStatus?.toLowerCase().includes("approved")
-// );
-// const completed = activities.filter((a) =>
-//   a.overallStatus?.toLowerCase().includes("completed")
-// );
+  //   // Group activities
+  // const pending = activities.filter((a) =>
+  //   a.overallStatus?.toLowerCase().includes("pending")
+  // );
+  // const ongoing = activities.filter((a) =>
+  //   a.overallStatus?.toLowerCase().includes("approved")
+  // );
+  // const completed = activities.filter((a) =>
+  //   a.overallStatus?.toLowerCase().includes("completed")
+  // );
 
-//   const chartData = [
-//     { name: "Pending", value: pending.length },
-//     { name: "Ongoing", value: ongoing.length },
-//     { name: "Completed", value: completed.length },
-//   ];
-//   const COLORS = ["#facc15", "#60a5fa", "#34d399"];
+  //   const chartData = [
+  //     { name: "Pending", value: pending.length },
+  //     { name: "Ongoing", value: ongoing.length },
+  //     { name: "Completed", value: completed.length },
+  //   ];
+  //   const COLORS = ["#facc15", "#60a5fa", "#34d399"];
 
-//   const openModal = (activity) => setSelected(activity);
-//   const closeModal = () => setSelected(null);
+  //   const openModal = (activity) => setSelected(activity);
+  //   const closeModal = () => setSelected(null);
 
-//   const handleAction = (type) => {
-//     // open UpdateStatusProposal modal
-//     if (type === "approve") {
-//       setStatusModal({ type: "approval", status: "Approved" });
-//     } else {
-//       setStatusModal({ type: "alert", status: "Returned" });
-//     }
-//   };
+  //   const handleAction = (type) => {
+  //     // open UpdateStatusProposal modal
+  //     if (type === "approve") {
+  //       setStatusModal({ type: "approval", status: "Approved" });
+  //     } else {
+  //       setStatusModal({ type: "alert", status: "Returned" });
+  //     }
+  //   };
 
-  return (
-<DeanProposedPlan selectedOrg={org} />
-  );
+  return <DeanProposalConduct orgData={org} user={user} />;
 }
 
 export function OrgFinancial({ org, user, financial, displayOrg }) {
   return (
-<DeanFinancialReport
-  selectedOrg={displayOrg}
-  user={user}
-  financial={financial}
-/>
+    <DeanFinancialReport
+      selectedOrg={displayOrg}
+      user={user}
+      financial={financial}
+    />
   );
 }
 export function OrgAccomplishments({ org, user, displayOrg }) {
-  return (
-<DeanAccomplishmentReport orgData={displayOrg} user={user} />
-    
-  );
+  return <DeanAccomplishmentReport orgData={displayOrg} user={user} />;
 }

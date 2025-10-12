@@ -23,19 +23,19 @@ import { ShowDeanDetailedProposal } from "./dean-detailed-proposal";
 export function DeanProposalConduct({ orgData, user }) {
   const [proposalsConduct, setProposalsConduct] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null); // for details modal
-
   const fetchProposedPlanConduct = async () => {
     try {
       const { data } = await axios.get(
         `${API_ROUTER}/getStudentLeaderProposalConduct/${orgData._id}`,
         { withCredentials: true }
       );
+      console.log(data);
       setProposalsConduct(data);
     } catch (err) {
       console.error("Error fetching proposals conduct:", err);
     }
   };
-
+  console.log(`${API_ROUTER}/getStudentLeaderProposalConduct/${orgData._id}`);
   useEffect(() => {
     fetchProposedPlanConduct();
   }, []);
