@@ -1,21 +1,14 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Login from "./login_form";
 import { RegistrationForm } from "./registration_form";
 import backgroundImage from "./../../assets/cnscsch.jpg";
-import { OrganzationComponent } from "./organization_profile";
+import { OrganizationComponent } from "./organization_profile";
 import { CalendarComponent } from "./proposal_calendar";
 import { EventComponent } from "./public_post";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function HomePage() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -29,7 +22,7 @@ export default function HomePage() {
     <div className="relative h-screen w-screen ">
       {/* Desktop Navigation */}
       <div className="hidden md:flex h-full w-full items-center justify-center z-10 relative">
-        <DekstopNavigation scrollToSection={scrollToSection} />
+        <DesktopNavigation scrollToSection={scrollToSection} />
       </div>
       <div className="flex md:hidden h-full w-full items-center justify-center z-10 relative">
         <CellphoneNavigation />
@@ -45,104 +38,180 @@ export default function HomePage() {
   );
 }
 
-function DekstopNavigation({ scrollToSection }) {
+function DesktopNavigation() {
+  const [currentSection, setCurrentSection] = useState(0);
   const [showRegistration, setShowRegistration] = useState(false);
-  const navigate = useNavigate();
+
+  const sections = ["Organizations", "Latest Posts", "Event Calendar", "Login"];
+
+  const goToSection = (index) => {
+    if (index >= 0 && index < sections.length) {
+      setCurrentSection(index);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (currentSection > 0) {
+      setCurrentSection(currentSection - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (currentSection < sections.length - 1) {
+      setCurrentSection(currentSection + 1);
+    }
+  };
 
   return (
-    <div className="relative h-screen w-screen overflow-x-hidden">
+    <div className="relative h-screen w-screen overflow-hidden">
       {/* Fixed Navigation Bar */}
       <div className="fixed top-0 left-0 w-full z-50 text-white font-bold">
         <div className="h-16 flex justify-end items-center px-16">
           <nav className="hidden md:flex items-center justify-center space-x-8 py-4">
-            <button
-              onClick={() => scrollToSection("section0")}
-              className="relative group  hover:text-yellow-300 transition-colors duration-300 "
-            >
-              Login
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-300 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </button>
-            <div className="h-6 w-0.5 bg-white/30" />
-            <button
-              onClick={() => scrollToSection("section1")}
-              className="relative group  hover:text-yellow-300 transition-colors duration-300 "
-            >
-              Organizations
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-300 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </button>
-            <div className="h-6 w-0.5 bg-white/30" />
-            <button
-              onClick={() => scrollToSection("section2")}
-              className="relative group  hover:text-yellow-300 transition-colors duration-300"
-            >
-              Latest Posts
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-300 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </button>
-            <div className="h-6 w-0.5 bg-white/30" />
-            <button
-              onClick={() => scrollToSection("section3")}
-              className="relative group  hover:text-yellow-300 transition-colors duration-300"
-            >
-              Event Calendar
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-300 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </button>
+            {sections.map((section, index) => (
+              <React.Fragment key={section}>
+                {index > 0 && <div className="h-6 w-0.5 bg-white/30" />}
+                <button
+                  onClick={() => goToSection(index)}
+                  className={`relative group transition-colors duration-300 ${
+                    currentSection === index
+                      ? "text-yellow-300"
+                      : "hover:text-yellow-300"
+                  }`}
+                >
+                  {section}
+                  <span
+                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-yellow-300 transition-transform duration-300 origin-left ${
+                      currentSection === index
+                        ? "scale-x-100"
+                        : "scale-x-0 group-hover:scale-x-100"
+                    }`}
+                  />
+                </button>
+              </React.Fragment>
+            ))}
           </nav>
         </div>
       </div>
 
-      {/* Main Content (with top padding so it doesn’t get hidden under nav) */}
-      <div id="section0" className="pt-16">
-        <div className="h-screen w-full flex justify-center items-center">
-          <div className="h-full flex flex-col items-start px-8 justify-center w-1/3">
-            <p className="stroked-text-cnsc text-[100px] leading-[90px]">
-              CNSC
-            </p>
-            <p className="stroked-text-codex text-[100px] -mt-6">CODEX</p>
-            <h1 className="text-white text-2xl font-bold italic mt-2 mb-5">
-              Document Tracking and Data Management for Student Organizations
-            </h1>
+      {/* Carousel Container */}
+      <div className="relative h-screen max-w-screen flex">
+        <div
+          className="h-full flex transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${currentSection * 100}%)` }}
+        >
+          {/* Section 1 - Organizations */}
+          <div className="min-w-full h-full  pt-16 flex-shrink-0">
+            <div
+              id="section1"
+              className=" justify-center items-center flex flex-col h-full"
+            >
+              <OrganizationComponent />
+            </div>
           </div>
 
-          <div className="h-full items-center flex justify-center w-1/3">
-            {showRegistration ? (
-              <RegistrationForm
-                onBackToLogin={() => setShowRegistration(false)}
-                onShowRegistration={setShowRegistration}
-              />
-            ) : (
-              <Login
-                navigate={navigate}
-                onShowRegistration={() => setShowRegistration(true)}
-              />
-            )}
+          {/* Section 2 - Latest Posts */}
+          <div className="min-w-full h-full  pt-16 flex-shrink-0">
+            <div
+              id="section2"
+              className=" justify-center items-center flex flex-col h-full"
+            >
+              <EventComponent />
+            </div>
+          </div>
+
+          {/* Section 3 - Event Calendar */}
+          <div className="w-full flex-shrink-0">
+            <div
+              id="section3"
+              className=" justify-center w-full items-center flex flex-col h-full"
+            >
+              <CalendarComponent />
+            </div>
+          </div>
+
+          {/* Section 0 - Login */}
+          <div className="min-w-full h-full  pt-16 flex-shrink-0">
+            <div id="section0">
+              <div className="h-screen w-full flex justify-center items-center">
+                <div className="h-full flex flex-col items-start px-8 justify-center w-1/3">
+                  <p className="stroked-text-cnsc text-[100px] leading-[90px]">
+                    CNSC
+                  </p>
+                  <p className="stroked-text-codex text-[100px] -mt-6">CODEX</p>
+                  <h1 className="text-white text-2xl font-bold italic mt-2 mb-5">
+                    Document Tracking and Data Management for Student
+                    Organizations
+                  </h1>
+                </div>
+
+                <div className="h-full items-center flex justify-center w-1/3">
+                  {showRegistration ? (
+                    <RegistrationForm
+                      onBackToLogin={() => setShowRegistration(false)}
+                      onShowRegistration={setShowRegistration}
+                    />
+                  ) : (
+                    <Login
+                      onShowRegistration={() => setShowRegistration(true)}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div id="section1">
-        <OrganzationComponent />
-      </div>
+      {/* Circular Indicators with Chevrons */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
+        {/* Left Chevron */}
+        <button
+          onClick={goToPrevious}
+          disabled={currentSection === 0}
+          className={`p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 transition-all duration-300 ${
+            currentSection === 0
+              ? "opacity-30 cursor-not-allowed"
+              : "opacity-70 hover:opacity-100 hover:bg-white/20"
+          }`}
+        >
+          <ChevronLeft className="w-6 h-6 text-white" />
+        </button>
 
-      <div id="section2">
-        <EventComponent />
-      </div>
+        {/* Indicators */}
+        <div className="flex gap-3">
+          {sections.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSection(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                currentSection === index
+                  ? "bg-yellow-300 w-8"
+                  : "bg-white/40 hover:bg-white/60"
+              }`}
+              aria-label={`Go to section ${index + 1}`}
+            />
+          ))}
+        </div>
 
-      <div id="section3">
-        <CalendarComponent />
+        {/* Right Chevron */}
+        <button
+          onClick={goToNext}
+          disabled={currentSection === sections.length - 1}
+          className={`p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 transition-all duration-300 ${
+            currentSection === sections.length - 1
+              ? "opacity-30 cursor-not-allowed"
+              : "opacity-70 hover:opacity-100 hover:bg-white/20"
+          }`}
+        >
+          <ChevronRight className="w-6 h-6 text-white" />
+        </button>
       </div>
     </div>
   );
 }
 
 function CellphoneNavigation() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -210,7 +279,7 @@ function CellphoneNavigation() {
           </div>
         </div>
         <div id="organizations" className="min-h-screen bg-blue-100 z-100">
-          <OrganzationComponent />
+          <OrganizationComponent />
         </div>
 
         {/* Posts Section */}

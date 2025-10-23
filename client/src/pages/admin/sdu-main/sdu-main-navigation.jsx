@@ -22,6 +22,7 @@ import {
   FileBarChart,
   CheckCircle,
   Settings,
+  File,
 } from "lucide-react";
 import { LogoutButton } from "../../../components/components";
 
@@ -102,6 +103,12 @@ export function SduMainNavigation() {
       icon: <User className="w-5 h-5" />,
       label: "User management",
       path: "/SDU/user-management",
+    },
+    {
+      key: "reports",
+      icon: <File className="w-5 h-5" />,
+      label: "Reports",
+      path: "/SDU/reports",
     },
     {
       key: "post",

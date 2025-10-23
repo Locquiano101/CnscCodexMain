@@ -15,12 +15,10 @@ export const ProportionCropTool = ({
   showReset = true,
   acceptedFormats = "image/*",
   className = "",
-  title = "",
   cropRef = null, // New prop to expose crop function
 }) => {
   const [imagePreview, setImagePreview] = useState(null); // For display only
   const [originalFile, setOriginalFile] = useState(null); // The actual File object
-  const [croppedImage, setCroppedImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [cropArea, setCropArea] = useState({
     x: 50,
@@ -349,8 +347,6 @@ export const ProportionCropTool = ({
     );
     const croppedFile = await createCroppedFile();
 
-    setCroppedImage(croppedDataUrl);
-
     if (onCropComplete && croppedFile) {
       const rect = imageRef.current.getBoundingClientRect();
       const img = new Image();
@@ -402,7 +398,6 @@ export const ProportionCropTool = ({
   const resetImage = () => {
     setImagePreview(null);
     setOriginalFile(null);
-    setCroppedImage(null);
     setOriginalFileName("");
     setCropArea({ x: 50, y: 50, width: 200, height: 200 });
     if (fileInputRef.current) {
@@ -562,12 +557,10 @@ export const ProportionCropTool = ({
 export default function ImageCropDemo() {
   const cropRef = useRef(null);
   const [croppedPreview, setCroppedPreview] = useState(null);
-  const [fileInfo, setFileInfo] = useState(null);
 
   const handleCropComplete = (cropData) => {
     console.log("Crop Complete!", cropData);
     setCroppedPreview(cropData.croppedDataUrl);
-    setFileInfo(cropData);
   };
 
   const handleCropClick = async () => {
@@ -582,7 +575,6 @@ export default function ImageCropDemo() {
   const handleResetClick = () => {
     cropRef.current?.resetImage();
     setCroppedPreview(null);
-    setFileInfo(null);
   };
 
   return (

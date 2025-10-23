@@ -4,6 +4,7 @@ import axios from "axios";
 import { MoreHorizontal, Search } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 import { EmailModal } from "../../../../components/accreditation-email";
+import { RosterMemberCard } from "../../../../components/roster-card";
 
 export function AdviserRosterData({ orgData, user }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -130,87 +131,96 @@ export function AdviserRosterData({ orgData, user }) {
     member.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  console.log(filteredRoster);
   const dropdownItems = [
     { id: "revision", label: "Revision of Roster" },
     { id: "Approval", label: "Approval of Roster" },
   ];
 
   return (
-    <div className="flex p-4 flex-col bg-gray-50 h-full">
-      {/* Header */}
-      <div className="flex flex-col gap-4 w-full bg-gray-200 shadow-md border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Roster Management
-            </h1>
-            <p className="text-sm font-medium text-gray-600">
+    <div className="flex flex-col p-6 bg-gray-50 min-h-screen">
+      {/* ---------------- Header ---------------- */}
+      <div className="bg-white shadow-md border border-gray-200 rounded-xl p-5 mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Roster Management
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-6">
+            <p className="text-sm font-medium text-gray-700">
               Roster List Status:{" "}
               <span
                 className={`${
                   rosterData.roster.isComplete
                     ? "text-green-600"
                     : "text-red-600"
-                }`}
+                } font-semibold`}
               >
                 {rosterData.roster.isComplete ? "Complete" : "Not Complete"}
               </span>
             </p>
-            <p className="text-sm font-medium text-gray-600">
+
+            <p className="text-sm font-medium text-gray-700">
               Approval Status:{" "}
-              <span className="text-indigo-600">
+              <span className="text-indigo-600 font-semibold">
                 {rosterData.roster.overAllStatus || "Pending"}
               </span>
             </p>
-          </div>
 
-          {/* Dropdown */}
-          <div className="relative dropdown-container">
-            <button
-              className="p-2 rounded-full hover:bg-gray-100 transition"
-              onClick={() => setShowDropdown(!showDropdown)}
-            >
-              <MoreHorizontal size={28} className="text-cnsc-primary-color" />
-            </button>
+            {/* Dropdown */}
+            <div className="relative">
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+                onClick={() => setShowDropdown(!showDropdown)}
+              >
+                <MoreHorizontal size={26} className="text-cnsc-primary-color" />
+              </button>
 
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg border border-gray-300 z-10 rounded-lg overflow-hidden">
-                {dropdownItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleDropdownAction(item.id)}
-                    className="px-4 py-3 text-left hover:bg-amber-200 transition-colors duration-200"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                  {dropdownItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleDropdownAction(item.id)}
+                      className="w-full text-left px-4 py-3 text-sm hover:bg-amber-100 transition"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="flex items-center gap-2 w-full max-w-md">
-          <Search className="text-gray-500" size={20} />
+      {/* ---------------- Search Section ---------------- */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-md p-5  w-full max-w-lg">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Search Roster Member
+        </label>
+        <div className="flex items-center gap-3">
           <input
             type="text"
             placeholder="Search roster by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
+          <Search className="text-gray-500" size={20} />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="h-full overflow-auto">
+      {/* ---------------- Content ---------------- */}
+      <div className="flex-1 overflow-auto">
         {!rosterData || filteredRoster.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center border border-dashed border-gray-300 rounded-lg bg-white p-6">
+          <div className="flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-300 rounded-xl bg-white p-8">
             <p className="text-gray-500 mb-2">
               {searchQuery
                 ? "No members match your search."
                 : "No roster has been started yet."}
             </p>
+
             {!searchQuery && (
               <>
                 <p className="text-gray-400 mb-4">
@@ -218,7 +228,7 @@ export function AdviserRosterData({ orgData, user }) {
                   leader roster.
                 </p>
                 <button
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition-colors"
                   onClick={() => setAlertModal(true)}
                 >
                   Notify Organization
@@ -227,7 +237,7 @@ export function AdviserRosterData({ orgData, user }) {
             )}
           </div>
         ) : (
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 overflow-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5 py-4">
             {filteredRoster.map((member) => (
               <RosterMemberCard
                 key={member._id}
@@ -239,7 +249,7 @@ export function AdviserRosterData({ orgData, user }) {
         )}
       </div>
 
-      {/* Revision Modal */}
+      {/* ---------------- Modals ---------------- */}
       <EmailModal
         open={revisionModal}
         onClose={() => setRevisionModal(false)}
@@ -257,7 +267,6 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {/* Incomplete Modal */}
       <EmailModal
         open={incompleteModal}
         onClose={() => setIncompleteModal(false)}
@@ -281,7 +290,6 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {/* Alert Modal */}
       <EmailModal
         open={alertModal}
         onClose={() => setAlertModal(false)}
@@ -296,10 +304,9 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {/* Approval Modal */}
       {approvalModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
-          <div className="h-fit bg-white w-1/4 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
             <button
               onClick={() => setApprovalModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
@@ -312,7 +319,7 @@ export function AdviserRosterData({ orgData, user }) {
               Approval: Roster of Organization
             </h1>
 
-            <p className="mb-4 text-gray-700">
+            <p className="text-gray-700 mb-6">
               By approving this roster, you confirm that you have reviewed the
               information provided and consent to its approval. Would you like
               to proceed?
@@ -324,7 +331,7 @@ export function AdviserRosterData({ orgData, user }) {
                 setApprovalModal(false);
               }}
               disabled={approvalLoading}
-              className={`mt-6 px-6 py-2 rounded-lg text-sm font-medium shadow-md transition ${
+              className={`w-full py-2 rounded-lg text-sm font-medium shadow-md transition ${
                 approvalLoading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -346,35 +353,3 @@ export function AdviserRosterData({ orgData, user }) {
     </div>
   );
 }
-
-const RosterMemberCard = ({ member, orgId }) => (
-  <div className="bg-white w-full h-full rounded-lg flex flex-col gap-2 items-center shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-    <img
-      src={
-        member.profilePicture
-          ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
-          : "/cnsc-logo.png"
-      }
-      alt="Profile"
-      className="max-h-32 aspect-square border object-cover rounded"
-    />
-
-    <div className="space-y-1 text-center">
-      <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
-      <p className="text-sm font-medium text-indigo-600">{member.position}</p>
-      <p className="text-sm text-gray-600">{member.email}</p>
-      <p className="text-sm text-gray-600">{member.contactNumber}</p>
-      <p className="text-sm text-gray-500">{member.address}</p>
-    </div>
-
-    <div className="mt-4 pt-4 border-t border-gray-100 w-full text-center">
-      <p className="text-xs text-gray-500">
-        Birth Date:{" "}
-        {member.birthDate
-          ? new Date(member.birthDate).toLocaleDateString()
-          : "Not provided"}
-      </p>
-      <p className="text-xs text-gray-500">Status: {member.status}</p>
-    </div>
-  </div>
-);

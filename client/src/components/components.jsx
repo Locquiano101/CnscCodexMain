@@ -12,36 +12,15 @@ import {
   LogOut,
 } from "lucide-react";
 export function OrganizationDropdown({ selectedOrg, onSelectOrg }) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedProgram, setSelectedProgram] = useState("");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("");
-  const [searchScope, setSearchScope] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  // Function to fetch data
   const fetchData = async () => {
     try {
-      if (searchTerm.trim() !== "") {
-        setSearching(true);
-      } else {
-        setLoading(true);
-      }
-      const res = await axios.get(
-        `${API_ROUTER}/getAllOrganizationProfile?search=${encodeURIComponent(
-          searchTerm
-        )}&department=${encodeURIComponent(
-          selectedDepartment
-        )}&program=${encodeURIComponent(
-          selectedProgram
-        )}&specialization=${encodeURIComponent(
-          selectedSpecialization
-        )}&scope=${encodeURIComponent(searchScope)}`
-      );
+      const res = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`);
       console.log(res.data);
       setOrgs(res.data);
     } catch (err) {
@@ -66,24 +45,7 @@ export function OrganizationDropdown({ selectedOrg, onSelectOrg }) {
     return () => {
       if (delay) clearTimeout(delay);
     };
-  }, [searchTerm]);
-
-  // Effect for immediate search on dropdown changes and scope changes
-  useEffect(() => {
-    fetchData();
-  }, [
-    selectedDepartment,
-    selectedProgram,
-    selectedSpecialization,
-    searchScope,
-  ]);
-
-  // Reset filters when scope changes
-  useEffect(() => {
-    setSelectedDepartment("");
-    setSelectedProgram("");
-    setSelectedSpecialization("");
-  }, [searchScope]);
+  }, []);
 
   const handleOrgSelect = (org) => {
     onSelectOrg(org);
@@ -169,11 +131,6 @@ export function OrganizationDropdown({ selectedOrg, onSelectOrg }) {
               <div className="text-center p-6 text-gray-500">
                 <Search size={32} className="mx-auto mb-2 text-gray-300" />
                 <p className="text-sm">No organizations found</p>
-                {searchTerm && (
-                  <p className="text-xs mt-1">
-                    Try adjusting your search terms
-                  </p>
-                )}
               </div>
             )}
           </div>
