@@ -45,6 +45,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // dev frontend
+      "https://cnsc-codex.site",
+
       "https://access.cnsc-codex.site", // production frontend
     ],
     credentials: true, // allow cookies/session
