@@ -179,7 +179,6 @@ export function EventComponent() {
 
         setPosts(sortedPosts.slice(0, 4));
       } catch (error) {
-        console.error("Error fetching public posts:", error);
         setPosts([]);
       } finally {
         setLoading(false);

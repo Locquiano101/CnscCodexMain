@@ -21,8 +21,7 @@ export function OrganizationComponent() {
       const activeOrgs = orgs.filter((org) => org?.isActive);
       setFilteredOrgs(activeOrgs);
       setLoading(false);
-    } catch (err) {
-      console.error("Error fetching organizations:", err);
+    } catch (e) {
       setFilteredOrgs([]);
       setLoading(false);
     }
@@ -71,19 +70,17 @@ export function OrganizationComponent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto relative">
+    <div className="max-w-7xl w-full flex flex-col justify-between min-h-7/10 py-6  px-4 mx-auto relative h-fit bg-cnsc-primary-color/25 border-2 border-white/50  rounded-xl shadow-md">
       {/* Header */}
-      <div className="text-center mb-12">
+      <div className="text-center ">
         {/* CNSC CODEX Title */}
-
-        <div className="flex flex-wrap items-center justify-center  text-center">
+        <div className="flex flex-wrap items-center justify-center text-center">
           <h1 className="text-xl md:text-4xl font-extrabold tracking-wide">
             <span className="text-[#500000] drop-shadow-[1px_1px_0_white]">
               CNSC{" "}
             </span>
-            <span className=" text-[#ee8f00] mr-2 drop-shadow-[1px_1px_0_white]">
-              CODEX {"    "}
-              {"    "}
+            <span className="text-[#ee8f00] mr-2 drop-shadow-[1px_1px_0_white]">
+              CODEX{" "}
             </span>
             <span className="text-white drop-shadow-[1px_1px_0_#ee8f00]">
               STUDENT ORGANIZATIONS
@@ -93,7 +90,7 @@ export function OrganizationComponent() {
       </div>
 
       {/* Organizations Grid */}
-      <div className="grid grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-4 gap-6">
         {currentOrgs.length === 0 ? (
           <div className="col-span-4 text-center py-12">
             <Building2 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
@@ -171,7 +168,7 @@ export function OrganizationComponent() {
 
       {/* Circular Indicators with Chevrons */}
       {totalSections > 1 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
+        <div className="flex justify-center items-center gap-4 ">
           {/* Left Chevron */}
           <button
             onClick={goToPrevious}

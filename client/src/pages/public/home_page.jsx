@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import Login from "./login_form";
 import { RegistrationForm } from "./registration_form";
 import backgroundImage from "./../../assets/cnscsch.jpg";

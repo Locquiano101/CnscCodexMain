@@ -28,7 +28,6 @@ export function CalendarComponent() {
         // Ensure we always set an array
         setProposalCalendar(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error fetching calendar data:", error);
         setProposalCalendar([]);
       }
     };

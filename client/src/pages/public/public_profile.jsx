@@ -10,7 +10,7 @@ import {
   Clock, // 📌 missing
   Badge, // 📌 missing
 } from "lucide-react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../App";
 import axios from "axios";
 
@@ -47,8 +47,6 @@ export function PublicProfile() {
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
     return `${Math.floor(diffInMinutes / 1440)}d`;
   };
-
-  console.log(orgData);
 
   return (
     <div className="w-screen h-screen  flex flex-col bg-gray-300 overflow-auto">

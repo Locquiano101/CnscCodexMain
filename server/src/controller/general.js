@@ -260,6 +260,7 @@ export const GetUserInformation = async (req, res) => {
 };
 
 export const CheckSession = (req, res) => {
+  console.log(req.body);
   if (req.session?.user) {
     res.json({ loggedIn: true, user: req.session.user });
   } else {
