@@ -129,7 +129,19 @@ export const GetAllAccreditationId = async (req, res) => {
       "PresidentProfile",
     ]);
 
-    res.status(200).json(accreditations);
+    // Filter out any accreditation that has missing (null) populated fields
+    const filtered = accreditations.filter(
+      (acc) =>
+        acc.organizationProfile &&
+        acc.FinancialReport &&
+        acc.JointStatement &&
+        acc.PledgeAgainstHazing &&
+        acc.ConstitutionAndByLaws &&
+        acc.Roster &&
+        acc.PresidentProfile
+    );
+
+    res.status(200).json(filtered);
   } catch (error) {
     console.error("Error fetching accreditation IDs:", error);
     res.status(500).json({ error: "Server error" });

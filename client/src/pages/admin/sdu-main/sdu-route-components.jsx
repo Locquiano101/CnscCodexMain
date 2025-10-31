@@ -24,6 +24,7 @@ import { SduMainAccomplishment } from "./accomplishment/sdu-accomplishment-main"
 import { SduMainAccomplishmentOrganization } from "./accomplishment/sdu-individual-accomplishment";
 import { SduMainOverallProposedActioPlanConduct } from "./proposal-conduct/sdu-main-overall-proposed-action-plan";
 import { SduMainIndividualProposeActionPlan } from "./proposal-conduct/sdu-main-individual-proposed-action-plan";
+import { SduGenerateReports } from "./generate-reports/sdu-generate-report";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -83,6 +84,7 @@ export function SduMainComponents({ user }) {
       // hide when inside organization route but no org selected
       (
         (location.pathname.startsWith("/SDU/organization") && !selectedOrg) ||
+        location.pathname.startsWith("/SDU/reports") ||
         // hide when system-wide route has NO selected org
         (location.pathname.startsWith("/SDU/proposal/system-wide") &&
           !selectedOrg) ||
@@ -198,6 +200,7 @@ export function SduMainComponents({ user }) {
             <Route path="settings" element={<SduMainAccreditationSettings />} />
           </Route>
 
+          <Route path="reports" element={<SduGenerateReports />} />
           {/* Accomplishments */}
           <Route
             path="/accomplishment"

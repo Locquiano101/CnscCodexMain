@@ -28,7 +28,6 @@ export function CalendarComponent() {
         // Ensure we always set an array
         setProposalCalendar(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error fetching calendar data:", error);
         setProposalCalendar([]);
       }
     };
@@ -205,22 +204,33 @@ export function CalendarComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-300 flex flex-col gap-4">
-      <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-        Event Calendar
-      </h2>
+    <div className="w-full max-w-3/4 ">
+      {/* CNSC CODEX Title */}
+      <div className="flex flex-wrap items-center justify-center text-center mb-2">
+        <h1 className="text-xl md:text-3xl font-extrabold tracking-wide">
+          <span className="text-[#500000] drop-shadow-[1px_1px_0_white]">
+            CNSC{" "}
+          </span>
+          <span className="text-[#ee8f00] mr-2 drop-shadow-[1px_1px_0_white]">
+            CODEX{" "}
+          </span>
+          <span className="text-white drop-shadow-[1px_1px_0_#ee8f00]">
+            EVENT CALENDAR
+          </span>
+        </h1>
+      </div>
 
-      <div className="h-full mx-auto container flex gap-4 p-12">
+      <div className="w-full mx-auto flex gap-3 p-2">
         {/* Calendar Section */}
         <div className="bg-white flex-1 rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
+          <div className="bg-cnsc-primary-color text-white p-3 flex justify-between items-center">
             <button
               onClick={() => navigateMonth(-1)}
-              className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+              className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={18} />
             </button>
-            <h3 className="text-xl font-bold">
+            <h3 className="text-lg font-bold">
               {currentDate.toLocaleDateString("en-US", {
                 month: "long",
                 year: "numeric",
@@ -228,9 +238,9 @@ export function CalendarComponent() {
             </h3>
             <button
               onClick={() => navigateMonth(1)}
-              className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+              className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={18} />
             </button>
           </div>
 
@@ -239,33 +249,33 @@ export function CalendarComponent() {
 
         {/* Multiple Events View */}
         {selectedDayEvents && !selectedEvent && (
-          <div className="flex flex-col bg-white rounded-xl shadow-md">
-            <div className="flex justify-between items-center p-6 border-b rounded-xl border-gray-200 bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-800">
+          <div className="flex flex-col bg-white rounded-lg shadow-md w-80">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-cnsc-primary-color text-white rounded-t-lg">
+              <h3 className="text-md font-bold">
                 Events on {selectedDayEvents.date}
               </h3>
               <button
                 onClick={closePanel}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="w-fit overflow-y-auto p-6 space-y-4">
+            <div className="overflow-y-auto p-3 space-y-3">
               {selectedDayEvents.events.map((event) => (
                 <div
                   key={event?._id || Math.random()}
-                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="border border-gray-200 rounded p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => selectEventFromDay(event)}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-gray-800 text-sm leading-tight">
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className="font-bold text-cnsc-primary-color text-sm leading-tight">
                       {event?.ProposedIndividualActionPlan?.activityTitle ||
                         "Untitled"}
                     </h4>
                     <span
-                      className={`px-2 py-1 rounded text-xs text-white ml-2 ${getStatusColor(
+                      className={`px-2 py-1 rounded text-xs text-white ml-1 ${getStatusColor(
                         event?.overallStatus
                       )}`}
                     >
@@ -274,16 +284,18 @@ export function CalendarComponent() {
                   </div>
 
                   <div className="space-y-1 text-xs text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={12} />
+                    <div className="flex items-center gap-1">
+                      <MapPin size={12} className="text-cnsc-secondary-color" />
                       <span>
                         {event?.ProposedIndividualActionPlan?.venue ||
                           "No Venue"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Budget:</span>
-                      <span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium text-cnsc-primary-color">
+                        Budget:
+                      </span>
+                      <span className="text-cnsc-secondary-color font-medium">
                         ₱
                         {event?.ProposedIndividualActionPlan
                           ?.budgetaryRequirements
@@ -291,7 +303,7 @@ export function CalendarComponent() {
                           : "0"}
                       </span>
                     </div>
-                    <p className="text-gray-600 mt-2 line-clamp-2">
+                    <p className="text-gray-600 mt-1 line-clamp-2 text-xs">
                       {event?.ProposedIndividualActionPlan?.briefDetails ||
                         "No details provided."}
                     </p>
@@ -304,66 +316,68 @@ export function CalendarComponent() {
 
         {/* Single Event View */}
         {selectedEvent && (
-          <div className="flex flex-col bg-white shadow-md rounded-xl">
-            <div className="flex items-center justify-between p-6 border-b border-gray-300">
-              <div className="flex items-center gap-3">
+          <div className="flex flex-col bg-white shadow-md rounded-lg w-80">
+            <div className="flex items-center justify-between p-4 border-b border-gray-300 bg-cnsc-primary-color text-white rounded-t-lg">
+              <div className="flex items-center gap-2">
                 {selectedDayEvents && (
                   <button
                     onClick={goBackToDayEvents}
-                    className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                    className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
                   >
-                    <ArrowLeft size={18} />
+                    <ArrowLeft size={16} />
                   </button>
                 )}
-                <h2 className="text-lg font-semibold text-gray-800 leading-tight">
+                <h2 className="text-md font-semibold leading-tight">
                   Event Details
                 </h2>
               </div>
               <button
                 onClick={closePanel}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-800 leading-tight">
+                <h3 className="text-lg font-bold text-cnsc-primary-color leading-tight">
                   {selectedEvent?.ProposedIndividualActionPlan?.activityTitle ||
                     "Untitled"}
                 </h3>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500 mb-1">
+                <p className="text-xs text-gray-500 mb-1">
                   Proponent Organization
                 </p>
-                <p className="font-medium text-gray-800">
+                <p className="font-medium text-cnsc-primary-color text-sm">
                   {selectedEvent?.organizationProfile?.orgName ||
                     "Unknown Organization"}
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Calendar size={16} />
-                  <span className="text-sm">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-gray-700 text-sm">
+                  <Calendar size={14} className="text-cnsc-secondary-color" />
+                  <span>
                     {formatDateForDisplay(
                       selectedEvent?.ProposedIndividualActionPlan?.proposedDate
                     )}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <MapPin size={16} />
-                  <span className="text-sm">
+                <div className="flex items-center gap-2 text-gray-700 text-sm">
+                  <MapPin size={14} className="text-cnsc-secondary-color" />
+                  <span>
                     {selectedEvent?.ProposedIndividualActionPlan?.venue ||
                       "No Venue"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <span className="font-medium text-sm">Budget:</span>
-                  <span className="text-sm">
+                <div className="flex items-center gap-2 text-gray-700 text-sm">
+                  <span className="font-medium text-cnsc-primary-color">
+                    Budget:
+                  </span>
+                  <span className="text-cnsc-secondary-color font-medium">
                     ₱
                     {selectedEvent?.ProposedIndividualActionPlan
                       ?.budgetaryRequirements
@@ -371,8 +385,10 @@ export function CalendarComponent() {
                       : "0"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <span className="font-medium text-sm">Status:</span>
+                <div className="flex items-center gap-2 text-gray-700 text-sm">
+                  <span className="font-medium text-cnsc-primary-color">
+                    Status:
+                  </span>
                   <span
                     className={`rounded px-2 py-1 text-xs font-medium text-white ${getStatusColor(
                       selectedEvent?.overallStatus
@@ -384,8 +400,10 @@ export function CalendarComponent() {
               </div>
 
               <div>
-                <p className="font-medium text-gray-700 mb-2">Aligned SDGs</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="font-medium text-cnsc-primary-color mb-1 text-sm">
+                  Aligned SDGs
+                </p>
+                <div className="flex flex-wrap gap-1">
                   {(
                     selectedEvent?.ProposedIndividualActionPlan?.alignedSDG ||
                     []
@@ -396,7 +414,7 @@ export function CalendarComponent() {
                         return parsed.map((parsedSdg, subIndex) => (
                           <span
                             key={`${index}-${subIndex}`}
-                            className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
+                            className="rounded bg-cnsc-secondary-color bg-opacity-10 px-2 py-1 text-xs text-cnsc-primary-color border border-cnsc-secondary-color border-opacity-20"
                           >
                             {parsedSdg}
                           </span>
@@ -408,7 +426,7 @@ export function CalendarComponent() {
                     return (
                       <span
                         key={index}
-                        className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
+                        className="rounded bg-cnsc-secondary-color bg-opacity-10 px-2 py-1 text-xs text-cnsc-primary-color border border-cnsc-secondary-color border-opacity-20"
                       >
                         {sdg || "N/A"}
                       </span>
@@ -418,18 +436,20 @@ export function CalendarComponent() {
               </div>
 
               <div>
-                <p className="font-medium text-gray-700 mb-2">Brief Details</p>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="font-medium text-cnsc-primary-color mb-1 text-sm">
+                  Brief Details
+                </p>
+                <p className="text-xs text-gray-600 leading-relaxed">
                   {selectedEvent?.ProposedIndividualActionPlan?.briefDetails ||
                     "No details provided."}
                 </p>
               </div>
 
               <div>
-                <p className="font-medium text-gray-700 mb-2">
+                <p className="font-medium text-cnsc-primary-color mb-1 text-sm">
                   Aligned Objective
                 </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs text-gray-600 leading-relaxed">
                   {selectedEvent?.ProposedIndividualActionPlan
                     ?.AlignedObjective || "No objective provided."}
                 </p>

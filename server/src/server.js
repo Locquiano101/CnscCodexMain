@@ -9,10 +9,9 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import http from "http";
 import { Server } from "socket.io";
-import PDFDocument from "pdfkit";
 
 import apiRoutes from "./routers.js";
-import { Notification } from "./models/index.js"; // adjust path!
+import { Notification } from "./models/index.js";
 
 dotenv.config();
 
@@ -36,7 +35,46 @@ async function connectDB() {
 
 connectDB();
 
-// -------------------- Profanity Middleware --------------------
+// -------------------- Middleware --------------------
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+// -------------------- CORS --------------------
+// Frontend: https://cnsc-codex.site
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // dev frontend
+      "https://cnsc-codex.site",
+
+      "https://access.cnsc-codex.site", // production frontend
+    ],
+    credentials: true, // allow cookies/session
+  })
+);
+
+// -------------------- Session --------------------
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET || "fallback-secret",
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: DB,
+    collectionName: "sessions",
+  }),
+  cookie: {
+    httpOnly: true,
+    secure: true, // HTTPS only
+    sameSite: "none", // allow cookies from a different domain
+    domain: ".cnsc-codex.site", // share session between subdomains
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+  },
+  rolling: true,
+});
+
+app.use(sessionMiddleware);
+
+// -------------------- Profanity Filter --------------------
 const badWords = [
   "fuck",
   "shit",
@@ -66,56 +104,12 @@ const profanityMiddleware = (req, res, next) => {
   next();
 };
 
-// -------------------- Middleware --------------------
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
-
-// Serve React frontend
-app.use(express.static(path.join(__dirname, "client/build")));
-
-// Serve uploads
-app.use("/api/uploads", express.static(path.join(__dirname, "../uploads")));
-
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
-
-const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET || "fallback-secret",
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: DB,
-    collectionName: "sessions",
-  }),
-  cookie: { httpOnly: true },
-  rolling: true,
-});
-app.use(sessionMiddleware);
-
-// -------------------- Inactivity + Profanity Middleware --------------------
-const INACTIVITY_GRACE = 5000; // 5 seconds
+// -------------------- Activity Timeout --------------------
+const INACTIVITY_GRACE = 5000; // 5 sec
 const INACTIVITY_TIMEOUT = 2629800000; // ~1 month
 
 const activityMiddleware = (req, res, next) => {
   if (req.path === "/notifications") return next();
-
-  const content = [
-    JSON.stringify(req.body || {}),
-    JSON.stringify(req.query || {}),
-    JSON.stringify(req.params || {}),
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  if (badWords.some((word) => content.includes(word))) {
-    return res
-      .status(400)
-      .json({ error: "Profanity detected", rickroll: true });
-  }
 
   const now = Date.now();
   if (req.session?.lastActivity) {
@@ -132,11 +126,15 @@ const activityMiddleware = (req, res, next) => {
   next();
 };
 
-// -------------------- HTTP + WebSocket --------------------
+// -------------------- Serve Static Files --------------------
+app.use(express.static(path.join(__dirname, "client/build")));
+app.use("/api/uploads", express.static(path.join(__dirname, "../uploads")));
+
+// -------------------- HTTP + Socket.IO --------------------
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.VITE_API_ROUTER,
+    origin: "https://cnsc-codex.site",
     credentials: true,
   },
 });
@@ -158,7 +156,7 @@ io.on("connection", (socket) => {
 // -------------------- Routes --------------------
 app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
-// Send test notification
+// -------------------- Test Notification --------------------
 app.post("/api/sendTestNotification", async (req, res) => {
   try {
     const { recipientId, message } = req.body;
@@ -171,7 +169,6 @@ app.post("/api/sendTestNotification", async (req, res) => {
     });
 
     io.to(recipientId.toString()).emit("notification", notification);
-
     res.json({ success: true, notification });
   } catch (err) {
     console.error("Error sending notification:", err);
@@ -179,13 +176,11 @@ app.post("/api/sendTestNotification", async (req, res) => {
   }
 });
 
-// Fetch notifications
+// -------------------- Notifications Endpoint --------------------
 app.get("/notifications", async (req, res) => {
   try {
     const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
+    if (!userId) return res.status(400).json({ error: "userId is required" });
 
     const notifications = await Notification.find({
       organizationProfile: userId,
@@ -200,6 +195,6 @@ app.get("/notifications", async (req, res) => {
 
 // -------------------- Start Server --------------------
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Frontend served at ${process.env.VITE_API_ROUTER}`);
-  console.log(`✅ Backend running at http://0.0.0.0:${PORT}`);
+  console.log(`🚀 Frontend allowed: https://cnsc-codex.site`);
+  console.log(`✅ Backend running at: https://access.cnsc-codex.site:${PORT}`);
 });

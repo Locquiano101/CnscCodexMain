@@ -20,8 +20,10 @@ import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
 import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
 
+// ✅ Main backend API URL (auto switches based on environment)
 const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
-export const API_ROUTER = `${MAIN_API_ROUTER}`;
+// ✅ Derived URLs
+export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
 export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
 
 export default function App() {
@@ -91,16 +93,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
       try {
         const res = await axios.get(`${API_ROUTER}/session-check`, {
           withCredentials: true,
+          credentials: "include",
         });
 
         console.log("session checking...");
-
-        // if (res.data.rickroll) {
-        //   // 🚀 Redirect user to YouTube (or whatever you want)
-        //   window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-        //   return;
-        // }
-
+        console.log(res);
         if (res.data.loggedIn) {
           const userRole = res.data.user.position;
 

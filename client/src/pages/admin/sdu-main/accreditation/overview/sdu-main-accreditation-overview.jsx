@@ -1,19 +1,22 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import {
-  TrendingUp,
   Users,
   CheckCircle,
   Clock,
+  TrendingUp,
   Award,
   Building2,
   GraduationCap,
-  Briefcase,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+
 import { API_ROUTER } from "../../../../../App";
 
 export function SduAccreditationOverview({ onSelectOrg }) {
   const [activeOrganization, setActiveOrganization] = useState([]);
+  const [activeReport, setActiveReport] = useState(null);
 
   const fetchStatus = async () => {
     try {
@@ -28,6 +31,20 @@ export function SduAccreditationOverview({ onSelectOrg }) {
   useEffect(() => {
     fetchStatus();
   }, []);
+
+  // Helper function to check if value should be displayed
+  const shouldDisplay = (value) => {
+    return (
+      value !== undefined &&
+      value !== null &&
+      value !== "" &&
+      value !== "Unknown" &&
+      value !== "Unknown Class" &&
+      value !== "Unknown Dept" &&
+      value !== "Unknown Course" &&
+      value !== "Unknown Spec"
+    );
+  };
 
   const processStatusData = () => {
     const statusCounts = activeOrganization.reduce((acc, org) => {
@@ -90,108 +107,101 @@ export function SduAccreditationOverview({ onSelectOrg }) {
       .sort((a, b) => b.count - a.count);
   };
 
+  const toggleReport = (reportType) => {
+    setActiveReport(activeReport === reportType ? null : reportType);
+  };
+
   const statusData = processStatusData();
   const orgClassData = processOrgClassData();
   const deptCourseData = processOrgDeptCourseData();
   const specData = processOrgSpecData();
 
   return (
-    <div className="flex flex-col gap-6 p-6 overflow-auto">
-      <div className="bg-white p-6 rounded-2xl shadow-md">
-        <h1 className="text-3xl font-bold text-cnsc-primary-color">
-          SDU Accreditation Analytics Dashboard
-        </h1>
-      </div>
+    <div className="flex flex-col gap-6 p-6 overflow-auto bg-gray-50">
+      <h1 className="text-3xl font-bold text-cnsc-primary-color">
+        SDU Accreditation Analytics Dashboard
+      </h1>
 
-      {/* Summary Cards + Main Panels */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Summary Cards Column */}
-        <div className="flex flex-row lg:flex-col gap-6 overflow-x-auto lg:overflow-x-visible lg:min-w-[280px]">
-          {/* Total Organizations */}
-          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+      {/* Reports Section */}
+      <div>
+        {/* Toggle Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+          <button
+            onClick={() => toggleReport("status")}
+            className={`p-4 rounded-xl shadow border-2 transition-all ${
+              activeReport === "status"
+                ? "border-blue-900 bg-blue-50"
+                : "border-gray-200 bg-white hover:border-blue-300"
+            }`}
+          >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-base mb-2">
-                  {" "}
-                  {/* text-sm → text-base */}
-                  Total Organizations
-                </p>
-                <p className="text-4xl font-extrabold text-cnsc-primary-color">
-                  {" "}
-                  {/* text-3xl → text-4xl */}
-                  {activeOrganization.length}
-                </p>
+              <div className="flex items-center gap-3">
+                <Award className="w-6 h-6 text-blue-900" />
+                <span className="font-semibold text-gray-800">
+                  Status Distribution
+                </span>
               </div>
-              <Users className="w-14 h-14 text-cnsc-primary-color" />{" "}
-              {/* 12 → 14 */}
+              {activeReport === "status" ? (
+                <ChevronUp className="w-5 h-5 text-blue-900" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
             </div>
-          </div>
+          </button>
 
-          {/* Active */}
-          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <button
+            onClick={() => toggleReport("class")}
+            className={`p-4 rounded-xl shadow border-2 transition-all ${
+              activeReport === "class"
+                ? "border-blue-900 bg-blue-50"
+                : "border-gray-200 bg-white hover:border-blue-300"
+            }`}
+          >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-base mb-2">Active</p>
-                <p className="text-4xl font-extrabold text-cnsc-primary-color">
-                  {
-                    activeOrganization.filter(
-                      (org) => org.organizationProfile?.isActive
-                    ).length
-                  }
-                </p>
+              <div className="flex items-center gap-3">
+                <Building2 className="w-6 h-6 text-blue-900" />
+                <span className="font-semibold text-gray-800">
+                  Classes & Specializations
+                </span>
               </div>
-              <CheckCircle className="w-14 h-14 text-cnsc-primary-color" />
+              {activeReport === "class" ? (
+                <ChevronUp className="w-5 h-5 text-blue-900" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
             </div>
-          </div>
+          </button>
 
-          {/* Pending */}
-          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
+          <button
+            onClick={() => toggleReport("dept")}
+            className={`p-4 rounded-xl shadow border-2 transition-all ${
+              activeReport === "dept"
+                ? "border-blue-900 bg-blue-50"
+                : "border-gray-200 bg-white hover:border-blue-300"
+            }`}
+          >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-base mb-2">Pending</p>
-                <p className="text-4xl font-extrabold text-amber-600">
-                  {
-                    activeOrganization.filter(
-                      (org) => org.overallStatus === "Pending"
-                    ).length
-                  }
-                </p>
+              <div className="flex items-center gap-3">
+                <GraduationCap className="w-6 h-6 text-blue-900" />
+                <span className="font-semibold text-gray-800">
+                  Department & Course
+                </span>
               </div>
-              <Clock className="w-14 h-14 text-amber-500" />
+              {activeReport === "dept" ? (
+                <ChevronUp className="w-5 h-5 text-blue-900" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
             </div>
-          </div>
-
-          {/* Completion Rate */}
-          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 min-w-[240px]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-base mb-2">Completion Rate</p>
-                <p className="text-4xl font-extrabold text-cnsc-primary-color">
-                  {(
-                    (activeOrganization.filter(
-                      (org) => org.overallStatus === "Approved"
-                    ).length /
-                      activeOrganization.length) *
-                    100
-                  ).toFixed(0)}
-                  %
-                </p>
-              </div>
-              <TrendingUp className="w-14 h-14 text-cnsc-primary-color" />
-            </div>
-          </div>
+          </button>
         </div>
 
-        {/* Main Data Panels */}
-        <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Status Distribution */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center gap-2 mb-6">
-              <Award className="w-6 h-6 text-blue-900" />
-              <h3 className="text-xl font-bold text-gray-800">
-                Status Distribution
-              </h3>
-            </div>
+        {/* Collapsible Report Content */}
+        {activeReport === "status" && (
+          <div className="border-t-2 border-blue-900 pt-6 animate-fadeIn">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              Status Distribution
+            </h3>
             <div className="space-y-3">
               {statusData.map((item, index) => (
                 <div
@@ -213,68 +223,69 @@ export function SduAccreditationOverview({ onSelectOrg }) {
               ))}
             </div>
           </div>
+        )}
 
-          {/* Organization Classes & Specializations */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="w-6 h-6 text-blue-900" />
-              <h3 className="text-xl font-bold text-gray-800">
+        {activeReport === "class" && (
+          <div className="border-t-2 border-blue-900 pt-6 animate-fadeIn">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
                 Organization Classes
               </h3>
-            </div>
-            <div className="space-y-3 mb-6">
-              {orgClassData.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-                >
-                  <span className="font-medium text-gray-700">{item.name}</span>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-blue-900">
-                      {item.count}
+              <div className="space-y-3">
+                {orgClassData.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                  >
+                    <span className="font-medium text-gray-700">
+                      {item.name}
                     </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      ({item.percentage}%)
-                    </span>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-blue-900">
+                        {item.count}
+                      </span>
+                      <span className="text-sm text-gray-500 ml-2">
+                        ({item.percentage}%)
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-4 mt-6">
-              <Briefcase className="w-6 h-6 text-blue-900" />
-              <h3 className="text-xl font-bold text-gray-800">
+            <div>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
                 Specializations
               </h3>
-            </div>
-            <div className="space-y-3">
-              {specData.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-                >
-                  <span className="font-medium text-gray-700">{item.name}</span>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-blue-900">
-                      {item.count}
+              <div className="space-y-3">
+                {specData.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                  >
+                    <span className="font-medium text-gray-700">
+                      {item.name}
                     </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      ({item.percentage}%)
-                    </span>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-blue-900">
+                        {item.count}
+                      </span>
+                      <span className="text-sm text-gray-500 ml-2">
+                        ({item.percentage}%)
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Department & Course Distribution */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center gap-2 mb-6">
-              <GraduationCap className="w-6 h-6 text-blue-900" />
-              <h3 className="text-xl font-bold text-gray-800">
-                Department & Course
-              </h3>
-            </div>
+        {activeReport === "dept" && (
+          <div className="border-t-2 border-blue-900 pt-6 animate-fadeIn">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              Department & Course Distribution
+            </h3>
             <div className="space-y-3">
               {deptCourseData.map((item, index) => (
                 <div
@@ -294,18 +305,16 @@ export function SduAccreditationOverview({ onSelectOrg }) {
               ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Organization Accreditation Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-md min">
-        <h1 className="text-3xl font-bold text-blue-900">
-          Organization Accreditation
-        </h1>
-      </div>
+      <h1 className="text-3xl font-bold text-cnsc-primary-color">
+        Organization Accreditation
+      </h1>
 
       {/* Accreditation Table */}
-      <div className="bg-white rounded-xl shadow-lg border min-h-screen border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-bold text-gray-800">
             Accreditation Overview
@@ -322,10 +331,7 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                 <th className="px-6 py-3 font-semibold">Organization Name</th>
                 <th className="px-6 py-3 font-semibold">Acronym</th>
                 <th className="px-6 py-3 font-semibold">Classification</th>
-
                 <th className="px-6 py-3 font-semibold">Overall Status</th>
-                <th className="px-6 py-3 font-semibold">Roster Status</th>
-                <th className="px-6 py-3 font-semibold">Financial Report</th>
                 <th className="px-6 py-3 font-semibold">Created At</th>
               </tr>
             </thead>
@@ -335,46 +341,64 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                   (org) =>
                     org &&
                     org.organizationProfile &&
-                    org.organizationProfile.orgName && // Must have org name
-                    org.overallStatus // Must have a status
+                    org.organizationProfile.orgName &&
+                    org.overallStatus
                 )
                 .map((org, index) => {
                   const profile = org.organizationProfile;
-                  const roster = org.Roster;
-                  const financial = org.FinancialReport;
                   return (
                     <tr
                       key={index}
                       onClick={() => {
                         console.log("Selected org:", org);
-                        onSelectOrg(org.organizationProfile);
+                        onSelectOrg?.(org.organizationProfile);
                       }}
-                      className="hover:bg-gray-50 transition"
+                      className="hover:bg-gray-50 transition cursor-pointer"
                     >
                       <td className="px-6 py-4 font-medium text-gray-900">
-                        {profile?.orgName || "—"}
+                        {shouldDisplay(profile?.orgName)
+                          ? profile.orgName
+                          : "—"}
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-900">
-                        {profile?.orgAcronym || "—"}
+                        {shouldDisplay(profile?.orgAcronym)
+                          ? profile.orgAcronym
+                          : "—"}
                       </td>
                       <td className="px-6 py-4">
                         {profile?.orgClass === "Local" ? (
                           <>
-                            <div className="font-medium text-gray-800">
-                              {profile?.orgDepartment || "—"}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {profile?.orgCourse || "—"}
-                            </div>
+                            {shouldDisplay(profile?.orgDepartment) && (
+                              <div className="font-medium text-gray-800">
+                                {profile.orgDepartment}
+                              </div>
+                            )}
+                            {shouldDisplay(profile?.orgCourse) && (
+                              <div className="text-sm text-gray-500">
+                                {profile.orgCourse}
+                              </div>
+                            )}
+                            {!shouldDisplay(profile?.orgDepartment) &&
+                              !shouldDisplay(profile?.orgCourse) && (
+                                <div className="text-gray-400">—</div>
+                              )}
                           </>
                         ) : profile?.orgClass === "System-wide" ? (
                           <>
-                            <div className="font-medium text-gray-800">
-                              {profile?.orgSpecialization || "—"}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {profile?.orgClass || "—"}
-                            </div>
+                            {shouldDisplay(profile?.orgSpecialization) && (
+                              <div className="font-medium text-gray-800">
+                                {profile.orgSpecialization}
+                              </div>
+                            )}
+                            {shouldDisplay(profile?.orgClass) && (
+                              <div className="text-sm text-gray-500">
+                                {profile.orgClass}
+                              </div>
+                            )}
+                            {!shouldDisplay(profile?.orgSpecialization) &&
+                              !shouldDisplay(profile?.orgClass) && (
+                                <div className="text-gray-400">—</div>
+                              )}
                           </>
                         ) : (
                           <div className="text-gray-400">—</div>
@@ -389,24 +413,15 @@ export function SduAccreditationOverview({ onSelectOrg }) {
                             : "text-gray-600"
                         }`}
                       >
-                        {org.overallStatus}
+                        {shouldDisplay(org.overallStatus)
+                          ? org.overallStatus
+                          : "—"}
                       </td>
-                      <td className="px-6 py-4">
-                        {roster?.isComplete ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Complete
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                            Incomplete
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 font-medium">
-                        ₱{financial?.endingBalance?.toLocaleString() || 0}
-                      </td>
+
                       <td className="px-6 py-4 text-gray-500 text-xs">
-                        {new Date(org.createdAt).toLocaleDateString()}
+                        {shouldDisplay(org.createdAt)
+                          ? new Date(org.createdAt).toLocaleDateString()
+                          : "—"}
                       </td>
                     </tr>
                   );

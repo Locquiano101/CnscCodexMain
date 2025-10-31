@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Eye, EyeOff, LogIn, User } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER } from "../../App";
+import { useNavigate } from "react-router-dom";
 
-export default function Login({ navigate, onShowRegistration }) {
+export default function Login({ onShowRegistration }) {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log({ email: username, password });
