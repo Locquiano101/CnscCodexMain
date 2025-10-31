@@ -20,9 +20,7 @@ import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
 import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
 
-// ✅ Main backend API URL (auto switches based on environment)
 const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
-// ✅ Derived URLs
 export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
 export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
 
@@ -93,7 +91,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
       try {
         const res = await axios.get(`${API_ROUTER}/session-check`, {
           withCredentials: true,
-          credentials: "include",
         });
 
         console.log("session checking...");
