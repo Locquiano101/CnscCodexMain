@@ -119,6 +119,9 @@ export function AccreditationDocuments({ orgData }) {
       docKey,
       url: `${DOCU_API_ROUTER}/${accreditationData.organizationProfile._id}/${doc.fileName}`,
     });
+    console.log({
+      url: `${DOCU_API_ROUTER}/${accreditationData.organizationProfile._id}/${doc.fileName}`,
+    });
     setShowDetailsPopup(true);
   };
 

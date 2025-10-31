@@ -128,7 +128,9 @@ const activityMiddleware = (req, res, next) => {
 // -------------------- Routes --------------------
 app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); // LOCALHOST
+app.use("/uploads", express.static("/uploads")); // PROD
+
 console.log(path.join(__dirname, "../uploads"));
 
 // -------------------- Start Server --------------------
