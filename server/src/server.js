@@ -7,12 +7,8 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import http from "http";
-import { Server } from "socket.io";
-import PDFDocument from "pdfkit";
 
 import apiRoutes from "./routers.js";
-import { Notification } from "./models/index.js"; // adjust path!
 
 dotenv.config();
 
@@ -33,6 +29,7 @@ async function connectDB() {
     process.exit(1);
   }
 }
+
 connectDB();
 
 // -------------------- Profanity Middleware --------------------
@@ -68,7 +65,9 @@ const profanityMiddleware = (req, res, next) => {
 // -------------------- Middleware --------------------
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
+
 app.use(express.static(path.join(__dirname, "client/build")));
+// Serve uploaded files
 
 app.use(
   cors({
@@ -126,74 +125,14 @@ const activityMiddleware = (req, res, next) => {
   next();
 };
 
-// -------------------- HTTP + WebSocket --------------------
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.VITE_API_ROUTER,
-    credentials: true,
-  },
-});
-
-io.engine.use(sessionMiddleware);
-
-io.on("connection", (socket) => {
-  const userId = socket.handshake.auth?.userId;
-  if (userId) {
-    socket.join(userId.toString());
-    console.log(`🔌 User ${userId} connected with socket ${socket.id}`);
-  }
-
-  socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
-  });
-});
-
 // -------------------- Routes --------------------
 app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
-// Send test notification
-app.post("/api/sendTestNotification", async (req, res) => {
-  try {
-    const { recipientId, message } = req.body;
-    const senderId = req.session.userId || "admin";
-
-    const notification = await Notification.create({
-      organizationProfile: recipientId,
-      sender: senderId,
-      message,
-    });
-
-    io.to(recipientId.toString()).emit("notification", notification);
-
-    res.json({ success: true, notification });
-  } catch (err) {
-    console.error("Error sending notification:", err);
-    res.status(500).json({ error: "Failed to send notification" });
-  }
-});
-
-// Fetch notifications
-app.get("/notifications", async (req, res) => {
-  try {
-    const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
-
-    const notifications = await Notification.find({
-      organizationProfile: userId,
-    }).sort({ createdAt: -1 });
-
-    res.json(notifications);
-  } catch (err) {
-    console.error("Error fetching notifications:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+console.log(path.join(__dirname, "../uploads"));
 
 // -------------------- Start Server --------------------
-server.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Frontend served at ${process.env.VITE_API_ROUTER}`);
   console.log(`✅ Backend running at http://0.0.0.0:${PORT}`);
 });

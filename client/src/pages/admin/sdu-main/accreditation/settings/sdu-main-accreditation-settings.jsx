@@ -80,7 +80,7 @@ export function SduMainAccreditationSettings() {
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               <AlertTriangle size={16} />
-              Issue Warning
+              Issue Reminder
             </button>
           </div>
 
