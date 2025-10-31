@@ -130,7 +130,14 @@ app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
 // app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); // LOCALHOST
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"), {
+    maxAge: "30d",
+    etag: true,
+  })
+);
+
 console.log("Serving uploads from:", path.join(__dirname, "../uploads"));
 
 // -------------------- Start Server --------------------
