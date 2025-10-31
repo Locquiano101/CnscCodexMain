@@ -90,80 +90,82 @@ export function OrganizationComponent() {
       </div>
 
       {/* Organizations Grid */}
-      <div className="grid grid-cols-4 gap-6">
-        {currentOrgs.length === 0 ? (
-          <div className="col-span-4 text-center py-12">
-            <Building2 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No organizations available</p>
-          </div>
-        ) : (
-          currentOrgs.map((org) => (
-            <div
-              key={org?._id || Math.random()}
-              onClick={() => handleOrgClick(org)}
-              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer"
-            >
-              {/* Logo Section */}
-              <div className="h-40 bg-gray-200 relative overflow-hidden flex items-center justify-center">
-                {org?.orgLogo ? (
-                  <img
-                    src={`${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`}
-                    alt={`${org?.orgName || "Organization"} Logo`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      e.target.parentNode.innerHTML =
-                        '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center"><svg class="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div>';
-                    }}
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-gray-500" />
-                  </div>
-                )}
-              </div>
+      <div className="h-full py-4">
+        <div className="grid grid-cols-4 gap-6">
+          {currentOrgs.length === 0 ? (
+            <div className="col-span-4 text-center py-12">
+              <Building2 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">No organizations available</p>
+            </div>
+          ) : (
+            currentOrgs.map((org) => (
+              <div
+                key={org?._id || Math.random()}
+                onClick={() => handleOrgClick(org)}
+                className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer"
+              >
+                {/* Logo Section */}
+                <div className="h-40 bg-gray-200 relative overflow-hidden flex items-center justify-center">
+                  {org?.orgLogo ? (
+                    <img
+                      src={`${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`}
+                      alt={`${org?.orgName || "Organization"} Logo`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.parentNode.innerHTML =
+                          '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center"><svg class="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div>';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                      <Building2 className="w-8 h-8 text-gray-500" />
+                    </div>
+                  )}
+                </div>
 
-              {/* Footer Section */}
-              <div className="h-16 bg-gray-300 p-4 flex items-center">
-                <div className="flex items-center space-x-3 w-full">
-                  {/* Acronym */}
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-medium text-gray-600">
-                      {org?.orgAcronym ||
-                        org?.orgName?.substring(0, 3).toUpperCase() ||
-                        "ORG"}
-                    </span>
-                  </div>
+                {/* Footer Section */}
+                <div className="h-16 bg-gray-300 p-4 flex items-center">
+                  <div className="flex items-center space-x-3 w-full">
+                    {/* Acronym */}
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-medium text-gray-600">
+                        {org?.orgAcronym ||
+                          org?.orgName?.substring(0, 3).toUpperCase() ||
+                          "ORG"}
+                      </span>
+                    </div>
 
-                  {/* Org name & department */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-700 truncate">
-                      {org?.orgName || "Unnamed Organization"}
-                    </p>
-                    <p className="text-xs text-gray-600 truncate">
-                      {org?.orgDepartment || "No Department"}
-                    </p>
-                  </div>
+                    {/* Org name & department */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {org?.orgName || "Unnamed Organization"}
+                      </p>
+                      <p className="text-xs text-gray-600 truncate">
+                        {org?.orgDepartment || "No Department"}
+                      </p>
+                    </div>
 
-                  {/* Status badge */}
-                  <div className="flex-shrink-0">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        org?.orgClass === "System-wide"
-                          ? "bg-amber-100 text-amber-700"
-                          : org?.orgClass === "Local"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
-                      {org?.orgClass || "Unknown"}
-                    </span>
+                    {/* Status badge */}
+                    <div className="flex-shrink-0">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          org?.orgClass === "System-wide"
+                            ? "bg-amber-100 text-amber-700"
+                            : org?.orgClass === "Local"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {org?.orgClass || "Unknown"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
 
       {/* Circular Indicators with Chevrons */}

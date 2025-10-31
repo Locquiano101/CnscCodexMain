@@ -36,6 +36,7 @@ export default function Login({ onShowRegistration }) {
       } else if (role === "sdu" || role === "SDU") {
         navigate("/SDU/organization");
       } else {
+        console.log("wahah");
         navigate("/unauthorized");
       }
     } catch (err) {
