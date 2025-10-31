@@ -685,7 +685,7 @@ function StudentAccreditationNavigationPage() {
             className={({ isActive }) =>
               `text-lg font-semibold px-4 pt-2 ${
                 isActive
-                  ? "border-b-2 border-cnsc-primary-color text-cnsc-primary-color"
+                  ? "border-b-2 border-cnsc-primary-z color text-cnsc-primary-color"
                   : "text-gray-600 hover:text-cnsc-primary-color"
               }`
             }

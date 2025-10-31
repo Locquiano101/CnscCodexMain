@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { User, Building } from "lucide-react";
+import { User, Building, CheckCircle } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER } from "./../../../App";
 
 export function InitialRegistration({ user, onComplete }) {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     adviserName: "",
     adviserEmail: "",
@@ -15,13 +16,13 @@ export function InitialRegistration({ user, onComplete }) {
     orgDepartment: "",
     orgCourse: "",
     orgSpecialization: "",
-    studentGovDepartment: "", // New field for student government department
+    studentGovDepartment: "",
     userId: user?.userId,
   });
 
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false); // 🔄 Loading state
-  const [submitError, setSubmitError] = useState(""); // ❌ Server error/conflict
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -82,21 +83,15 @@ export function InitialRegistration({ user, onComplete }) {
     }));
   };
 
-  const validateForm = () => {
+  const validateStep1 = () => {
     const newErrors = {};
 
-    if (!formData.adviserName.trim())
-      newErrors.adviserName = "Adviser name is required";
-    if (!formData.adviserEmail.trim())
-      newErrors.adviserEmail = "Adviser email is required";
-    if (!formData.adviserDepartment.trim())
-      newErrors.adviserDepartment = "Adviser department is required";
     if (!formData.orgName.trim())
       newErrors.orgName = "Organization name is required";
-    if (!formData.orgClass)
-      newErrors.orgClass = "Organization class is required";
     if (!formData.orgAcronym.trim())
       newErrors.orgAcronym = "Organization acronym is required";
+    if (!formData.orgClass)
+      newErrors.orgClass = "Organization class is required";
     if (!formData.orgEmail.trim())
       newErrors.orgEmail = "Organization email is required";
 
@@ -120,14 +115,29 @@ export function InitialRegistration({ user, onComplete }) {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.adviserEmail && !emailRegex.test(formData.adviserEmail)) {
-      newErrors.adviserEmail = "Please enter a valid email address";
-    }
     if (formData.orgEmail && !emailRegex.test(formData.orgEmail)) {
       newErrors.orgEmail = "Please enter a valid email address";
     }
 
-    // 🚨 Prevent adviser and org from having the same email
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep2 = () => {
+    const newErrors = {};
+
+    if (!formData.adviserName.trim())
+      newErrors.adviserName = "Adviser name is required";
+    if (!formData.adviserEmail.trim())
+      newErrors.adviserEmail = "Adviser email is required";
+    if (!formData.adviserDepartment.trim())
+      newErrors.adviserDepartment = "Adviser department is required";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.adviserEmail && !emailRegex.test(formData.adviserEmail)) {
+      newErrors.adviserEmail = "Please enter a valid email address";
+    }
+
     if (
       formData.adviserEmail.trim() &&
       formData.orgEmail.trim() &&
@@ -144,8 +154,26 @@ export function InitialRegistration({ user, onComplete }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateForm = () => {
+    return validateStep1() && validateStep2();
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
+    } else if (currentStep === 2 && validateStep2()) {
+      setCurrentStep(3);
+    }
+  };
+
+  const handleBackStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const handleSubmit = async () => {
-    setSubmitError(""); // clear old errors
+    setSubmitError("");
     if (validateForm()) {
       try {
         setLoading(true);
@@ -163,7 +191,6 @@ export function InitialRegistration({ user, onComplete }) {
       } catch (error) {
         console.error("Error submitting initial registration:", error);
 
-        // If conflict (409), show special error
         if (error.response?.status === 409) {
           setSubmitError("This organization is already registered.");
         } else {
@@ -175,122 +202,194 @@ export function InitialRegistration({ user, onComplete }) {
     }
   };
 
+  const StepIndicator = ({ stepNumber, title, isActive, isCompleted }) => (
+    <div className="flex flex-col items-center flex-1 relative">
+      <div className="flex items-center w-full relative">
+        {/* Left connector line */}
+        {stepNumber > 1 && (
+          <div
+            className={`absolute right-1/2 w-1/2 h-0.5 ${
+              isActive || isCompleted ? "bg-red-800" : "bg-gray-300"
+            }`}
+          />
+        )}
+
+        {/* Circle - centered */}
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-base border-2 relative z-10 mx-auto ${
+            isActive
+              ? "bg-red-800 text-white border-red-800"
+              : isCompleted
+              ? "bg-red-800 text-white border-red-800"
+              : "bg-white text-gray-400 border-gray-300"
+          }`}
+        >
+          {stepNumber}
+        </div>
+
+        {/* Right connector line */}
+        {stepNumber < 3 && (
+          <div
+            className={`absolute left-1/2 w-1/2 h-0.5 ${
+              isCompleted ? "bg-red-800" : "bg-gray-300"
+            }`}
+          />
+        )}
+      </div>
+
+      {/* Label */}
+      <span
+        className={`text-xs font-medium mt-2 text-center ${
+          isActive ? "text-gray-900" : "text-gray-500"
+        }`}
+      >
+        {title}
+      </span>
+    </div>
+  );
+
   return (
-    <div className="absolute inset-0 h-screen w-screen overflow-hidden backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="max-h-9/10 h-fit flex-col max-w-5xl rounded-xl gap-4 w-full p border-gray-500 bg-gray-300 flex  items-center px-8 py-6 overflow-hidden">
-        <h1 className="text-3xl font-bold text-b">
-          WELCOME TO INITIAL REGISTRATION OF YOUR ORGANIZATION
-        </h1>
+    <div className="absolute inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-red-800 to-red-600 text-white py-6 px-8">
+          <h1 className="text-2xl font-bold text-center">
+            INITIAL REGISTRATION
+          </h1>
+        </div>
 
-        <div className="h-full w-full overflow-y-auto">
-          {/* Organization Information */}
-          <div className="w-full border border-gray-300 rounded-xl bg-white px-6 py-4 mb-4">
-            <h1 className="text-xl font-semibold mb-4 flex items-center">
-              <Building className="mr-2 h-5 w-5 text-amber-600" />
-              Organization Information
-            </h1>
+        {/* Step Indicator */}
+        <div className="bg-white border-b border-gray-300 px-8 py-4">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <StepIndicator
+              stepNumber={1}
+              title="Organization Information"
+              isActive={currentStep === 1}
+              isCompleted={currentStep > 1}
+            />
+            <StepIndicator
+              stepNumber={2}
+              title="Adviser Information"
+              isActive={currentStep === 2}
+              isCompleted={currentStep > 2}
+            />
+            <StepIndicator
+              stepNumber={3}
+              title="Submit"
+              isActive={currentStep === 3}
+              isCompleted={false}
+            />
+          </div>
+        </div>
 
-            <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-              <div className="flex flex-col col-span-2 gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Organization Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="orgName"
-                  value={formData.orgName}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"} ${
-                    errors.orgName ? "border-red-500" : ""
-                  }`}
-                  placeholder="(Example: Union of Supreme Student Government)"
-                />
-                {errors.orgName && (
-                  <p className="text-red-500 text-sm px-4">{errors.orgName}</p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Acronym <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="orgAcronym"
-                  value={formData.orgAcronym}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.orgAcronym ? "border-red-500" : ""
-                  }`}
-                  placeholder="(Example: USSG)"
-                />
-                {errors.orgAcronym && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.orgAcronym}
-                  </p>
-                )}
-              </div>
-
-              {/* Classification */}
-              <div className=" flex flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Classification <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-4 px-4 py-3 rounded-lg border-gray-300 border bg-gray-100 ">
-                  {["System-wide", "Local"].map((option) => (
-                    <div key={option} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        id={`orgClass${option}`}
-                        name="orgClass"
-                        value={option}
-                        checked={formData.orgClass === option}
-                        onChange={handleClassificationChange}
-                        className="h-4 w-4 text-blue-600"
-                      />
-                      <label htmlFor={`orgClass${option}`} className="text-lg">
-                        {option}
-                      </label>
-                    </div>
-                  ))}
+        {/* Form Content */}
+        <div className="px-8 py-8 max-h-[500px] overflow-y-auto">
+          {/* Step 1: Organization Information */}
+          {currentStep === 1 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Organization Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="orgName"
+                    value={formData.orgName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.orgName ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="(Example: Union of Supreme Student Government)"
+                  />
+                  {errors.orgName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgName}
+                    </p>
+                  )}
                 </div>
-                {errors.orgClass && (
-                  <p className="text-red-500 text-sm px-4">{errors.orgClass}</p>
-                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Acronym <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="orgAcronym"
+                    value={formData.orgAcronym}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.orgAcronym ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="(Example: USSG)"
+                  />
+                  {errors.orgAcronym && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgAcronym}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <div className="flex col-span-2 flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Organization Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="orgEmail"
-                  value={formData.orgEmail}
-                  readOnly
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} bg-gray-100 cursor-not-allowed ${
-                    errors.orgEmail ? "border-red-500" : ""
-                  }`}
-                  placeholder="organization@email.com"
-                />
-                {errors.orgEmail && (
-                  <p className="text-red-500 text-sm px-4">{errors.orgEmail}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Classification <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="orgClass"
+                    value={formData.orgClass}
+                    onChange={handleClassificationChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.orgClass ? "border-red-500" : "border-gray-300"
+                    }`}
+                  >
+                    <option value="System-wide">System-wide</option>
+                    <option value="Local">Local</option>
+                  </select>
+                  {errors.orgClass && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgClass}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Organization Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="orgEmail"
+                    value={formData.orgEmail}
+                    readOnly
+                    className={`w-full px-4 py-3 border rounded-lg bg-gray-100 cursor-not-allowed ${
+                      errors.orgEmail ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="organization@email.com"
+                  />
+                  {errors.orgEmail && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgEmail}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* For Local Classification */}
               {formData.orgClass === "Local" && (
-                <div className="flex col-span-3 gap-6 ">
-                  <div className="flex flex-1 flex-col gap-2">
-                    <label className="block text-lg font-medium text-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Department <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="orgDepartment"
                       value={formData.orgDepartment}
                       onChange={handleInputChange}
-                      className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                        errors.orgDepartment ? "border-red-500" : ""
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                        errors.orgDepartment
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     >
                       <option value="">Select Department</option>
@@ -301,22 +400,22 @@ export function InitialRegistration({ user, onComplete }) {
                       ))}
                     </select>
                     {errors.orgDepartment && (
-                      <p className="text-red-500 text-sm px-4">
+                      <p className="text-red-500 text-sm mt-1">
                         {errors.orgDepartment}
                       </p>
                     )}
                   </div>
 
-                  <div className="flex flex-col flex-1 gap-2">
-                    <label className="block text-lg font-medium text-gray-700">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Course <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="orgCourse"
                       value={formData.orgCourse}
                       onChange={handleInputChange}
-                      className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                        errors.orgCourse ? "border-red-500" : ""
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                        errors.orgCourse ? "border-red-500" : "border-gray-300"
                       }`}
                       disabled={!formData.orgDepartment}
                     >
@@ -329,7 +428,7 @@ export function InitialRegistration({ user, onComplete }) {
                         ))}
                     </select>
                     {errors.orgCourse && (
-                      <p className="text-red-500 text-sm px-4">
+                      <p className="text-red-500 text-sm mt-1">
                         {errors.orgCourse}
                       </p>
                     )}
@@ -337,19 +436,20 @@ export function InitialRegistration({ user, onComplete }) {
                 </div>
               )}
 
-              {/* For System-wide Classification */}
               {formData.orgClass === "System-wide" && (
-                <div className="flex  col-span-3 gap-4">
-                  <div className="flex flex-col flex-1 gap-2">
-                    <label className="block text-lg font-medium text-gray-700">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Specialization <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="orgSpecialization"
                       value={formData.orgSpecialization}
                       onChange={handleSpecializationChange}
-                      className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                        errors.orgSpecialization ? "border-red-500" : ""
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                        errors.orgSpecialization
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     >
                       <option value="">Select Specialization</option>
@@ -360,25 +460,25 @@ export function InitialRegistration({ user, onComplete }) {
                       ))}
                     </select>
                     {errors.orgSpecialization && (
-                      <p className="text-red-500 text-sm px-4">
+                      <p className="text-red-500 text-sm mt-1">
                         {errors.orgSpecialization}
                       </p>
                     )}
                   </div>
 
-                  {/* Student Government Department Field */}
                   {formData.orgSpecialization === "Student government" && (
-                    <div className="flex flex-col flex-1  gap-2">
-                      <label className="block text-lg font-medium text-gray-700">
-                        Department <span className="text-red-500">*</span>{" "}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Department <span className="text-red-500">*</span>
                       </label>
-
                       <select
                         name="studentGovDepartment"
                         value={formData.studentGovDepartment}
                         onChange={handleInputChange}
-                        className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                          errors.studentGovDepartment ? "border-red-500" : ""
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.studentGovDepartment
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                       >
                         <option value="">Select Department</option>
@@ -389,136 +489,249 @@ export function InitialRegistration({ user, onComplete }) {
                         ))}
                       </select>
                       {errors.studentGovDepartment && (
-                        <p className="text-red-500 text-sm px-4">
+                        <p className="text-red-500 text-sm mt-1">
                           {errors.studentGovDepartment}
                         </p>
                       )}
-                      <span className="text-xs text-cnsc-accent-1-color">
+                      <p className="text-xs text-blue-600 mt-1">
                         Select Department of the Student Government.
-                      </span>
+                      </p>
                     </div>
                   )}
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          {/* Adviser Information */}
-          <div className="w-full border border-gray-300 rounded-xl bg-white px-6 py-4 mb-4">
-            <h1 className="text-xl font-semibold mb-4 flex items-center">
-              <User className="mr-2 h-5 w-5 text-blue-600" />
-              Adviser Information
-            </h1>
-
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <div className="flex flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Adviser Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="adviserName"
-                  value={formData.adviserName}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.adviserName ? "border-red-500" : ""
-                  }`}
-                  placeholder="Enter adviser's full name"
-                />
-                {errors.adviserName && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.adviserName}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col col-span-2 gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Adviser Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="adviserEmail"
-                  value={formData.adviserEmail}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.adviserEmail ? "border-red-500" : ""
-                  }`}
-                  placeholder="adviser@university.edu"
-                />
-                {errors.adviserEmail && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.adviserEmail}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col col-span-3 gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Adviser Department <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="adviserDepartment"
-                  value={formData.adviserDepartment}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.adviserDepartment ? "border-red-500" : ""
-                  }`}
-                  disabled={
-                    (formData.orgClass === "Local" && formData.orgDepartment) ||
-                    (formData.orgClass === "System-wide" &&
-                      formData.orgSpecialization === "Student government" &&
-                      formData.studentGovDepartment)
-                  }
-                >
-                  <option value="">Select department</option>
-                  {Object.keys(departments).map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-                {errors.adviserDepartment && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.adviserDepartment}
-                  </p>
-                )}
-                {formData.orgClass === "Local" && formData.orgDepartment && (
-                  <p className="text-blue-600 text-sm px-4">
-                    Auto-populated from organization department
-                  </p>
-                )}
-                {formData.orgClass === "System-wide" &&
-                  formData.orgSpecialization === "Student government" &&
-                  formData.studentGovDepartment && (
-                    <p className="text-blue-600 text-sm px-4">
-                      Auto-populated from student government department
+          {/* Step 2: Adviser Information */}
+          {currentStep === 2 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adviser Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="adviserName"
+                    value={formData.adviserName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.adviserName ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="Enter adviser's full name"
+                  />
+                  {errors.adviserName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.adviserName}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adviser Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="adviserEmail"
+                    value={formData.adviserEmail}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.adviserEmail ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="adviser@university.edu"
+                  />
+                  {errors.adviserEmail && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.adviserEmail}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adviser Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="adviserDepartment"
+                    value={formData.adviserDepartment}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.adviserDepartment
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    disabled={
+                      (formData.orgClass === "Local" &&
+                        formData.orgDepartment) ||
+                      (formData.orgClass === "System-wide" &&
+                        formData.orgSpecialization === "Student government" &&
+                        formData.studentGovDepartment)
+                    }
+                  >
+                    <option value="">Select department</option>
+                    {Object.keys(departments).map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.adviserDepartment && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.adviserDepartment}
+                    </p>
+                  )}
+                  {formData.orgClass === "Local" && formData.orgDepartment && (
+                    <p className="text-blue-600 text-sm mt-1">
+                      Auto-populated from organization department
+                    </p>
+                  )}
+                  {formData.orgClass === "System-wide" &&
+                    formData.orgSpecialization === "Student government" &&
+                    formData.studentGovDepartment && (
+                      <p className="text-blue-600 text-sm mt-1">
+                        Auto-populated from student government department
+                      </p>
+                    )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Submit Button */}
-          {/* Submit Button */}
-          <div className="flex flex-col items-end gap-2">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className={`px-8 py-4 rounded-xl font-bold ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-amber-300 hover:bg-amber-400"
-              }`}
-            >
-              {loading ? "Registering..." : "Register Organization"}
-            </button>
+          {/* Step 3: Review and Submit */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Review Your Information
+                </h3>
 
-            {/* Error or Conflict Message */}
-            {submitError && (
-              <p className="text-red-600 font-medium text-sm">{submitError}</p>
-            )}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                      <Building className="mr-2 h-4 w-4 text-amber-600" />
+                      Organization Information
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm ml-6">
+                      <div>
+                        <span className="font-medium">Name:</span>{" "}
+                        {formData.orgName}
+                      </div>
+                      <div>
+                        <span className="font-medium">Acronym:</span>{" "}
+                        {formData.orgAcronym}
+                      </div>
+                      <div>
+                        <span className="font-medium">Classification:</span>{" "}
+                        {formData.orgClass}
+                      </div>
+                      <div>
+                        <span className="font-medium">Email:</span>{" "}
+                        {formData.orgEmail}
+                      </div>
+                      {formData.orgClass === "Local" && (
+                        <>
+                          <div>
+                            <span className="font-medium">Department:</span>{" "}
+                            {formData.orgDepartment}
+                          </div>
+                          <div>
+                            <span className="font-medium">Course:</span>{" "}
+                            {formData.orgCourse}
+                          </div>
+                        </>
+                      )}
+                      {formData.orgClass === "System-wide" && (
+                        <>
+                          <div>
+                            <span className="font-medium">Specialization:</span>{" "}
+                            {formData.orgSpecialization}
+                          </div>
+                          {formData.orgSpecialization ===
+                            "Student government" && (
+                            <div>
+                              <span className="font-medium">Department:</span>{" "}
+                              {formData.studentGovDepartment}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                      <User className="mr-2 h-4 w-4 text-blue-600" />
+                      Adviser Information
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm ml-6">
+                      <div>
+                        <span className="font-medium">Name:</span>{" "}
+                        {formData.adviserName}
+                      </div>
+                      <div>
+                        <span className="font-medium">Email:</span>{" "}
+                        {formData.adviserEmail}
+                      </div>
+                      <div>
+                        <span className="font-medium">Department:</span>{" "}
+                        {formData.adviserDepartment}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 font-medium text-sm">
+                    {submitError}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer with Navigation Buttons */}
+        <div className="bg-gray-50 px-8 py-4 border-t border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handleBackStep}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
+                >
+                  Back
+                </button>
+              )}
+            </div>
+            <div>
+              {currentStep < 3 ? (
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="px-6 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 font-medium"
+                >
+                  Next Step
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className={`px-6 py-2 rounded-lg font-medium ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed text-white"
+                      : "bg-red-700 hover:bg-red-800 text-white"
+                  }`}
+                >
+                  {loading ? "Registering..." : "Register Organization"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -527,6 +740,7 @@ export function InitialRegistration({ user, onComplete }) {
 }
 
 export function ReRegistration({ OrgData, user, onComplete }) {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     adviserName: OrgData.adviserName,
     adviserEmail: OrgData.adviserEmail,
@@ -538,12 +752,14 @@ export function ReRegistration({ OrgData, user, onComplete }) {
     orgDepartment: OrgData?.orgDepartment,
     orgCourse: OrgData?.orgCourse,
     orgSpecialization: OrgData?.orgSpecialization,
-    studentGovDepartment: OrgData?.orgDepartment, // New field for student government department
+    studentGovDepartment: OrgData?.orgDepartment,
     userId: user?.userId,
   });
 
   console.log("tite", OrgData);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -568,7 +784,6 @@ export function ReRegistration({ OrgData, user, onComplete }) {
       }));
     }
 
-    // Auto-populate adviser department when student government department is selected
     if (
       name === "studentGovDepartment" &&
       formData.orgSpecialization === "Student government"
@@ -590,7 +805,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
       orgDepartment: "",
       orgCourse: "",
       orgSpecialization: "",
-      studentGovDepartment: "", // Reset student government department
+      studentGovDepartment: "",
       adviserDepartment: "",
     }));
   };
@@ -601,20 +816,13 @@ export function ReRegistration({ OrgData, user, onComplete }) {
       ...prev,
       orgSpecialization: value,
       studentGovDepartment: "",
-      orgDepartment: value === "Student government" ? "" : prev.orgDepartment, // Reset if "Student government"
+      orgDepartment: value === "Student government" ? "" : prev.orgDepartment,
     }));
   };
 
-  const validateForm = () => {
+  const validateStep1 = () => {
     const newErrors = {};
 
-    // General required fields
-    if (!formData.adviserName.trim())
-      newErrors.adviserName = "Adviser name is required";
-    if (!formData.adviserEmail.trim())
-      newErrors.adviserEmail = "Adviser email is required";
-    if (!formData.adviserDepartment.trim())
-      newErrors.adviserDepartment = "Adviser department is required";
     if (!formData.orgName.trim())
       newErrors.orgName = "Organization name is required";
     if (!formData.orgClass)
@@ -624,7 +832,6 @@ export function ReRegistration({ OrgData, user, onComplete }) {
     if (!formData.orgEmail.trim())
       newErrors.orgEmail = "Organization email is required";
 
-    // Conditional validations
     if (formData.orgClass === "Local") {
       if (!formData.orgDepartment)
         newErrors.orgDepartment = "Organization department is required";
@@ -634,24 +841,18 @@ export function ReRegistration({ OrgData, user, onComplete }) {
       if (!formData.orgSpecialization.trim())
         newErrors.orgSpecialization = "Specialization is required";
 
-      // Handle Student Government case
       if (formData.orgSpecialization === "Student government") {
         if (!formData.studentGovDepartment.trim()) {
           newErrors.studentGovDepartment =
             "Department is required for student government";
         } else {
-          // ✅ Assign studentGovDepartment to orgDepartment
           formData.orgSpecialization = formData.orgSpecialization;
           formData.orgDepartment = formData.studentGovDepartment;
         }
       }
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.adviserEmail && !emailRegex.test(formData.adviserEmail)) {
-      newErrors.adviserEmail = "Please enter a valid email address";
-    }
     if (formData.orgEmail && !emailRegex.test(formData.orgEmail)) {
       newErrors.orgEmail = "Please enter a valid email address";
     }
@@ -660,9 +861,47 @@ export function ReRegistration({ OrgData, user, onComplete }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateStep2 = () => {
+    const newErrors = {};
+
+    if (!formData.adviserName.trim())
+      newErrors.adviserName = "Adviser name is required";
+    if (!formData.adviserEmail.trim())
+      newErrors.adviserEmail = "Adviser email is required";
+    if (!formData.adviserDepartment.trim())
+      newErrors.adviserDepartment = "Adviser department is required";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.adviserEmail && !emailRegex.test(formData.adviserEmail)) {
+      newErrors.adviserEmail = "Please enter a valid email address";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateForm = () => {
+    return validateStep1() && validateStep2();
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
+    } else if (currentStep === 2 && validateStep2()) {
+      setCurrentStep(3);
+    }
+  };
+
+  const handleBackStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const handleSubmit = async () => {
     if (validateForm()) {
       try {
+        setLoading(true);
         console.log("Form submitted:", formData);
 
         try {
@@ -677,130 +916,180 @@ export function ReRegistration({ OrgData, user, onComplete }) {
           throw error;
         }
 
+        setLoading(false);
         onComplete?.();
       } catch (error) {
         console.error("Registration failed:", error);
-        // You might want to show an error message to the user here
-        // setErrors({ submit: "Registration failed. Please try again." });
+        setSubmitError("Registration failed. Please try again.");
+        setLoading(false);
       }
     }
   };
+
+  const StepIndicator = ({ stepNumber, title, isActive, isCompleted }) => (
+    <div className="flex items-center flex-1">
+      <div className="flex items-center gap-3">
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 ${
+            isActive
+              ? "bg-red-800 text-white border-red-800"
+              : "bg-white text-gray-400 border-gray-300"
+          }`}
+        >
+          {stepNumber}
+        </div>
+        <span
+          className={`text-sm font-medium whitespace-nowrap ${
+            isActive ? "text-gray-900" : "text-gray-400"
+          }`}
+        >
+          {title}
+        </span>
+      </div>
+      {stepNumber < 3 && <div className="flex-1 h-px bg-gray-300 mx-4" />}
+    </div>
+  );
+
   return (
-    <div className="absolute inset-0 h-screen w-screen overflow-hidden backdrop-blur-3xl z-50 flex items-center justify-center">
-      <div className="max-h-9/10 h-fit flex-col max-w-5xl rounded-xl gap-4 w-full p border-gray-500 bg-gray-300 flex  items-center px-8 py-6 overflow-hidden">
-        <h1 className="text-3xl font-bold text-cnsc-primary-color">
-          WELCOME TO RE-REGISTRATION OF YOUR ORGANIAZTION
-        </h1>
+    <div className="absolute inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-red-800 to-red-600 text-white py-6 px-8">
+          <h1 className="text-2xl font-bold text-center">RE-REGISTRATION</h1>
+        </div>
 
-        <div className="h-full w-full overflow-y-auto">
-          {/* Organization Information */}
-          <div className="w-full border border-gray-300 rounded-xl bg-white px-6 py-4 mb-4">
-            <h1 className="text-xl font-semibold mb-4 flex items-center">
-              <Building className="mr-2 h-5 w-5 text-amber-600" />
-              Organization Information
-            </h1>
+        {/* Step Indicator */}
+        <div className="bg-white border-b border-gray-300 px-8 py-4">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <StepIndicator
+              stepNumber={1}
+              title="Organization Information"
+              isActive={currentStep === 1}
+              isCompleted={currentStep > 1}
+            />
+            <StepIndicator
+              stepNumber={2}
+              title="Adviser Information"
+              isActive={currentStep === 2}
+              isCompleted={currentStep > 2}
+            />
+            <StepIndicator
+              stepNumber={3}
+              title="Submit"
+              isActive={currentStep === 3}
+              isCompleted={false}
+            />
+          </div>
+        </div>
 
-            <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-              <div className="flex flex-col col-span-2 gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Organization Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="orgName"
-                  value={formData.orgName}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"} ${
-                    errors.orgName ? "border-red-500" : ""
-                  }`}
-                  placeholder="(Example: Union of Supreme Student Government)"
-                />
-                {errors.orgName && (
-                  <p className="text-red-500 text-sm px-4">{errors.orgName}</p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Acronym <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="orgAcronym"
-                  value={formData.orgAcronym}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.orgAcronym ? "border-red-500" : ""
-                  }`}
-                  placeholder="(Example: USSG)"
-                />
-                {errors.orgAcronym && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.orgAcronym}
-                  </p>
-                )}
-              </div>
-
-              {/* Classification */}
-              <div className=" flex flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Classification <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-4 px-4 py-3 rounded-lg border-gray-300 border bg-gray-100 ">
-                  {["System-wide", "Local"].map((option) => (
-                    <div key={option} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        id={`orgClass${option}`}
-                        name="orgClass"
-                        value={option}
-                        checked={formData.orgClass === option}
-                        onChange={handleClassificationChange}
-                        className="h-4 w-4 text-blue-600"
-                      />
-                      <label htmlFor={`orgClass${option}`} className="text-lg">
-                        {option}
-                      </label>
-                    </div>
-                  ))}
+        {/* Form Content */}
+        <div className="px-8 py-8 max-h-[500px] overflow-y-auto">
+          {/* Step 1: Organization Information */}
+          {currentStep === 1 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Organization Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="orgName"
+                    value={formData.orgName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.orgName ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="(Example: Union of Supreme Student Government)"
+                  />
+                  {errors.orgName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgName}
+                    </p>
+                  )}
                 </div>
-                {errors.orgClass && (
-                  <p className="text-red-500 text-sm px-4">{errors.orgClass}</p>
-                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Acronym <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="orgAcronym"
+                    value={formData.orgAcronym}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.orgAcronym ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="(Example: USSG)"
+                  />
+                  {errors.orgAcronym && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgAcronym}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <div className="flex col-span-2 flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Organization Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="orgEmail"
-                  value={formData.orgEmail}
-                  readOnly
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} bg-gray-100 cursor-not-allowed ${
-                    errors.orgEmail ? "border-red-500" : ""
-                  }`}
-                  placeholder="organization@email.com"
-                />
-                {errors.orgEmail && (
-                  <p className="text-red-500 text-sm px-4">{errors.orgEmail}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Classification <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="orgClass"
+                    value={formData.orgClass}
+                    onChange={handleClassificationChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.orgClass ? "border-red-500" : "border-gray-300"
+                    }`}
+                  >
+                    <option value="System-wide">System-wide</option>
+                    <option value="Local">Local</option>
+                  </select>
+                  {errors.orgClass && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgClass}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Organization Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="orgEmail"
+                    value={formData.orgEmail}
+                    readOnly
+                    className={`w-full px-4 py-3 border rounded-lg bg-gray-100 cursor-not-allowed ${
+                      errors.orgEmail ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="organization@email.com"
+                  />
+                  {errors.orgEmail && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.orgEmail}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* For Local Classification */}
               {formData.orgClass === "Local" && (
-                <div className="flex col-span-3 gap-6 ">
-                  <div className="flex flex-1 flex-col gap-2">
-                    <label className="block text-lg font-medium text-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Department <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="orgDepartment"
                       value={formData.orgDepartment}
                       onChange={handleInputChange}
-                      className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                        errors.orgDepartment ? "border-red-500" : ""
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                        errors.orgDepartment
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     >
                       <option value="">Select Department</option>
@@ -811,22 +1100,22 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                       ))}
                     </select>
                     {errors.orgDepartment && (
-                      <p className="text-red-500 text-sm px-4">
+                      <p className="text-red-500 text-sm mt-1">
                         {errors.orgDepartment}
                       </p>
                     )}
                   </div>
 
-                  <div className="flex flex-col flex-1 gap-2">
-                    <label className="block text-lg font-medium text-gray-700">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Course <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="orgCourse"
                       value={formData.orgCourse}
                       onChange={handleInputChange}
-                      className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                        errors.orgCourse ? "border-red-500" : ""
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                        errors.orgCourse ? "border-red-500" : "border-gray-300"
                       }`}
                       disabled={!formData.orgDepartment}
                     >
@@ -839,7 +1128,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                         ))}
                     </select>
                     {errors.orgCourse && (
-                      <p className="text-red-500 text-sm px-4">
+                      <p className="text-red-500 text-sm mt-1">
                         {errors.orgCourse}
                       </p>
                     )}
@@ -847,19 +1136,20 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                 </div>
               )}
 
-              {/* For System-wide Classification */}
               {formData.orgClass === "System-wide" && (
-                <div className="flex  col-span-3 gap-4">
-                  <div className="flex flex-col flex-1 gap-2">
-                    <label className="block text-lg font-medium text-gray-700">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Specialization <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="orgSpecialization"
                       value={formData.orgSpecialization}
                       onChange={handleSpecializationChange}
-                      className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                        errors.orgSpecialization ? "border-red-500" : ""
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                        errors.orgSpecialization
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     >
                       <option value="">Select Specialization</option>
@@ -870,25 +1160,25 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                       ))}
                     </select>
                     {errors.orgSpecialization && (
-                      <p className="text-red-500 text-sm px-4">
+                      <p className="text-red-500 text-sm mt-1">
                         {errors.orgSpecialization}
                       </p>
                     )}
                   </div>
 
-                  {/* Student Government Department Field */}
                   {formData.orgSpecialization === "Student government" && (
-                    <div className="flex flex-col flex-1  gap-2">
-                      <label className="block text-lg font-medium text-gray-700">
-                        Department <span className="text-red-500">*</span>{" "}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Department <span className="text-red-500">*</span>
                       </label>
-
                       <select
                         name="studentGovDepartment"
                         value={formData.studentGovDepartment}
                         onChange={handleInputChange}
-                        className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                          errors.studentGovDepartment ? "border-red-500" : ""
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.studentGovDepartment
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                       >
                         <option value="">Select Department</option>
@@ -899,125 +1189,249 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                         ))}
                       </select>
                       {errors.studentGovDepartment && (
-                        <p className="text-red-500 text-sm px-4">
+                        <p className="text-red-500 text-sm mt-1">
                           {errors.studentGovDepartment}
                         </p>
                       )}
-                      <span className="text-xs text-cnsc-accent-1-color">
+                      <p className="text-xs text-blue-600 mt-1">
                         Select Department of the Student Government.
-                      </span>
+                      </p>
                     </div>
                   )}
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          {/* Adviser Information */}
-          <div className="w-full border border-gray-300 rounded-xl bg-white px-6 py-4 mb-4">
-            <h1 className="text-xl font-semibold mb-4 flex items-center">
-              <User className="mr-2 h-5 w-5 text-blue-600" />
-              Adviser Information
-            </h1>
-
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <div className="flex flex-col gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Adviser Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="adviserName"
-                  value={formData.adviserName}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.adviserName ? "border-red-500" : ""
-                  }`}
-                  placeholder="Enter adviser's full name"
-                />
-                {errors.adviserName && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.adviserName}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col col-span-2 gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Adviser Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="adviserEmail"
-                  value={formData.adviserEmail}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.adviserEmail ? "border-red-500" : ""
-                  }`}
-                  placeholder="adviser@university.edu"
-                />
-                {errors.adviserEmail && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.adviserEmail}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col col-span-3 gap-2">
-                <label className="block text-lg font-medium text-gray-700">
-                  Adviser Department <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="adviserDepartment"
-                  value={formData.adviserDepartment}
-                  onChange={handleInputChange}
-                  className={`${"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"} ${
-                    errors.adviserDepartment ? "border-red-500" : ""
-                  }`}
-                  disabled={
-                    (formData.orgClass === "Local" && formData.orgDepartment) ||
-                    (formData.orgClass === "System-wide" &&
-                      formData.orgSpecialization === "Student government" &&
-                      formData.studentGovDepartment)
-                  }
-                >
-                  <option value="">Select department</option>
-                  {Object.keys(departments).map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-                {errors.adviserDepartment && (
-                  <p className="text-red-500 text-sm px-4">
-                    {errors.adviserDepartment}
-                  </p>
-                )}
-                {formData.orgClass === "Local" && formData.orgDepartment && (
-                  <p className="text-blue-600 text-sm px-4">
-                    Auto-populated from organization department
-                  </p>
-                )}
-                {formData.orgClass === "System-wide" &&
-                  formData.orgSpecialization === "Student government" &&
-                  formData.studentGovDepartment && (
-                    <p className="text-blue-600 text-sm px-4">
-                      Auto-populated from student government department
+          {/* Step 2: Adviser Information */}
+          {currentStep === 2 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adviser Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="adviserName"
+                    value={formData.adviserName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.adviserName ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="Enter adviser's full name"
+                  />
+                  {errors.adviserName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.adviserName}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adviser Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="adviserEmail"
+                    value={formData.adviserEmail}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.adviserEmail ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="adviser@university.edu"
+                  />
+                  {errors.adviserEmail && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.adviserEmail}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adviser Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="adviserDepartment"
+                    value={formData.adviserDepartment}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.adviserDepartment
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    disabled={
+                      (formData.orgClass === "Local" &&
+                        formData.orgDepartment) ||
+                      (formData.orgClass === "System-wide" &&
+                        formData.orgSpecialization === "Student government" &&
+                        formData.studentGovDepartment)
+                    }
+                  >
+                    <option value="">Select department</option>
+                    {Object.keys(departments).map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.adviserDepartment && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.adviserDepartment}
+                    </p>
+                  )}
+                  {formData.orgClass === "Local" && formData.orgDepartment && (
+                    <p className="text-blue-600 text-sm mt-1">
+                      Auto-populated from organization department
+                    </p>
+                  )}
+                  {formData.orgClass === "System-wide" &&
+                    formData.orgSpecialization === "Student government" &&
+                    formData.studentGovDepartment && (
+                      <p className="text-blue-600 text-sm mt-1">
+                        Auto-populated from student government department
+                      </p>
+                    )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Submit Button */}
-          <div className="flex justify-end ">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="px-8 py-4 rounded-xl bg-amber-300  font-bold"
-            >
-              Register Organization
-            </button>
+          {/* Step 3: Review and Submit */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Review Your Information
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                      <Building className="mr-2 h-4 w-4 text-amber-600" />
+                      Organization Information
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm ml-6">
+                      <div>
+                        <span className="font-medium">Name:</span>{" "}
+                        {formData.orgName}
+                      </div>
+                      <div>
+                        <span className="font-medium">Acronym:</span>{" "}
+                        {formData.orgAcronym}
+                      </div>
+                      <div>
+                        <span className="font-medium">Classification:</span>{" "}
+                        {formData.orgClass}
+                      </div>
+                      <div>
+                        <span className="font-medium">Email:</span>{" "}
+                        {formData.orgEmail}
+                      </div>
+                      {formData.orgClass === "Local" && (
+                        <>
+                          <div>
+                            <span className="font-medium">Department:</span>{" "}
+                            {formData.orgDepartment}
+                          </div>
+                          <div>
+                            <span className="font-medium">Course:</span>{" "}
+                            {formData.orgCourse}
+                          </div>
+                        </>
+                      )}
+                      {formData.orgClass === "System-wide" && (
+                        <>
+                          <div>
+                            <span className="font-medium">Specialization:</span>{" "}
+                            {formData.orgSpecialization}
+                          </div>
+                          {formData.orgSpecialization ===
+                            "Student government" && (
+                            <div>
+                              <span className="font-medium">Department:</span>{" "}
+                              {formData.studentGovDepartment}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                      <User className="mr-2 h-4 w-4 text-blue-600" />
+                      Adviser Information
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm ml-6">
+                      <div>
+                        <span className="font-medium">Name:</span>{" "}
+                        {formData.adviserName}
+                      </div>
+                      <div>
+                        <span className="font-medium">Email:</span>{" "}
+                        {formData.adviserEmail}
+                      </div>
+                      <div>
+                        <span className="font-medium">Department:</span>{" "}
+                        {formData.adviserDepartment}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 font-medium text-sm">
+                    {submitError}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer with Navigation Buttons */}
+        <div className="bg-gray-50 px-8 py-4 border-t border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handleBackStep}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
+                >
+                  Back
+                </button>
+              )}
+            </div>
+            <div>
+              {currentStep < 3 ? (
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="px-6 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 font-medium"
+                >
+                  Next Step
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className={`px-6 py-2 rounded-lg font-medium ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed text-white"
+                      : "bg-red-700 hover:bg-red-800 text-white"
+                  }`}
+                >
+                  {loading ? "Registering..." : "Register Organization"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

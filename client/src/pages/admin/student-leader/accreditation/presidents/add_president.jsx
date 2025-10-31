@@ -1347,7 +1347,7 @@ function PresidentClassSchedInfo({
           <thead className="bg-gray-200 text-gray-700">
             <tr>
               <th className="p-2 text-left border">Subject</th>
-              <th className="p-2 text-left border">Place</th>
+              <th className="p-2 text-left border">Place/Room</th>
               <th className="p-2 text-left border">Time Start</th>
               <th className="p-2 text-left border">Time End</th>
               <th className="p-2 text-left border">Day</th>
