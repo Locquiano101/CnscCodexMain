@@ -39,55 +39,27 @@ export function DeanProposedPlan({ selectedOrg }) {
     message: "",
   });
 
-const fetchProposals = async () => {
-  setLoading(true);
-  try {
-    const response = await axios.get(
-      `${API_ROUTER}/getStudentLeaderProposalConduct/${selectedOrg._id}`
-    );
-    console.log("✅ Student Leader Proposals:", response.data);
-
-    // 🧩 Flatten the nested structure
-    const formattedData = response.data.map((item) => {
-      const plan = item.ProposedIndividualActionPlan || {};
-      return {
-        _id: item._id,
-        activityTitle: plan.activityTitle || "Untitled",
-        alignedSDG: Array.isArray(plan.alignedSDG)
-          ? plan.alignedSDG
-          : JSON.parse(plan.alignedSDG || "[]"),
-        budgetaryRequirements: plan.budgetaryRequirements || 0,
-        venue: plan.venue || "N/A",
-        briefDetails: plan.briefDetails || "",
-        AlignedObjective: plan.AlignedObjective || "",
-        proposedDate: plan.proposedDate || item.createdAt,
-        overallStatus: item.overallStatus || "Pending",
-        documents: item.document || [],
-        organization: item.organization || "",
-        organizationProfile: item.organizationProfile || "",
-        isActive: item.isActive,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-      };
-    });
-
-    setProposals(formattedData);
-    setError(null);
-  } catch (err) {
-    console.error("❌ Failed to fetch proposals:", err);
-    if (err.status === 404 || err.response?.status === 404) {
-      setProposals([]);
-      setError(null);
-    } else {
-      setError("Failed to load proposals");
-    }
-  } finally {
+  const fetchProposals = async () => {
     setLoading(false);
-  }
-};
-
-
-  console.log(proposals, "proposal")
+    try {
+      const response = await axios.get(
+        `${API_ROUTER}/getAdviserProposals/${selectedOrg._id}`
+      );
+      console.log(response.data);
+      setProposals(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch proposals:", err);
+      if (err.status === 404 || err.response?.status === 404) {
+        setProposals([]);
+        setError(null);
+      } else {
+        setError("Failed to load proposals");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedOrg._id) {
@@ -140,12 +112,6 @@ const fetchProposals = async () => {
     }).format(amount);
   };
 
-  const latestUpdate = proposals.length
-    ? new Date(
-        Math.max(...proposals.map((p) => new Date(p.updatedAt).getTime()))
-      )
-    : null;
-
   const handleView = (proposal) => {
     console.log(proposal);
 
@@ -190,74 +156,42 @@ const fetchProposals = async () => {
     setShowRevisionModal(true);
   };
 
-  // const handleApproval = () => {
-  //   const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
-  //   const adviserStatuses = [
-  //     "Approved by the Adviser",
-  //     "Revision from the Adviser",
-  //   ];
+  const handleApproval = () => {
+    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+    const adviserStatuses = [
+      "Approved by the Adviser",
+      "Revision from the Adviser",
+    ];
 
-  //   const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
+    const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
 
-  //   const isDeanUpdated = deanStatuses.some(
-  //     (status) => status.toLowerCase().trim() === currentStatus
-  //   );
-
-  //   const isAdviserValid = adviserStatuses.some(
-  //     (status) => status.toLowerCase().trim() === currentStatus
-  //   );
-
-  //   if (isDeanUpdated || !isAdviserValid) {
-  //     setPendingAction("Approval");
-
-  //     if (isDeanUpdated) {
-  //       setConfirmMessage(
-  //         "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
-  //       );
-  //     } else if (!isAdviserValid) {
-  //       setConfirmMessage(
-  //         "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
-  //       );
-  //     }
-
-  //     setConfirmUpdateModal(true);
-  //     return;
-  //   }
-
-  //   setShowApprovalModal(true);
-  // };
-
-const handleApproval = async (proposal, status) => {
-  if (!proposal?._id) {
-    console.error("Missing proposal._id!", proposal);
-    alert("Cannot update proposal: Missing ID.");
-    return;
-  }
-
-  const payload = {
-    proposalId: proposal._id,
-    overallStatus: status,
-    activityTitle: proposal?.ProposedIndividualActionPlan?.activityTitle || "",
-    orgProfileId: selectedOrg?._id || "",
-    orgName: selectedOrg?.orgName || "",
-  };
-
-  try {
-    console.log("Sending payload:", payload);
-
-    const response = await axios.post(
-      `${API_ROUTER}/updateStatusProposalConduct/${proposal._id}`,
-      payload
+    const isDeanUpdated = deanStatuses.some(
+      (status) => status.toLowerCase().trim() === currentStatus
     );
 
-    console.log("Server response:", response.data);
-    window.location.reload();
-  } catch (err) {
-    console.error("Failed to update proposal:", err);
-  }
-};
+    const isAdviserValid = adviserStatuses.some(
+      (status) => status.toLowerCase().trim() === currentStatus
+    );
 
+    if (isDeanUpdated || !isAdviserValid) {
+      setPendingAction("Approval");
 
+      if (isDeanUpdated) {
+        setConfirmMessage(
+          "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
+        );
+      } else if (!isAdviserValid) {
+        setConfirmMessage(
+          "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
+        );
+      }
+
+      setConfirmUpdateModal(true);
+      return;
+    }
+
+    setShowApprovalModal(true);
+  };
 
   const submitUpdate = async ({ status }) => {
     try {
@@ -356,19 +290,20 @@ const handleApproval = async (proposal, status) => {
         </div>
       )}
 
-{/* Empty State */}
-{!loading && !error && proposals.length === 0 && (
-  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
-    <div className="text-center">
-      <h3 className="text-xl font-semibold text-slate-800 mb-3">
-        No Proposals Found
-      </h3>
-      <p className="text-slate-600 mb-8 max-w-md mx-auto">
-        There are currently no proposed action plans for this organization.
-      </p>
-    </div>
-  </div>
-)}
+      {/* Empty State */}
+      {!loading && !error && proposals.length === 0 && (
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-slate-800 mb-3">
+              No Proposals Found
+            </h3>
+            <p className="text-slate-600 mb-8 max-w-md mx-auto">
+              There are currently no proposed action plans for this
+              organization.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Enhanced Table */}
       {!loading && !error && proposals.length > 0 && (
@@ -378,7 +313,7 @@ const handleApproval = async (proposal, status) => {
               Proposals Analysis
             </h3>
             <div className="flex gap-4 ">
-              <div className="flex  gap-2 ">
+              <div className="flex flex-col gap-2 ">
                 {/* Total Proposals */}
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                   <h4 className="text-sm font-medium text-blue-800">
@@ -396,14 +331,14 @@ const handleApproval = async (proposal, status) => {
                   </h4>
                   <p className="text-3xl font-bold text-green-900">
                     {proposals.length > 0
-                      ? "₱" +
+                      ? "$" +
                         Math.round(
                           proposals.reduce(
                             (sum, p) => sum + (p.budgetaryRequirements || 0),
                             0
                           ) / proposals.length
                         )
-                      : "₱0"}
+                      : "$0"}
                   </p>
                 </div>
 
@@ -441,9 +376,48 @@ const handleApproval = async (proposal, status) => {
                 </div>
               </div>
 
+              {/* SDG Frequency */}
+              <div className="flex-1 h-full bg-white p-6 rounded-2xl shadow-xl">
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">
+                  Proposals SDG Analysis
+                </h3>
 
+                {/* Count SDGs */}
+                {(() => {
+                  const sdgCounts = proposals
+                    .flatMap((p) => p.alignedSDG || [])
+                    .reduce((acc, sdg) => {
+                      acc[sdg] = (acc[sdg] || 0) + 1;
+                      return acc;
+                    }, {});
+                  const maxCount = Math.max(...Object.values(sdgCounts), 1);
 
-
+                  return (
+                    <div className="space-y-3">
+                      {Object.entries(sdgCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([sdg, count]) => (
+                          <div key={sdg} className="flex items-center gap-4">
+                            <span className="w-24 text-sm font-medium text-slate-700">
+                              {sdg}
+                            </span>
+                            <div className="flex-1 h-4 bg-slate-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                                style={{
+                                  width: `${(count / maxCount) * 100}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <span className="w-8 text-sm font-medium text-slate-700 text-right">
+                              {count}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           </div>
 
@@ -701,30 +675,23 @@ const handleApproval = async (proposal, status) => {
                   )}
               </div>
 
-              {/* Action Buttons */}
-              {!["Approved by the Dean", "Completed", "Approved"].includes(selectedProposal.overallStatus) && (
-                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
-                  <button
-                    onClick={() => handleApproval(selectedProposal, "Revision from the Dean")}
-                    className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-                  >
-                    <AlertTriangle size={18} />
-                    Notify Revision
-                  </button>
+              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
+                <button
+                  onClick={handleRevision}
+                  className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                >
+                  <AlertTriangle size={18} />
+                  Notify Revision
+                </button>
 
-                  <button
-                    onClick={() => handleApproval(selectedProposal, "Approved by the Dean")}
-                    className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-                  >
-                    <CheckCircle size={18} />
-                    Approve Proposal
-                  </button>
-                </div>
-              )}
-
-
-
-
+                <button
+                  onClick={handleApproval}
+                  className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                >
+                  <CheckCircle size={18} />
+                  Approve Proposal
+                </button>
+              </div>
             </div>
           </div>
         </div>

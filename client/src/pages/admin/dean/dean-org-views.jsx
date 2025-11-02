@@ -10,26 +10,20 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 import axios from "axios";
 import { API_ROUTER } from "../../../App";
 
-import { UpdateStatusProposal } from "../../../components/update-status-proposal";
 import { DeanFinancialReport } from "./individual-accreditation/dean-accreditation-financial-report";
 import { DeanRosterData } from "./individual-accreditation/dean-accreditation-roster";
 import { DeanPresident } from "./individual-accreditation/dean-accreditation-president";
 import { DeanAccreditationDocument } from "./individual-accreditation/dean-accreditation-documents";
 import { DeanAccomplishmentReport } from "./accomplishment/dean-accomplishment";
-import { DeanProposedPlan } from "./individual-accreditation/dean-accreditation-proposed-plan";
-import { DeanAccreditationMain } from "./individual-accreditation/dean-accreditation-main";
 import { DeanProposalConduct } from "./proposals/dean-proposal";
+import { DeanProposedPlan } from "./individual-accreditation/dean-accreditation-proposed-plan";
 
 export function OrgHome({
-  baseOrg, // original org from list
   displayOrg, // latest active profile OR baseOrg
   accreditationData, // fetched in parent
   financial, // fetched in parent (for latest profile)
@@ -45,6 +39,7 @@ export function OrgHome({
       { label: "President Information" },
       { label: "Roster of Members" },
       { label: "Documents" },
+      { label: "Proposed Action Plan" },
     ],
     []
   );
@@ -367,6 +362,11 @@ export function OrgHome({
         {tab === "Documents" && (
           <div className="w-full h-full">
             <DeanAccreditationDocument selectedOrg={displayOrg} />
+          </div>
+        )}
+        {tab === "Proposed Action Plan" && (
+          <div className="w-full h-full">
+            <DeanProposedPlan selectedOrg={displayOrg} />
           </div>
         )}
       </div>

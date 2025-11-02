@@ -328,7 +328,7 @@ export function AdviserProposal({ orgData }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
-                  {proposals.map((proposal, index) => (
+                  {proposals.map((proposal) => (
                     <tr
                       key={proposal._id}
                       className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 cursor-pointer transition-all duration-200 group"
