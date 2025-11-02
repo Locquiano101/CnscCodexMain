@@ -8,7 +8,6 @@ export function ShowAdviserDetailedProposal({
   user,
   onClose,
 }) {
-  if (!proposal) return null;
   const [statusModal, setStatusModal] = useState(null); // ✅ unique name
 
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);

@@ -16,9 +16,9 @@ export const updateProposalConductStatus = async (req, res) => {
     } = req.body;
 
     // 🔎 Find ProposalConduct by ID and populate its linked documents
-    const proposalConduct = await Proposal.findById(proposalConductId).populate(
-      "document"
-    );
+    const proposalConduct = await ProposalConduct.findById(
+      proposalConductId
+    ).populate("document");
 
     if (!proposalConduct) {
       return res
