@@ -107,6 +107,7 @@ router.get(
   "/getStudentLeaderAccomplishmentReady/:orgProfileId",
   Controller.getDoneProposalConductsByOrgProfile
 );
+router.get("/getApprovedPPA/:orgId", Controller.getApprovedPPA);
 
 router.get(
   "/getStudentLeaderProposalById/:accreditationId",

@@ -57,9 +57,12 @@ export function StudentLeaderProposal({ orgData }) {
   };
 
   useEffect(() => {
-    fetchApprovedProposedActionPlanData();
-    fetchProposedPlanConduct();
-  }, []);
+    console.log("useEffect triggered", orgData);
+    if (orgData?._id) {
+      fetchApprovedProposedActionPlanData();
+      fetchProposedPlanConduct();
+    }
+  }, [orgData]);
 
   const handleAddLog = () => {
     fetchApprovedProposedActionPlanData();
