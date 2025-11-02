@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import axios from "axios";
 import { API_ROUTER } from "../../../../../App";
@@ -16,10 +16,7 @@ import {
   Edit,
   DollarSign,
   Target,
-  Settings,
-  ChevronDown,
   FileText,
-  Users,
 } from "lucide-react";
 import { DonePopUp } from "../../../../../components/components";
 import {
@@ -41,9 +38,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
   const [revisionNotes, setRevisionNotes] = useState("");
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmUpdateModal, setConfirmUpdateModal] = useState(false);
-  const [isManageProposedPlanOpen, setIsManageProposedPlanOpen] =
-    useState(false);
-  const dropdownRef = useRef(null);
+  useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
 
   const [popup, setPopup] = useState({
@@ -131,7 +126,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
   };
 
   const handleRevision = () => {
-    const deanStatuses = ["Revision from SDU", "Approved"];
+    const deanStatuses = ["Revision From the Dean", "Approved by the Dean"];
     const adviserStatuses = [
       "Approved by the Adviser",
       "Revision from the Adviser",
@@ -142,33 +137,32 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
     const isDeanUpdated = deanStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus
     );
-
     const isAdviserValid = adviserStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus
     );
 
-    if (isDeanUpdated || !isAdviserValid) {
+    // ✅ Allow direct revision if dean already reviewed
+    if (isDeanUpdated) {
+      setShowRevisionModal(true);
+      return;
+    }
+
+    // ⚠️ Only confirm if adviser has NOT yet reviewed
+    if (!isAdviserValid) {
       setPendingAction("revision");
-
-      if (isDeanUpdated) {
-        setConfirmMessage(
-          "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
-        );
-      } else if (!isAdviserValid) {
-        setConfirmMessage(
-          "This proposal has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
-        );
-      }
-
+      setConfirmMessage(
+        "This proposal has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
+      );
       setConfirmUpdateModal(true);
       return;
     }
 
+    // ✅ Normal flow
     setShowRevisionModal(true);
   };
 
   const handleApproval = () => {
-    const deanStatuses = ["Revision From the SDU", "Approved"];
+    const deanStatuses = ["Revision From the Dean", "Approved by the Dean"];
     const adviserStatuses = [
       "Approved by the Adviser",
       "Revision from the Adviser",
@@ -179,28 +173,27 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
     const isDeanUpdated = deanStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus
     );
-
     const isAdviserValid = adviserStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus
     );
 
-    if (isDeanUpdated || !isAdviserValid) {
+    // ✅ Allow direct approval if dean already reviewed
+    if (isDeanUpdated) {
+      setShowApprovalModal(true);
+      return;
+    }
+
+    // ⚠️ Only confirm if adviser has NOT yet reviewed
+    if (!isAdviserValid) {
       setPendingAction("Approval");
-
-      if (isDeanUpdated) {
-        setConfirmMessage(
-          "This proposal has already been updated by the Dean. Do you want to continue updating it again?"
-        );
-      } else if (!isAdviserValid) {
-        setConfirmMessage(
-          "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?"
-        );
-      }
-
+      setConfirmMessage(
+        "This proposal has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
+      );
       setConfirmUpdateModal(true);
       return;
     }
 
+    // ✅ Normal flow
     setShowApprovalModal(true);
   };
 
@@ -243,17 +236,6 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
         type: "error",
         message: "Failed to update proposal. Please try again.",
       });
-    }
-  };
-
-  const handleButtonClick = (action) => {
-    switch (action) {
-      case "approve":
-        handleApproval();
-        break;
-      case "notes":
-        handleRevision();
-        break;
     }
   };
 

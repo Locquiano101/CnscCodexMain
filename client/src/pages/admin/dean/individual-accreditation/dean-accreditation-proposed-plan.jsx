@@ -120,7 +120,7 @@ export function DeanProposedPlan({ selectedOrg }) {
   };
 
   const handleRevision = () => {
-    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+    const deanStatuses = ["Revision From the Dean", "Approved by the Dean"];
     const adviserStatuses = [
       "Approved by the Adviser",
       "Revision from the Adviser",
