@@ -14,6 +14,7 @@ export function UpdateStatusAccomplishment({
   formatDate,
 }) {
   const [loading, setLoading] = useState(false);
+  console.log("statusModal:", statusModal);
   const { type, status } = statusModal || {};
 
   // Required documents mapping
@@ -226,7 +227,7 @@ export function UpdateStatusAccomplishment({
         </div>
 
         {/* Modal Content */}
-        <div className="p-6">
+        <div className="p-6 ">
           {/* Approval Modal */}
           {type === "approval" && (
             <>
@@ -277,7 +278,6 @@ export function UpdateStatusAccomplishment({
               </div>
             </>
           )}
-
           {/* Revision Modal */}
           {type === "revision" && (
             <>

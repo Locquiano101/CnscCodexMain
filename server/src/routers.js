@@ -145,6 +145,11 @@ router.post(
   Controller.updateProposalConductStatus
 );
 
+router.post(
+  "/updateStatusAccomplishment/:accomplishmentId",
+  Controller.updateAccomplishmentStatus
+);
+
 router.post("/sendVerification", Controller.SendRegistrationConfirmationCode);
 router.post(
   "/confirmVerification",

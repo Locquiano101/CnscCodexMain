@@ -5,6 +5,7 @@ import { UpdateStatusAccomplishment } from "../../../../components/update-status
 export function AdviserAccomplishmentReportDetailed({
   getCategoryIcon,
   orgData,
+
   user,
   formatDate,
   getCategoryColor,
@@ -14,7 +15,8 @@ export function AdviserAccomplishmentReportDetailed({
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [modalType, setModalType] = useState(null);
+  const [statusModal, setStatusModal] = useState(null);
+
   useEffect(() => {
     if (selectedAccomplishment) {
       setLoading(false);
@@ -127,13 +129,23 @@ export function AdviserAccomplishmentReportDetailed({
                   <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
                     <button
                       className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition"
-                      onClick={() => setModalType("approval")}
+                      onClick={() =>
+                        setStatusModal({
+                          type: "approval",
+                          status: "Approved by the Adviser",
+                        })
+                      }
                     >
                       Approve
                     </button>
                     <button
                       className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition"
-                      onClick={() => setModalType("revision")}
+                      onClick={() =>
+                        setStatusModal({
+                          type: "revision",
+                          status: "Revision from Adviser",
+                        })
+                      }
                     >
                       Request Revision
                     </button>
@@ -284,7 +296,6 @@ export function AdviserAccomplishmentReportDetailed({
                             key={index}
                             onClick={() => {
                               setSelectedDoc(doc.label);
-                              NotifyDocumentPopUp(true);
                             }}
                             className="flex items-center gap-2 p-2 rounded border bg-gray-50 border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
                           >
@@ -321,10 +332,11 @@ export function AdviserAccomplishmentReportDetailed({
               </div>
             )}
           </div>
+
           <UpdateStatusAccomplishment
             accomplishment={selectedAccomplishment}
-            modalType={modalType}
-            setModalType={setModalType}
+            statusModal={statusModal}
+            setStatusModal={setStatusModal}
             orgData={orgData}
             user={user}
             getCategoryIcon={getCategoryIcon}
