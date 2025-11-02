@@ -1,10 +1,4 @@
-import {
-  useOutletContext,
-  NavLink,
-  Routes,
-  Route,
-  Outlet,
-} from "react-router-dom";
+import { NavLink, Routes, Route, Outlet } from "react-router-dom";
 
 export function AdviserAccreditationNavigationPage() {
   const tabs = [

@@ -21,7 +21,6 @@ export function OrganizationDropdown({ selectedOrg, onSelectOrg }) {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_ROUTER}/getAllOrganizationProfile`);
-      console.log(res.data);
       setOrgs(res.data);
     } catch (err) {
       console.error("Error fetching data:", err);

@@ -1,22 +1,7 @@
-import {
-  Edit,
-  Trash2,
-  Camera,
-  Plus,
-  X,
-  User,
-  Calendar,
-  MapPin,
-  Award,
-  Clock,
-  MoreHorizontal,
-  AlertCircle,
-  AlertTriangle,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { Edit, Trash2, X, AlertTriangle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
-import { CurrentPresidentCard } from "../../../../components/president-profile";
 
 export function AdviserPresident({ user, orgData }) {
   const [currentPresident, setCurrentPresident] = useState(null);
@@ -34,6 +19,8 @@ export function AdviserPresident({ user, orgData }) {
     userPosition: user.position,
     userName: user.name,
   });
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   console.log(user);
   useEffect(() => {
@@ -83,10 +70,6 @@ export function AdviserPresident({ user, orgData }) {
     GetAndSetPresidents();
   }, [orgId, orgData?.orgPresident]);
 
-  const handleEdit = (president) => {
-    console.log("Edit clicked for:", president.name);
-  };
-
   const handleAdd = () => {
     setShowEmailModal(true);
   };
@@ -95,53 +78,60 @@ export function AdviserPresident({ user, orgData }) {
     console.log("📨 Sending email:", emailData);
 
     try {
-      setLoading(true);
+      setEmailLoading(true);
+      setError(null);
+
       const response = await axios.post(
         `${API_ROUTER}/accreditationEmailInquiry`,
         emailData
       );
-      console.log(response.data);
-      setShowEmailModal(false);
-    } catch (err) {
-      console.error("Failed to fetch roster members:", err);
-      setError("Failed to load roster members");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleDelete = (president) => {
-    console.log("Delete clicked for:", president.name);
+      console.log(response.data);
+      setEmailSent(true);
+
+      // Reset modal after short delay
+      setTimeout(() => {
+        setShowEmailModal(false);
+        setEmailSent(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to send email:", err);
+      setError("Failed to send email. Please try again.");
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
   // Show loading screen while fetching data
   if (loading) {
-    <div className="flex flex-col h-full w-full items-center justify-center min-h-96">
-      <div className="flex flex-col items-center space-y-6">
-        {/* Animated spinner */}
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-indigo-400 rounded-full animate-spin animation-delay-150"></div>
-        </div>
+    return (
+      <div className="flex flex-col h-full w-full items-center justify-center min-h-96">
+        <div className="flex flex-col items-center space-y-6">
+          {/* Animated spinner */}
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-indigo-400 rounded-full animate-spin animation-delay-150"></div>
+          </div>
 
-        {/* Loading text */}
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Loading Presidents...
-          </h3>
-          <p className="text-sm text-gray-500">
-            Please wait while we fetch the data
-          </p>
-        </div>
+          {/* Loading text */}
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              Loading Presidents...
+            </h3>
+            <p className="text-sm text-gray-500">
+              Please wait while we fetch the data
+            </p>
+          </div>
 
-        {/* Animated dots */}
-        <div className="flex space-x-1">
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-200"></div>
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-400"></div>
+          {/* Animated dots */}
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-200"></div>
+            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-400"></div>
+          </div>
         </div>
       </div>
-    </div>;
+    );
   }
 
   // Show error message if there's an error
@@ -180,11 +170,11 @@ export function AdviserPresident({ user, orgData }) {
   }
 
   return (
-    <div className="flex flex-col mt-4 h-full w-full gap-4 overflow-auto">
+    <div className="flex flex-col mt-4 h-full w-full gap-4 overflow-auto ">
       <div className="grid grid-cols-4 gap-4">
         {/* Current President (2 columns) */}
 
-        <div className="col-span-4  pt-4">
+        <div className="col-span-4  pt-4 ">
           {currentPresident ? (
             <CurrentPresidentCard
               currentPresident={currentPresident}
@@ -221,14 +211,9 @@ export function AdviserPresident({ user, orgData }) {
         <div className="col-span-4 flex flex-col gap-4">
           <div className="w-full grid grid-cols-4 gap-4">
             {remainingPresidents.map((president) => (
-              <div className="">
-                <h1> PRESIDENT</h1>
-                <PresidentCard
-                  president={president}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  showActions={false} // never show "current" actions
-                />
+              <div key={president._id}>
+                <h1>PRESIDENT</h1>
+                <PresidentCard president={president} showActions={false} />
               </div>
             ))}
           </div>
@@ -299,12 +284,20 @@ export function AdviserPresident({ user, orgData }) {
                 Cancel
               </button>
               <button
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 onClick={handleSendEmail}
+                disabled={emailLoading}
               >
-                Send Email
+                {emailLoading ? "Sending..." : "Send Email"}
               </button>
             </div>
+
+            {/* Success message */}
+            {emailSent && (
+              <p className="text-green-600 text-sm mt-2 text-right">
+                ✅ Email sent successfully!
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -312,10 +305,275 @@ export function AdviserPresident({ user, orgData }) {
   );
 }
 
+// --- Main Component ---
+function CurrentPresidentCard({ currentPresident }) {
+  const {
+    name,
+    course,
+    year,
+    department,
+    age,
+    sex,
+    religion,
+    nationality,
+    profilePicture,
+    presentAddress,
+    contactNo,
+    facebookAccount,
+    overAllStatus,
+    parentGuardian,
+    sourceOfFinancialSupport,
+    talentSkills = [],
+    classSchedule = [],
+    organizationProfile,
+  } = currentPresident;
+
+  const profilePictureUrl =
+    profilePicture && organizationProfile
+      ? `${DOCU_API_ROUTER}/${organizationProfile}/${profilePicture}`
+      : null;
+
+  const [showPopup, setShowPopup] = useState({
+    show: false,
+    type: "",
+    member: null,
+  });
+
+  const [isManagePresidentProfileOpen, setManagePresidentProfileOpen] =
+    useState(false);
+  const dropdownRef = useRef(null);
+
+  const handleButtonClick = (type) => {
+    setShowPopup({ show: true, type, member: currentPresident });
+    setManagePresidentProfileOpen(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setManagePresidentProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative  bg-white shadow-md rounded-lg p-6">
+      {/* Popup Overlay */}
+      {showPopup.show && (
+        <div className="fixed top-0 left-0 z-20 w-full h-full flex bg-black/30 items-center justify-center">
+          <div className="relative h-fit w-[400px] px-6 py-4 bg-white rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Manage President Profile
+            </h3>
+            <X
+              size={20}
+              onClick={() =>
+                setShowPopup({ show: false, type: "", member: null })
+              }
+              className="absolute top-3 right-3 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
+            />
+            {showPopup.type === "approve" && (
+              <ApprovePresidentProfile
+                presidentData={currentPresident}
+                setShowPopup={setShowPopup}
+              />
+            )}
+            {showPopup.type === "notes" && (
+              <RevisePresidentProfile
+                presidentData={currentPresident}
+                setShowPopup={setShowPopup}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Manage Dropdown */}
+      <div
+        className="absolute right-4 top-4 inline-block text-left mb-4"
+        ref={dropdownRef}
+      >
+        <button
+          onClick={() => setManagePresidentProfileOpen((prev) => !prev)}
+          className={`px-4 py-2 bg-cnsc-primary-color w-48 text-white transition-colors hover:bg-cnsc-primary-color-dark ${
+            isManagePresidentProfileOpen ? "rounded-t-lg" : "rounded-lg"
+          }`}
+        >
+          Manage President Profile
+        </button>
+
+        {isManagePresidentProfileOpen && (
+          <div className="absolute right-0 w-48 bg-white border rounded-b-lg shadow-lg z-10">
+            <button
+              onClick={() => handleButtonClick("approve")}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
+            >
+              Approve
+            </button>
+            <button
+              onClick={() => handleButtonClick("notes")}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
+            >
+              Revision Notes
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* President Profile */}
+      <div className="flex flex-col md:flex-row items-center gap-6">
+        <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-indigo-100 flex items-center justify-center bg-gray-100">
+          {profilePictureUrl ? (
+            <img
+              src={profilePictureUrl}
+              alt={name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-gray-400">No Img</span>
+          )}
+        </div>
+        <div className="text-center md:text-left">
+          <h1 className="text-2xl font-bold mb-2">{name}</h1>
+          <p className="text-lg">{course}</p>
+          <p className="text-lg">
+            {year} • {department}
+          </p>
+          <p className="text-gray-600 mt-2">Status: {overAllStatus}</p>
+        </div>
+      </div>
+
+      {/* Info Section */}
+      <InfoSection
+        personal={{ age, sex, religion, nationality, contactNo }}
+        additional={{
+          parentGuardian,
+          sourceOfFinancialSupport,
+          facebookAccount,
+        }}
+        address={presentAddress?.fullAddress}
+        talentSkills={talentSkills}
+        classSchedule={classSchedule}
+      />
+    </div>
+  );
+}
+// --- Info Section ---
+const InfoSection = ({
+  personal,
+  additional,
+  address,
+  talentSkills,
+  classSchedule,
+}) => (
+  <div className="p-6 grid md:grid-cols-2 gap-6">
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold border-b pb-2">
+        Personal Information
+      </h3>
+      <div className="space-y-2 text-sm">
+        {Object.entries(personal).map(([key, value]) => (
+          <div key={key} className="flex justify-between">
+            <span className="text-gray-600 capitalize">{key}:</span>
+            <span className="font-medium">{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold border-b pb-2">
+        Additional Information
+      </h3>
+      <div className="space-y-2 text-sm">
+        {Object.entries(additional).map(([key, value]) =>
+          value ? (
+            <div key={key} className="flex justify-between">
+              <span className="text-gray-600">
+                {key.replace(/([A-Z])/g, " $1")}:
+              </span>
+              {key === "facebookAccount" ? (
+                <a
+                  href={value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  View Profile
+                </a>
+              ) : (
+                <span className="font-medium">{value}</span>
+              )}
+            </div>
+          ) : null
+        )}
+      </div>
+    </div>
+
+    {address && (
+      <div className="col-span-2">
+        <h3 className="text-lg font-semibold border-b pb-2 mb-2">Address</h3>
+        <p className="text-sm text-gray-700">{address}</p>
+      </div>
+    )}
+
+    {talentSkills.length > 0 && (
+      <div className="col-span-2">
+        <h3 className="text-lg font-semibold border-b pb-2 mb-2">
+          Skills & Talents
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {talentSkills.map((t, i) => (
+            <span
+              key={i}
+              className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+            >
+              {t.skill} ({t.level})
+            </span>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {classSchedule.length > 0 && (
+      <div className="col-span-2">
+        <h3 className="text-lg font-semibold border-b pb-2 mb-2">
+          Class Schedule
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-300 text-sm">
+            <thead className="bg-gray-200 text-gray-700">
+              <tr>
+                <th className="p-2 border text-left">Subject</th>
+                <th className="p-2 border text-left">Place</th>
+                <th className="p-2 border text-left">Day</th>
+                <th className="p-2 border text-left">Start</th>
+                <th className="p-2 border text-left">End</th>
+              </tr>
+            </thead>
+            <tbody>
+              {classSchedule.map((s, idx) => (
+                <tr key={idx} className="even:bg-white odd:bg-gray-50">
+                  <td className="p-2 border">{s.subject || "N/A"}</td>
+                  <td className="p-2 border">{s.place || "N/A"}</td>
+                  <td className="p-2 border">{s.day || "N/A"}</td>
+                  <td className="p-2 border">{s.time?.start || "N/A"}</td>
+                  <td className="p-2 border">{s.time?.end || "N/A"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 const PresidentCard = ({
   president,
-  onEdit,
-  onDelete,
   showActions = false, // Default to false
 }) => {
   if (!president) {
@@ -330,19 +588,17 @@ const PresidentCard = ({
   }
 
   return (
-    <div className="bg-white h-full w-full duration-200 p-4 relative">
+    <div className="bg-white h-full w-full border-12 duration-200 p-4 relative">
       {/* Action buttons - only show for current president */}
       {showActions && (
         <div className="absolute top-3 right-3 flex gap-1">
           <button
-            onClick={() => onEdit(president)}
             className="text-gray-400 hover:text-blue-600 p-1"
             title="Edit"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
-            onClick={() => onDelete(president)}
             className="text-gray-400 hover:text-red-600 p-1"
             title="Delete"
           >
@@ -445,3 +701,179 @@ const PresidentCard = ({
     </div>
   );
 };
+
+export function ApprovePresidentProfile({ presidentData, setShowPopup }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const HandleSubmitApprovalOfPresidentProfile = async () => {
+    console.log(
+      "Submitting approval for president profile:",
+      presidentData._id
+    );
+    try {
+      setIsLoading(true);
+      const res = await axios.post(
+        `${API_ROUTER}/updateStatusPresident/${presidentData._id}`,
+        {
+          overallStatus: "Approved by the Adviser", // ✅ Fixed: Send the correct field name
+        }
+      );
+      console.log("Approval response:", res.data);
+
+      setConfirmationMessage("✅ Approved successfully!");
+      setShowConfirmation(true);
+
+      // auto-close popup after 1s
+      setTimeout(() => {
+        setShowConfirmation(false);
+        setShowPopup({ show: false, type: "", member: null });
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to approve president profile", error);
+
+      setConfirmationMessage("❌ Failed to approve president profile.");
+      setShowConfirmation(true);
+
+      // auto-close popup after 1s
+      setTimeout(() => {
+        setShowConfirmation(false);
+      }, 1000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const CancelSubmissionOfPresidentProfile = () => {
+    console.log("Cancelling submission for president profile");
+    setShowPopup({ show: false, type: "", member: null });
+  };
+
+  return (
+    <div className="flex flex-col gap-2 w-full justify-start">
+      <h1 className="text-lg font-semibold text-gray-800">
+        Approve President Profile of {presidentData?.name}?
+      </h1>
+
+      <button
+        onClick={HandleSubmitApprovalOfPresidentProfile}
+        className="border px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
+        disabled={isLoading}
+      >
+        {isLoading ? "Approving..." : "Approve"}
+      </button>
+
+      <button
+        onClick={CancelSubmissionOfPresidentProfile}
+        className="border px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Cancel
+      </button>
+
+      {/* Confirmation popup */}
+      {showConfirmation && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white flex items-center justify-center min-w-[300px] px-6 py-4 rounded shadow-lg">
+            <p className="text-center text-lg">{confirmationMessage}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function RevisePresidentProfile({ presidentData, setShowPopup }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [revisionNotes, setRevisionNotes] = useState("");
+  const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const HandleSubmitRevisionOfPresidentProfile = async () => {
+    console.log(
+      "Submitting revision for president profile:",
+      presidentData._id,
+      "Notes:",
+      revisionNotes
+    );
+    try {
+      setIsLoading(true);
+      const res = await axios.post(
+        `${API_ROUTER}/updateStatusPresident/${presidentData._id}`,
+        {
+          overallStatus: "Revision From the Adviser", // ✅ Fixed: Send correct field name
+          revisionNotes: revisionNotes.trim(), // ✅ Fixed: Send revision notes correctly
+        }
+      );
+      console.log("Revision response:", res.data);
+
+      setConfirmationMessage("✅ Revision notes sent successfully!");
+      setShowConfirmation(true);
+
+      // auto-close popup after 1.5s
+      setTimeout(() => {
+        setShowConfirmation(false);
+        setShowPopup({ show: false, type: "", member: null });
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to revise president profile", error);
+
+      setConfirmationMessage("❌ Failed to submit revision notes.");
+      setShowConfirmation(true);
+
+      // auto-close popup after 1.5s
+      setTimeout(() => {
+        setShowConfirmation(false);
+      }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const CancelSubmissionOfPresidentProfile = () => {
+    console.log("Cancelling revision for president profile");
+    setShowPopup({ show: false, type: "", member: null });
+  };
+
+  return (
+    <div className="flex flex-col gap-3 w-full justify-start">
+      <h1 className="text-lg font-semibold text-gray-800">
+        Send Revision Notes for {presidentData?.name}
+      </h1>
+
+      <textarea
+        className="border rounded p-2 w-full min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Enter your revision notes here..."
+        value={revisionNotes}
+        onChange={(e) => setRevisionNotes(e.target.value)}
+      />
+
+      <div className="flex gap-2">
+        <button
+          onClick={HandleSubmitRevisionOfPresidentProfile}
+          className="border px-4 py-2 bg-yellow-500 text-white rounded disabled:opacity-50"
+          disabled={isLoading || !revisionNotes.trim()}
+        >
+          {isLoading ? "Sending..." : "Send Revision Notes"}
+        </button>
+        <button
+          onClick={CancelSubmissionOfPresidentProfile}
+          className="border px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
+          disabled={isLoading}
+        >
+          Cancel
+        </button>
+      </div>
+
+      {/* Confirmation popup */}
+      {showConfirmation && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white flex items-center justify-center min-w-[300px] px-6 py-4 rounded shadow-lg">
+            <p className="text-center text-lg">{confirmationMessage}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

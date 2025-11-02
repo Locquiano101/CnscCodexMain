@@ -138,8 +138,6 @@ app.use(
   })
 );
 
-console.log("Serving uploads from:", path.join(__dirname, "../uploads"));
-
 // -------------------- Start Server --------------------
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Frontend served at ${process.env.VITE_API_ROUTER}`);

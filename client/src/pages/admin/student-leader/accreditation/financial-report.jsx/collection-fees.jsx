@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BriefcaseBusiness, TrendingUp } from "lucide-react";
 
 // Helper to format currency
@@ -11,7 +10,6 @@ export function AddCollectionFees({
   setViewModalOpen,
   formatCurrency,
 }) {
-  console.log(financialReport);
   return (
     <div className="bg-white border overflow-hidden border-gray-100 flex-1 flex flex-col">
       <div className="sticky flex justify-between h-16  w-full top-0 z-10 bg-white p-6 border-b border-gray-400 items-center gap-3">

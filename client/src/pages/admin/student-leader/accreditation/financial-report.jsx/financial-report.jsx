@@ -36,7 +36,6 @@ export default function FinancialReport({ orgData }) {
   const GetFinancialReportApi = async () => {
     try {
       setLoading(true);
-      console.log(`${API_ROUTER}/getFinancialReport/${orgData._id}`);
       const response = await axios.get(
         `${API_ROUTER}/getFinancialReport/${orgData._id}`
       );
@@ -55,7 +54,8 @@ export default function FinancialReport({ orgData }) {
   }, [orgData._id]);
 
   const generateMonthlyData = () => {
-    const monthlyStats = {};
+    if (!financialReport) return [];
+
     const months = [
       "Jan",
       "Feb",
@@ -71,38 +71,46 @@ export default function FinancialReport({ orgData }) {
       "Dec",
     ];
 
-    months.forEach((month) => {
-      monthlyStats[month] = {
-        month,
+    // Initialize months
+    const monthlyStats = {};
+    months.forEach((m) => {
+      monthlyStats[m] = {
+        month: m,
+        collections: 0,
         reimbursements: 0,
         disbursements: 0,
-        balance: currentBalance,
+        balance: 0,
       };
     });
 
-    financialReport.reimbursements.forEach((item) => {
-      const date = new Date(item.date);
-      const monthIndex = date.getMonth();
-      const monthName = months[monthIndex];
-      monthlyStats[monthName].reimbursements += item.amount;
+    // 🟩 Add Collections
+    financialReport.collections?.forEach((item) => {
+      const month = months[new Date(item.date).getMonth()];
+      monthlyStats[month].collections += Number(item.amount) || 0;
     });
 
-    financialReport.disbursements.forEach((item) => {
-      const date = new Date(item.date);
-      const monthIndex = date.getMonth();
-      const monthName = months[monthIndex];
-      monthlyStats[monthName].disbursements += item.amount;
+    // 🟢 Add Reimbursements
+    financialReport.reimbursements?.forEach((item) => {
+      const month = months[new Date(item.date).getMonth()];
+      monthlyStats[month].reimbursements += Number(item.amount) || 0;
     });
 
-    let runningBalance = currentBalance;
+    // 🔴 Add Disbursements
+    financialReport.disbursements?.forEach((item) => {
+      const month = months[new Date(item.date).getMonth()];
+      monthlyStats[month].disbursements += Number(item.amount) || 0;
+    });
+
+    // 💰 Compute running balance per month
+    let runningBalance = Number(financialReport.initialBalance) || 0;
     return months.map((month) => {
       const data = monthlyStats[month];
       runningBalance =
-        runningBalance - data.disbursements + data.reimbursements;
-      return {
-        ...data,
-        balance: runningBalance,
-      };
+        runningBalance +
+        data.collections -
+        data.reimbursements -
+        data.disbursements;
+      return { ...data, balance: runningBalance };
     });
   };
 
@@ -167,6 +175,7 @@ export default function FinancialReport({ orgData }) {
     (sum, item) => sum + item.amount,
     0
   );
+
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,
     0
@@ -241,19 +250,19 @@ export default function FinancialReport({ orgData }) {
 
         {/* Summary Cards */}
         <div className="flex flex-wrap gap-4">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 flex-1 min-w-[200px] p-4 border border-blue-200 shadow-sm">
+          <div className="bg-amber-100 flex-1 min-w-[200px] p-4 border border-amber-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600 font-medium">
+                <p className="text-sm text-amber-600 font-medium">
                   Current Balance
                 </p>
-                <p className="text-2xl font-bold text-blue-800">
+                <p className="text-2xl font-bold text-amber-800">
                   {formatCurrency(currentBalance)}
                 </p>
               </div>
               {/* Peso sign instead of DollarSign */}
               <div className="w-8 h-8 flex items-center justify-center">
-                <span className="text-blue-600 text-2xl font-bold">₱</span>
+                <span className="text-amber-600 text-2xl font-bold">₱</span>
               </div>
             </div>
           </div>
@@ -301,6 +310,11 @@ export default function FinancialReport({ orgData }) {
                   <YAxis />
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
+                  <Bar
+                    dataKey="collections"
+                    fill="#F59E0B"
+                    name="Collections"
+                  />
                   <Bar
                     dataKey="reimbursements"
                     fill="#22c55e"

@@ -131,7 +131,7 @@ export const AddReceipt = async (req, res) => {
     switch (type) {
       case "reimbursement":
         updateField = "reimbursements";
-        balanceAdjustment = amount; // reimbursement increases balance
+        balanceAdjustment = -amount; // reimbursement increases balance
         break;
       case "disbursement":
         updateField = "disbursements";

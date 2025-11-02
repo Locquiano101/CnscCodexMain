@@ -14,6 +14,7 @@ import {
   Camera,
   Plus,
   LogOut,
+  Building2,
 } from "lucide-react";
 
 import { AdviserAccreditationNavigationPage } from "./accreditation/adviser-accreditation.main";
@@ -145,9 +146,9 @@ function AdviserNavigation({ orgData }) {
       <div className="text-white mt-2 mb-4 font-bold flex items-center space-x-4 hover:cursor-pointer">
         {/* Logo */}
         <div
-          className="my-1 ml-3 w-15 aspect-square rounded-full bg-cnsc-secondary-color 
-                    flex items-center justify-center cursor-pointer overflow-hidden 
-                    group relative"
+          className="ml-3 w-24 aspect-square rounded-full bg-cnsc-secondary-color 
+              flex items-center justify-center cursor-pointer overflow-hidden 
+              group relative"
         >
           {imageSrc ? (
             <img
@@ -155,21 +156,25 @@ function AdviserNavigation({ orgData }) {
               alt="Organization Logo"
               className="w-full h-full object-cover rounded-full"
               onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextSibling.style.display = "block";
+                e.currentTarget.style.display = "none";
+                e.currentTarget.parentNode.querySelector(
+                  ".fallback-icon"
+                ).style.display = "flex";
               }}
             />
           ) : null}
-          <span
-            className="relative inline-block"
-            style={{ display: imageSrc ? "none" : "block" }}
-          >
-            <Camera size={48} />
-            <Plus
-              size={24}
-              className="absolute top-0 right-0 transform translate-x-1/3 bg-cnsc-secondary-color rounded-full"
-            />
-          </span>
+
+          {/* Fallback Icon */}
+          <div className="fallback-icon p-2 absolute inset-0 hidden items-center justify-center">
+            <Building2 className="w-10 h-10 text-white opacity-80" />
+          </div>
+
+          {/* If no imageSrc at all */}
+          {!imageSrc && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Building2 className="w-10 h-10 text-white opacity-80" />
+            </div>
+          )}
         </div>
 
         {/* Welcome message */}
@@ -210,17 +215,11 @@ function AdviserNavigation({ orgData }) {
               label: "Proposals",
               path: "/adviser/proposal",
             },
-            {
-              key: "post",
-              icon: <PenSquare className="mr-3 w-5 h-5" />,
-              label: "Post",
-              path: "/adviser/post",
-            },
             // {
-            //   key: "logs",
-            //   icon: <Clock className="mr-3 w-5 h-5" />,
-            //   label: "Logs",
-            //   path: "/adviser/log",
+            //   key: "post",
+            //   icon: <PenSquare className="mr-3 w-5 h-5" />,
+            //   label: "Post",
+            //   path: "/adviser/post",
             // },
           ].map((item) => (
             <NavLink
@@ -334,6 +333,7 @@ function AdviserRoutes({ orgData, user }) {
 
 import { Eye, EyeOff, Lock } from "lucide-react";
 import AdviserHomePage from "./adviser_home_page";
+import { constructFrom } from "date-fns";
 
 function InitialSignInAdviser({ user, orgData, onFinish }) {
   const [newPassword, setNewPassword] = useState("");

@@ -206,7 +206,6 @@ export const UpdateDocumentStatus = async (req, res) => {
     const document = await Document.findById(documentId).populate(
       "organizationProfile"
     );
-    console.log(`+++++++++${document}++++++++`);
 
     if (!document) {
       return res
@@ -373,8 +372,6 @@ export const GetAccreditationDetails = async (req, res) => {
     let accreditation = await Accreditation.findOne({
       organizationProfile: orgProfileId,
     });
-
-    console.log(accreditation);
 
     // If not found → create new
     if (!accreditation) {

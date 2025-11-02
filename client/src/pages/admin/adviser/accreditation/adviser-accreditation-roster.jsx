@@ -18,6 +18,8 @@ export function AdviserRosterData({ orgData, user }) {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [approvalLoading, setApprovalLoading] = useState(false);
+  const [incompleteConfirmModal, setIncompleteConfirmModal] = useState(false);
+  const [pendingApprovalStatus, setPendingApprovalStatus] = useState(null);
 
   // Fetch roster members
   const fetchRosterMembers = async () => {
@@ -53,16 +55,21 @@ export function AdviserRosterData({ orgData, user }) {
     };
   }, [showDropdown]);
 
-  // Handle approval
-  const handleApproval = async ({ status, revisionNotes }) => {
-    if (!rosterData?.roster?.isComplete) {
-      setIncompleteModal(true);
+  const handleApproval = async ({
+    status,
+    revisionNotes,
+    forceApprove = false,
+  }) => {
+    // If roster incomplete and not forcing approval, open confirmation modal
+    if (!rosterData?.roster?.isComplete && !forceApprove) {
+      setPendingApprovalStatus(status);
+      setIncompleteConfirmModal(true);
       return;
     }
 
+    // Proceed with approval (either roster is complete OR user confirmed to proceed)
     try {
       setApprovalLoading(true);
-
       const payload = { overAllStatus: status };
       if (revisionNotes?.trim()) payload.revisionNotes = revisionNotes;
 
@@ -71,13 +78,9 @@ export function AdviserRosterData({ orgData, user }) {
         payload
       );
 
-      // Update local state so UI reflects new status
       setRosterData((prev) => ({
         ...prev,
-        roster: {
-          ...prev.roster,
-          overAllStatus: status,
-        },
+        roster: { ...prev.roster, overAllStatus: status },
       }));
 
       setPopup({
@@ -85,6 +88,10 @@ export function AdviserRosterData({ orgData, user }) {
         message: "Your action has been sent successfully!",
       });
       setError(null);
+
+      // Close the approval modal if it's open
+      setApprovalModal(false);
+      setIncompleteConfirmModal(false);
     } catch (err) {
       console.error("Failed to approve:", err);
       setPopup({
@@ -131,7 +138,6 @@ export function AdviserRosterData({ orgData, user }) {
     member.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  console.log(filteredRoster);
   const dropdownItems = [
     { id: "revision", label: "Revision of Roster" },
     { id: "Approval", label: "Approval of Roster" },
@@ -168,16 +174,22 @@ export function AdviserRosterData({ orgData, user }) {
             </p>
 
             {/* Dropdown */}
-            <div className="relative">
+            <div className="relative dropdown-container">
               <button
                 className="p-2 rounded-full hover:bg-gray-100 transition"
-                onClick={() => setShowDropdown(!showDropdown)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDropdown((prev) => !prev);
+                }}
               >
                 <MoreHorizontal size={26} className="text-cnsc-primary-color" />
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                <div
+                  className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden"
+                  onClick={(e) => e.stopPropagation()} // keep open while clicking inside
+                >
                   {dropdownItems.map((item) => (
                     <button
                       key={item.id}
@@ -328,7 +340,6 @@ export function AdviserRosterData({ orgData, user }) {
             <button
               onClick={() => {
                 handleApproval({ status: "Approved By the Adviser" });
-                setApprovalModal(false);
               }}
               disabled={approvalLoading}
               className={`w-full py-2 rounded-lg text-sm font-medium shadow-md transition ${
@@ -339,6 +350,52 @@ export function AdviserRosterData({ orgData, user }) {
             >
               {approvalLoading ? "Processing..." : "Confirm Approval"}
             </button>
+          </div>
+        </div>
+      )}
+      {/* ---------------- Incomplete Confirmation Modal ---------------- */}
+      {incompleteConfirmModal && (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
+            <button
+              onClick={() => setIncompleteConfirmModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+
+            <h1 className="text-lg font-semibold mb-4">Roster Incomplete</h1>
+
+            <p className="text-gray-700 mb-6">The roster is incomplete.</p>
+
+            <div className=" flex gap-4 ">
+              <button
+                onClick={() => {
+                  handleApproval({
+                    status: pendingApprovalStatus,
+                    forceApprove: true,
+                  });
+                }}
+                disabled={approvalLoading}
+                className={`w-full py-2 rounded-lg text-sm font-medium ${
+                  approvalLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                }`}
+              >
+                {approvalLoading ? "Processing..." : "Proceed Anyway (Approve)"}
+              </button>
+
+              <button
+                onClick={() => {
+                  setIncompleteConfirmModal(false);
+                  setRevisionModal(true);
+                }}
+                className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium"
+              >
+                Send Revision Request
+              </button>
+            </div>
           </div>
         </div>
       )}

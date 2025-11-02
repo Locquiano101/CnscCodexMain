@@ -314,7 +314,6 @@ function StudentNavigation({ orgData }) {
     orgData._id && orgData.orgLogo
       ? `${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`
       : "";
-  console.log(`${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [croppedData, setCroppedData] = useState(null);

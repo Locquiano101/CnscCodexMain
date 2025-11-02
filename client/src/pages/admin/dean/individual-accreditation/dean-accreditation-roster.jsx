@@ -2,21 +2,21 @@ import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import axios from "axios";
 import { MoreHorizontal, MoreVertical, Users } from "lucide-react";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 import { DonePopUp } from "../../../../components/components";
 
 export function DeanRosterData({ selectedOrg }) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [alertModal, setAlertModal] = useState(false);
+  const [notificationModal, setNotificationModal] = useState(false);
   const [revisionModal, setRevisionModal] = useState(false);
   const [approvalModal, setApprovalModal] = useState(false);
-  const [exportModal, setExportModal] = useState(false);
-  const [incompleteModal, setIncompleteModal] = useState(false);
-  const [popup, setPopup] = useState(null);
+  const [incompleteConfirmModal, setIncompleteConfirmModal] = useState(false);
   const [confirmUpdateModal, setConfirmUpdateModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null); // to store action type
+  const [popup, setPopup] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
+  const [approvalLoading, setApprovalLoading] = useState(false);
+
+  // Add this new state
 
   const [rosterData, setRosterData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,6 @@ export function DeanRosterData({ selectedOrg }) {
       const response = await axios.get(
         `${API_ROUTER}/getRosterMembers/${selectedOrg._id}`
       );
-      console.log(response.data);
       setRosterData(response.data);
       setError(null);
     } catch (err) {
@@ -47,7 +46,7 @@ export function DeanRosterData({ selectedOrg }) {
     if (selectedOrg._id) {
       fetchRosterMembers();
     }
-  }, [selectedOrg._id]);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -56,44 +55,29 @@ export function DeanRosterData({ selectedOrg }) {
         setShowDropdown(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
-  const SendNotification = async () => {
+  const sendNotification = async () => {
     if (!message.trim()) {
       alert("Message cannot be empty");
       return;
     }
-
-    console.log({
-      organizationId: selectedOrg._id,
-      subject,
-      message,
-    });
     try {
       setLoading(true);
-
-      const response = await axios.post(
-        `${API_ROUTER}/sendNotificationRoster`,
-        {
-          organizationId: selectedOrg._id,
-          subject,
-          message,
-        }
-      );
-
-      console.log("✅ Notification Response:", response.data);
+      await axios.post(`${API_ROUTER}/sendNotificationRoster`, {
+        organizationId: selectedOrg._id,
+        subject,
+        message,
+      });
       setPopup({
         type: "success",
         message: "Your action has been sent successfully!",
       });
       setError(null);
     } catch (err) {
-      console.error("❌ Failed to send notification:", err.response.data);
+      console.error("Failed to send notification:", err.response?.data);
       setError("Failed to send notification");
       setPopup({
         type: "error",
@@ -101,104 +85,102 @@ export function DeanRosterData({ selectedOrg }) {
       });
     } finally {
       setLoading(false);
-      setAlertModal(false);
-      setIncompleteModal(false);
+      setNotificationModal(false);
     }
   };
 
-  const handleExportExcel = async () => {
-    if (!rosterMembers || rosterMembers.length === 0) {
-      alert("No roster data to export.");
+  const handleApproval = async ({
+    status,
+    revisionNotes,
+    forceApprove = false,
+  }) => {
+    // If roster incomplete and not forcing approval, open confirmation modal
+    if (!rosterData?.roster?.isComplete && !forceApprove) {
+      setIncompleteConfirmModal(true);
       return;
     }
 
-    // Create workbook & worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Roster Members");
-
-    // Define headers
-    worksheet.columns = [
-      { header: "Name", key: "name", width: 25 },
-      { header: "Position", key: "position", width: 20 },
-      { header: "Email", key: "email", width: 30 },
-      { header: "Contact Number", key: "contactNumber", width: 20 },
-      { header: "Address", key: "address", width: 40 },
-      { header: "Birth Date", key: "birthDate", width: 15 },
-      { header: "Status", key: "status", width: 15 },
-    ];
-
-    // Add data rows
-    rosterMembers.forEach((member) => {
-      worksheet.addRow({
-        name: member.name,
-        position: member.position,
-        email: member.email,
-        contactNumber: member.contactNumber,
-        address: member.address,
-        birthDate: member.birthDate
-          ? new Date(member.birthDate).toLocaleDateString()
-          : "Not provided",
-        status: member.status,
-      });
-    });
-
-    // Style header row
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFDCE6F1" },
-      };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
-    });
-
-    // Generate buffer
-    const buffer = await workbook.xlsx.writeBuffer();
-
-    // Save file
-    saveAs(new Blob([buffer]), "RosterMembers.xlsx");
-
-    setExportModal(false); // close modal after export
-  };
-
-  const handleApproval = async ({ status, revisionNotes }) => {
-    if (!rosterData?.roster?.isComplete) {
-      setIncompleteModal(true); // 👈 open modal
-      return;
-    }
-
+    // Proceed with approval (either roster is complete OR user confirmed to proceed)
     try {
+      setApprovalLoading(true);
       const payload = { overAllStatus: status };
-      console.log(payload);
-      if (revisionNotes && revisionNotes.trim() !== "") {
-        payload.revisionNotes = revisionNotes;
-      }
+      if (revisionNotes?.trim()) payload.revisionNotes = revisionNotes;
 
-      const response = await axios.post(
+      const res = await axios.post(
         `${API_ROUTER}/postApproveRoster/${rosterData.roster._id}`,
         payload
       );
+      console.log(res);
+      setRosterData((prev) => ({
+        ...prev,
+        roster: { ...prev.roster, overAllStatus: status },
+      }));
 
-      console.log("✅ Approval success:", response.data);
       setPopup({
         type: "success",
         message: "Your action has been sent successfully!",
       });
-      fetchRosterMembers();
       setError(null);
+
+      // Close the approval modal if it's open
+      setApprovalModal(false);
+      setIncompleteConfirmModal(false);
+      setRevisionModal(false);
     } catch (err) {
+      console.error("Failed to approve:", err);
       setPopup({
         type: "error",
         message: "Something went wrong while processing your request.",
       });
+    } finally {
+      setRevisionModal(false);
+      setApprovalLoading(false);
     }
   };
+  const handleDropdownAction = (id) => {
+    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+    const adviserStatuses = [
+      "Approved by the Adviser",
+      "Revision from the Adviser",
+    ];
+
+    const currentStatus = rosterData?.roster?.overAllStatus
+      ?.toLowerCase()
+      .trim();
+
+    const isDeanUpdated = deanStatuses.some(
+      (status) => status.toLowerCase().trim() === currentStatus
+    );
+
+    const isAdviserValid = adviserStatuses.some(
+      (status) => status.toLowerCase().trim() === currentStatus
+    );
+
+    if (isDeanUpdated || !isAdviserValid) {
+      setPendingAction(id);
+      setConfirmMessage(
+        isDeanUpdated
+          ? "This roster has already been updated by the Dean. Do you want to continue updating it again?"
+          : "This roster has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
+      );
+      setConfirmUpdateModal(true);
+      setShowDropdown(false);
+      return;
+    }
+
+    if (id === "revision") setRevisionModal(true);
+    else if (id === "Approval") setApprovalModal(true);
+
+    setShowDropdown(false);
+  };
+
+  const rosterMembers = rosterData?.rosterMembers || [];
+
+  const dropdownItems = [
+    { id: "revision", label: "Revision of Roster" },
+    { id: "Approval", label: "Approval of Roster" },
+    { id: "export", label: "Export Roster as Spread Sheet" },
+  ];
 
   if (loading) {
     return (
@@ -226,70 +208,6 @@ export function DeanRosterData({ selectedOrg }) {
     );
   }
 
-  const handleDropdownAction = (id) => {
-    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
-    const adviserStatuses = [
-      "Approved by the Adviser",
-      "Revision from the Adviser",
-    ];
-
-    const currentStatus = rosterData?.roster?.overAllStatus
-      ?.toLowerCase()
-      .trim();
-
-    const isDeanUpdated = deanStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
-
-    const isAdviserValid = adviserStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
-
-    // Show confirmation modal if:
-    if (isDeanUpdated || !isAdviserValid) {
-      setPendingAction(id);
-
-      // Set dynamic message
-      if (isDeanUpdated) {
-        setConfirmMessage(
-          "This roster has already been updated by the Dean. Do you want to continue updating it again?"
-        );
-      } else if (!isAdviserValid) {
-        setConfirmMessage(
-          "This roster has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
-        );
-      }
-
-      setConfirmUpdateModal(true);
-      setShowDropdown(false);
-      return;
-    }
-
-    // Otherwise, open modal normally
-    if (id === "revision") setRevisionModal(true);
-    else if (id === "Approval") setApprovalModal(true);
-    else if (id === "export") setExportModal(true);
-
-    setShowDropdown(false);
-  };
-
-  const rosterMembers = rosterData?.rosterMembers || [];
-
-  const dropdownItems = [
-    {
-      id: "revision",
-      label: "Revision of Roster",
-    },
-    {
-      id: "Approval",
-      label: "Approval of Roster",
-    },
-    {
-      id: "export",
-      label: "Export Roster as Spread Sheet",
-    },
-  ];
-
   return (
     <div className="flex p-4 flex-col bg-gray-50 h-full">
       {/* Header */}
@@ -315,20 +233,17 @@ export function DeanRosterData({ selectedOrg }) {
             }`}
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            <MoreHorizontal size={42} className=" text-cnsc-primary-color" />
+            <MoreHorizontal size={42} className="text-cnsc-primary-color" />
           </button>
 
-          {/* Dropdown Menu */}
           {showDropdown && (
             <div className="absolute right-0 w-fit bg-white shadow-lg border border-gray-300 z-10">
               <div className="flex flex-col justify-end gap-1">
                 {dropdownItems.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      handleDropdownAction(item.id);
-                    }} // ✅ now it works
-                    className="w-full  justify-end px-4 py-3 flex hover:bg-amber-200 items-center gap-3 transition-colors duration-300"
+                    onClick={() => handleDropdownAction(item.id)}
+                    className="w-full justify-end px-4 py-3 flex hover:bg-amber-200 items-center gap-3 transition-colors duration-300"
                   >
                     <span className="font-medium text-black">{item.label}</span>
                   </button>
@@ -338,9 +253,10 @@ export function DeanRosterData({ selectedOrg }) {
           )}
         </div>
       </div>
+
       {/* Content */}
       <div className="h-full">
-        {!rosterData || rosterMembers.length === 0 ? (
+        {!rosterData || !rosterMembers.length ? (
           <div className="flex flex-col items-center justify-center text-center border border-dashed border-gray-300 rounded-lg bg-white">
             <p className="text-gray-500 mb-2">
               No roster has been started yet.
@@ -351,7 +267,7 @@ export function DeanRosterData({ selectedOrg }) {
             </p>
             <button
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-              onClick={() => setAlertModal(true)}
+              onClick={() => setNotificationModal(true)}
             >
               Notify Organization
             </button>
@@ -368,26 +284,30 @@ export function DeanRosterData({ selectedOrg }) {
           </div>
         )}
       </div>
-      {/* Revision Modal */}
-      {revisionModal && (
+
+      {/* Notification Modal (Unified for alert and incomplete) */}
+      {notificationModal && (
         <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
           <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            {/* Close Button */}
             <button
-              onClick={() => {
-                setRevisionModal(false);
-              }}
+              onClick={() => setNotificationModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
             >
               ✕
             </button>
-
-            <h1 className="text-lg font-semibold mb-4">
-              Revision: Notify Organization
-            </h1>
-
+            <h1 className="text-lg font-semibold mb-4">Notify Organization</h1>
             <div className="flex flex-col gap-4 w-full">
-              {/* Message */}
+              <div className="flex flex-col gap-1 w-full">
+                <label className="text-sm font-medium text-gray-700">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
+                />
+              </div>
               <div className="flex flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700">
                   Message
@@ -399,30 +319,80 @@ export function DeanRosterData({ selectedOrg }) {
                 />
               </div>
             </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setNotificationModal(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendNotification}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Revision Modal */}
+      {revisionModal && (
+        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
+          <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
             <button
-              onClick={() => {
-                handleApproval({
+              onClick={() => setRevisionModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              disabled={approvalLoading}
+            >
+              ✕
+            </button>
+            <h1 className="text-lg font-semibold mb-4">
+              Revision: Notify Organization
+            </h1>
+            <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-col gap-1 w-full">
+                <label className="text-sm font-medium text-gray-700">
+                  Message
+                </label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="border rounded-lg w-full h-28 p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                setApprovalLoading(true);
+                await handleApproval({
                   status: "Revision From the Dean",
                   revisionNotes: message,
-                }); // 👈 call with "Revision"
-                setRevisionModal(false);
+                  forceApprove: true,
+                });
+                setApprovalLoading(false);
               }}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+              disabled={approvalLoading}
+              className={`mt-6 w-full py-2 rounded-lg text-sm font-medium shadow-md transition ${
+                approvalLoading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              }`}
             >
-              Send
+              {approvalLoading ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
       )}
-      {/* Approval Modal */}
+
       {approvalModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
-          <div className="h-fit bg-white w-1/4 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            {/* Close Button */}
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
             <button
               onClick={() => setApprovalModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              disabled={approvalLoading}
             >
               ✕
             </button>
@@ -431,160 +401,76 @@ export function DeanRosterData({ selectedOrg }) {
               Approval: Roster of Organization
             </h1>
 
-            <p className="mb-4 text-gray-700">
-              By approving this section of the accreditation, you confirm that
-              you have reviewed the information provided and consent to its
-              approval. Would you like to proceed?
+            <p className="text-gray-700 mb-6">
+              By approving this roster, you confirm that you have reviewed the
+              information provided and consent to its approval. Would you like
+              to proceed?
             </p>
 
             <button
               onClick={() => {
-                handleApproval({
-                  status: "Approved By the Dean",
-                  revisionNotes: null,
-                }); // 👈 call with "Approved"
-                setApprovalModal(false);
+                handleApproval({ status: "Approved By the Dean" });
               }}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+              disabled={approvalLoading}
+              className={`w-full py-2 rounded-lg text-sm font-medium shadow-md transition ${
+                approvalLoading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              }`}
             >
-              Confirm Approval
+              {approvalLoading ? "Processing..." : "Confirm Approval"}
             </button>
           </div>
         </div>
       )}
-      {alertModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
-          <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 justify-center items-center rounded-2xl shadow-xl">
-            <h1 className="text-lg font-semibold mb-4">Notify Organization</h1>
-
-            <div className="flex flex-col gap-4 w-full">
-              {/* Subject */}
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
-                />
-              </div>
-
-              {/* Message */}
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700">
-                  Message
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="border rounded-lg w-full h-28 p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
+      {/* ---------------- Incomplete Confirmation Modal ---------------- */}
+      {incompleteConfirmModal && (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
             <button
-              onClick={SendNotification}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      )}
-      {exportModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
-          <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            <button
-              onClick={() => setExportModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-
-            <h1 className="text-lg font-semibold mb-4">Export Roster</h1>
-            <p className="text-sm text-gray-600 mb-6">
-              Do you want to export the roster members into an Excel file?
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setExportModal(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExportExcel}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md transition"
-              >
-                Export
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {incompleteModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
-          <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            <button
-              onClick={() => setIncompleteModal(false)}
+              onClick={() => setIncompleteConfirmModal(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
             >
               ✕
             </button>
 
             <h1 className="text-lg font-semibold mb-4">Roster Incomplete</h1>
-            <p className="text-sm text-gray-700 mb-4">
-              The roster is not yet complete. Would you like to notify the
-              organization to complete their roster list?
-            </p>
 
-            <div className="flex flex-col gap-4 w-full">
-              {/* Subject */}
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
-                />
-              </div>
+            <p className="text-gray-700 mb-6">The roster is incomplete.</p>
 
-              {/* Message */}
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700">
-                  Message
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="border rounded-lg w-full h-28 p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
+            <div className=" flex gap-4 ">
               <button
-                onClick={() => setIncompleteModal(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm"
+                onClick={() => {
+                  handleApproval({
+                    status: "Approved by the Dean",
+                    forceApprove: true,
+                  });
+                }}
+                disabled={approvalLoading}
+                className={`w-full py-2 rounded-lg text-sm font-medium ${
+                  approvalLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                }`}
               >
-                Cancel
+                {approvalLoading ? "Processing..." : "Proceed Anyway (Approve)"}
               </button>
+
               <button
-                onClick={SendNotification} // 👈 reuse your function
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+                onClick={() => {
+                  setIncompleteConfirmModal(false);
+                  setRevisionModal(true);
+                }}
+                className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium"
               >
-                Notify Organization
+                Send Revision Request
               </button>
             </div>
           </div>
         </div>
-      )}{" "}
+      )}
+
+      {/* Popup */}
       {popup && (
         <DonePopUp
           type={popup.type}
@@ -592,6 +478,8 @@ export function DeanRosterData({ selectedOrg }) {
           onClose={() => setPopup(null)}
         />
       )}
+
+      {/* Confirm Update Modal */}
       {confirmUpdateModal && (
         <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center">
           <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
@@ -601,10 +489,8 @@ export function DeanRosterData({ selectedOrg }) {
             >
               ✕
             </button>
-
             <h1 className="text-lg font-semibold mb-4">Confirmation</h1>
             <p className="text-sm text-gray-700 mb-4">{confirmMessage}</p>
-
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setConfirmUpdateModal(false)}
@@ -614,11 +500,8 @@ export function DeanRosterData({ selectedOrg }) {
               </button>
               <button
                 onClick={() => {
-                  // Trigger the correct modal based on pending action
                   if (pendingAction === "revision") setRevisionModal(true);
                   else if (pendingAction === "Approval") setApprovalModal(true);
-                  else if (pendingAction === "export") setExportModal(true);
-
                   setConfirmUpdateModal(false);
                 }}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
