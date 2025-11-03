@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
+import PlaceholderLogo from "../../../../assets/cnsc-codex.svg";
 import axios from "axios";
 import { MoreHorizontal, MoreVertical, Users } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
@@ -521,13 +522,22 @@ const RosterMemberCard = ({ member, orgId }) => {
     <div className="bg-white w-full h-full rounded-lg flex flex-col gap-2 items-center shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between">
         <img
+          key={
+            member.profilePicture
+              ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
+              : "placeholder"
+          }
           src={
             member.profilePicture
               ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
-              : "/cnsc-logo.png"
+              : PlaceholderLogo
           }
           alt="Profile Picture"
           className="max-h-32 aspect-square border object-cover rounded"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = PlaceholderLogo;
+          }}
         />
       </div>
 

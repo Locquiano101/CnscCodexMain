@@ -9,9 +9,9 @@ export function useNotifications(userId) {
   useEffect(() => {
     if (!userId) return;
 
-    // Fetch existing notifications
+    // Fetch existing notifications (use configured API URL instead of hard-coded LAN IP)
     axios
-      .get(`http://192.168.1.8:5050/notifications`, {
+      .get(`${import.meta.env.VITE_API_URL}/notifications`, {
         params: { userId },
         withCredentials: true, // optional now, but fine to keep
       })
@@ -20,8 +20,8 @@ export function useNotifications(userId) {
       })
       .catch((err) => console.error("Fetch notifications error:", err));
     // Connect to WebSocket with userId
-
-    const socket = io(API_ROUTER, {
+    // Socket server should be the server origin (not the /api path)
+    const socket = io(import.meta.env.VITE_API_URL, {
       withCredentials: true,
       auth: { userId },
     });

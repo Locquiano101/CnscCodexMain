@@ -7,6 +7,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: true, // expose to network
-    port: 5173, // optional, default is 5173
+    // Use a non-default port to avoid conflicts with other projects
+    port: Number(process.env.VITE_PORT) || 5174,
+    strictPort: true, // fail instead of auto-selecting a different port
   },
 });

@@ -631,6 +631,7 @@ function ViewTransactionModal({
 
           {fileUrl && (
             <iframe
+              key={fileUrl}
               src={fileUrl}
               className="w-full full border"
               title="Transaction Document"

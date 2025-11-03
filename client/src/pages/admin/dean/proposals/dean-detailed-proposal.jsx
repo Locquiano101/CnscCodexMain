@@ -169,6 +169,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
             <div className="flex-1 bg-gray-100">
               {selectedDoc ? (
                 <iframe
+                  key={`${DOCU_API_ROUTER}/${proposal.organizationProfile}/${selectedDoc.fileName}`}
                   src={`${DOCU_API_ROUTER}/${proposal.organizationProfile}/${selectedDoc.fileName}`}
                   title={`${selectedDoc.label || "Document"} PDF`}
                   className="w-full h-full border-0"

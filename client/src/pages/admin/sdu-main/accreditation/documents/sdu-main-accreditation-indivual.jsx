@@ -40,8 +40,15 @@ export function SduMainAccreditationDocumentIndividualOrganization({
   };
 
   useEffect(() => {
+    // When switching organizations, clear current data to avoid showing stale docs
+    if (!selectedOrg?._id) {
+      setAccreditationData(null);
+      return;
+    }
+    setAccreditationData(null);
     fetchAccreditationInfo();
-  }, []);
+    // Re-fetch whenever the selected organization changes
+  }, [selectedOrg?._id]);
 
   const openDocumentDetails = (doc, label, docKey) => {
     setSelectedDocument({ doc, label, docKey });
@@ -170,6 +177,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
           <div className="flex-1 p-6">
             <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden">
               <iframe
+                key={`${DOCU_API_ROUTER}/${selectedOrg._id}/${selectedDocument?.doc?.fileName}`}
                 src={`${DOCU_API_ROUTER}/${selectedOrg._id}/${selectedDocument?.doc?.fileName}`}
                 title={`${selectedDocument?.label} PDF Viewer`}
                 className="w-full h-full"
@@ -354,6 +362,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
           {/* PDF Viewer */}
           <div className="flex-1  overflow-hidden">
             <iframe
+              key={`${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}`}
               src={`${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}#toolbar=0&navpanes=0&scrollbar=0`}
               title={`${label} PDF Viewer`}
               className="w-full h-full"

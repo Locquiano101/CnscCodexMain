@@ -122,7 +122,11 @@ export function DeanAccreditationDocument({ selectedOrg }) {
   };
 
   const DocumentCard = ({ label, doc, docKey }) => {
-    return doc?.fileName ? (
+    const hasFile = Boolean(doc?.fileName && selectedOrg?._id);
+    const url = hasFile
+      ? `${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}`
+      : null;
+    return hasFile ? (
       <div
         onClick={() => openDocumentDetails(doc, label, docKey)}
         className="flex-1 min-h-180 h-full  transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
@@ -165,7 +169,8 @@ export function DeanAccreditationDocument({ selectedOrg }) {
           {/* PDF Viewer */}
           <div className="flex-1  overflow-hidden">
             <iframe
-              src={`${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}#toolbar=0&navpanes=0&scrollbar=0`}
+              key={url}
+              src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
               title={`${label} PDF Viewer`}
               className="w-full h-full"
             />
@@ -413,6 +418,7 @@ export function DeanAccreditationDocument({ selectedOrg }) {
               <div className="flex-1 bg-white">
                 <div className="h-full">
                   <iframe
+                    key={selectedDocumentDetails.url}
                     src={`${selectedDocumentDetails.url}#toolbar=1&navpanes=1`}
                     title={`${selectedDocumentDetails.label} PDF Viewer`}
                     className="w-full h-full"

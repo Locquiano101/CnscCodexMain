@@ -171,9 +171,14 @@ function OrgLayout({ orgs, onClose }) {
         <div className="w-full h-fit mb-1 bg-cnsc-primary-color flex p-2 gap-x-2 items-center border-b border-gray-400">
           {displayOrg?.orgLogo && (
             <img
+              key={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
               src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
               alt={displayOrg.orgAcronym}
               className="min-w-11 h-11 object-contain"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = Logo;
+              }}
             />
           )}
           <div className="w-full h-fit flex flex-col">

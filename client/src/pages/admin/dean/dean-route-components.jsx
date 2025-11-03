@@ -1,5 +1,6 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { DOCU_API_ROUTER } from "../../../App";
+import PlaceholderLogo from "../../../assets/cnsc-codex.svg";
 import { DeanAccreditationNavigationSubRoute } from "./dean-main";
 import { DeanAccreditationMain } from "./individual-accreditation/dean-accreditation-main";
 import { DeanPresident } from "./individual-accreditation/dean-accreditation-president";
@@ -52,9 +53,14 @@ export function DeanComponent({
             <div className="flex-shrink-0">
               {org.orgLogo ? (
                 <img
+                  key={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
                   src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
                   alt={`${org.orgName} Logo`}
                   className="w-16 h-16 object-cover rounded-full border-3 border-white shadow-md"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = PlaceholderLogo;
+                  }}
                 />
               ) : (
                 <div className="w-16 h-16 bg-cnsc-primary-color flex justify-center items-center text-white rounded-full border shadow-md">
