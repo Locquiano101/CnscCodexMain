@@ -60,16 +60,24 @@ export function SduMainAccomplishmentOrganization({ selectedOrg, user }) {
 
   useState(false);
 
-  const fetchAccomplishmentInformation = async () => {
+  const fetchAccomplishmentInformation = async (keepSelection = false) => {
     try {
       // Accomplishment Report
       const getAccomplishment = await axios.get(
         `${API_ROUTER}/getAccomplishment/${selectedOrg._id}`
       );
 
-      setAccomplishmentData(getAccomplishment.data); // ✅ full report
-      console.log(getAccomplishment.data); // ✅ full report
-      setAccomplishments(getAccomplishment.data.accomplishments); // ✅ safe list
+      const report = getAccomplishment.data;
+      setAccomplishmentData(report); // ✅ full report
+      setAccomplishments(report.accomplishments || []); // ✅ safe list
+
+      // If requested, keep current selection by reselecting updated item by id
+      if (keepSelection && selectedAccomplishment?._id) {
+        const updated = (report.accomplishments || []).find(
+          (a) => a._id === selectedAccomplishment._id
+        );
+        if (updated) setSelectedAccomplishment(updated);
+      }
     } catch (error) {
       console.error(error.response || error);
     }
@@ -278,6 +286,7 @@ export function SduMainAccomplishmentOrganization({ selectedOrg, user }) {
               user={user}
               getCategoryColor={getCategoryColor}
               selectedAccomplishment={selectedAccomplishment}
+              onGradeSaved={() => fetchAccomplishmentInformation(true)}
             />
           </div>
         </div>

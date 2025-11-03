@@ -28,6 +28,17 @@ export const subAccomplishmentSchema = new Schema(
       ref: "OrganizationProfile", // ✅ exact match
     },
 
+    // Grading details for SDU accomplishments
+    grading: {
+      totalPoints: { type: Number, default: 0 },
+      maxPoints: { type: Number },
+      breakdown: { type: Schema.Types.Mixed, default: {} },
+      comments: { type: String, default: "" },
+      status: { type: String, default: "Pending" },
+      gradedAt: { type: Date },
+      gradedBy: { type: String },
+    },
+
     awardedPoints: { type: Number, default: 0 },
     awardPointsBreakdown: Object,
   },

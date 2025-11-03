@@ -16,6 +16,7 @@ export function SduAccomplishmentReportDetailed({
   formatDate,
   getCategoryColor,
   selectedAccomplishment,
+  onGradeSaved,
 }) {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedDocFile, setSelectedDocFile] = useState(null);
@@ -35,7 +36,16 @@ export function SduAccomplishmentReportDetailed({
       setLoading(false);
       // Initialize grading data if it exists
       if (selectedAccomplishment.grading) {
-        setGradingData(selectedAccomplishment.grading);
+        const existing = selectedAccomplishment.grading || {};
+        // Ensure breakdown object exists
+        const safeBreakdown = existing.breakdown && typeof existing.breakdown === "object" ? existing.breakdown : {};
+        setGradingData({
+          totalPoints: Number(existing.totalPoints) || 0,
+          maxPoints: Number(existing.maxPoints) || 0,
+          breakdown: safeBreakdown,
+          comments: existing.comments || "",
+          status: existing.status || "Pending",
+        });
       }
     }
   }, [selectedAccomplishment]);
@@ -139,14 +149,19 @@ export function SduAccomplishmentReportDetailed({
   const handleGrading = () => {
     const categoryGrading = gradingCriteria[selectedAccomplishment.category];
     if (categoryGrading) {
-      setGradingData({
-        ...gradingData,
-        breakdown: categoryGrading.criteria.reduce((acc, criteria) => {
-          acc[criteria.name] = 0;
-          return acc;
-        }, {}),
+      const existing = gradingData?.breakdown || {};
+      // Align existing breakdown (if any) with current rubric criteria
+      const alignedBreakdown = categoryGrading.criteria.reduce((acc, c) => {
+        const v = Number(existing[c.name]);
+        acc[c.name] = Number.isFinite(v) ? v : 0;
+        return acc;
+      }, {});
+
+      setGradingData((prev) => ({
+        ...prev,
+        breakdown: alignedBreakdown,
         maxPoints: categoryGrading.maxPoints,
-      });
+      }));
     }
     setShowGradingModal(true);
   };
@@ -194,6 +209,18 @@ export function SduAccomplishmentReportDetailed({
 
   const currentGrading = gradingCriteria[selectedAccomplishment?.category];
 
+  // Derive a robust "is graded" flag: supports legacy records with only awardedPoints
+  const isAlreadyGraded = (() => {
+    const pointsFromGrade = Number(gradingData?.totalPoints) || 0;
+    const pointsFromAwarded = Number(
+      selectedAccomplishment?.awardedPoints
+    ) || 0;
+    const hasBreakdown =
+      gradingData?.breakdown &&
+      Object.values(gradingData.breakdown).some((v) => (Number(v) || 0) > 0);
+    return pointsFromGrade > 0 || pointsFromAwarded > 0 || hasBreakdown;
+  })();
+
   const saveGrade = async () => {
     if (!selectedAccomplishment) return;
 
@@ -220,6 +247,15 @@ export function SduAccomplishmentReportDetailed({
       console.log("Grade saved successfully:", response.data);
       setGradingData(finalGrading);
       setShowGradingModal(false);
+
+      // 🔄 Ask parent to refresh totals and list values (and keep selection)
+      if (typeof onGradeSaved === "function") {
+        try {
+          await onGradeSaved();
+        } catch (e) {
+          // non-blocking
+        }
+      }
     } catch (error) {
       console.error("Failed to save grade:", error);
       // Optionally: show a notification to the user
@@ -246,21 +282,23 @@ export function SduAccomplishmentReportDetailed({
             </div>
             <div className="flex items-center gap-4 relative">
               {/* Grading Display */}
-              {gradingData.totalPoints > 0 && (
+              {isAlreadyGraded && (
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-purple-200 border border-purple-300 shadow-sm">
                   <Calculator className="w-5 h-5 text-amber-700" />
                   <span className="text-sm font-semibold text-amber-800">
-                    {gradingData.totalPoints}/
-                    {currentGrading?.maxPoints ||
-                      selectedAccomplishment.awardedPoints}{" "}
+                    {(gradingData?.totalPoints && gradingData.totalPoints > 0)
+                      ? gradingData.totalPoints
+                      : (selectedAccomplishment?.awardedPoints || 0)}
+                    /
+                    {currentGrading?.maxPoints || 0}{" "}
                     Points
                   </span>
                   {currentGrading &&
                     (() => {
-                      const gradeInfo = getGradeStatus(
-                        gradingData.totalPoints,
-                        currentGrading.maxPoints
-                      );
+                      const points = (gradingData?.totalPoints && gradingData.totalPoints > 0)
+                        ? gradingData.totalPoints
+                        : (selectedAccomplishment?.awardedPoints || 0);
+                      const gradeInfo = getGradeStatus(points, currentGrading.maxPoints);
                       const IconComponent = gradeInfo.icon;
                       return (
                         <span
@@ -281,7 +319,7 @@ export function SduAccomplishmentReportDetailed({
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition"
                 >
                   <Calculator className="w-4 h-4" />
-                  Grade Accomplishment
+                  {isAlreadyGraded ? "Edit Grade" : "Grade Accomplishment"}
                 </button>
               </div>
             </div>
@@ -466,7 +504,7 @@ export function SduAccomplishmentReportDetailed({
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Calculator className="w-5 h-5" />
-                Grade Accomplishment: {selectedAccomplishment.title}
+                {isAlreadyGraded ? "Edit Grade:" : "Grade Accomplishment:"} {selectedAccomplishment.title}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
                 Category: {selectedAccomplishment.category} (Max:{" "}
@@ -476,6 +514,16 @@ export function SduAccomplishmentReportDetailed({
 
             {/* Body */}
             <div className="p-6 space-y-4">
+              {/* If this is a legacy grade (no breakdown) but has a total, show a hint */}
+              {isAlreadyGraded &&
+                (!gradingData?.breakdown ||
+                  !Object.values(gradingData.breakdown).some((v) => (Number(v) || 0) > 0)) && (
+                  <div className="p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                    Previous total: {selectedAccomplishment?.awardedPoints || gradingData?.totalPoints || 0} points.
+                    This grade was saved before per-criteria breakdowns were kept. Please enter the breakdown below.
+                  </div>
+                )}
+
               {currentGrading.criteria.map((criteria, index) => (
                 <div key={index}>
                   <div className="flex justify-between items-center mb-2">
@@ -490,7 +538,7 @@ export function SduAccomplishmentReportDetailed({
                     type="number"
                     min="0"
                     max={criteria.maxPoints}
-                    value={gradingData.breakdown[criteria.name] || 0}
+                    value={gradingData.breakdown?.[criteria.name] || 0}
                     onChange={(e) => {
                       const value = Math.min(
                         criteria.maxPoints,
@@ -572,7 +620,7 @@ export function SduAccomplishmentReportDetailed({
                 onClick={() => saveGrade()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                Save Grade
+                {isAlreadyGraded ? "Save Changes" : "Save Grade"}
               </button>
             </div>
           </div>
