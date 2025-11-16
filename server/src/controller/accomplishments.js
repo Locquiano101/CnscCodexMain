@@ -4,6 +4,7 @@ import {
   Document,
   User,
 } from "../models/index.js";
+import { logAction } from "../middleware/audit.js";
 
 export const getAccomplishmentReportAll = async (req, res) => {
   try {
@@ -108,6 +109,19 @@ export const gradeAccomplishment = async (req, res) => {
       }
     }
 
+    // 📝 Audit log: accomplishment grading updated
+    logAction(req, {
+      action: "accomplishment.grade.update",
+      targetType: "SubAccomplishment",
+      targetId: subAccomplishment._id,
+      organizationProfile: subAccomplishment.organizationProfile || null,
+      organizationName: null,
+      meta: {
+        awardedPoints: subAccomplishment.awardedPoints,
+        totalPoints: grading?.totalPoints,
+      },
+    });
+
     return res.status(200).json({
       message: "Grading saved successfully",
       subAccomplishment,
@@ -172,6 +186,19 @@ export const updateAccomplishmentStatus = async (req, res) => {
     }
 
     await accomplishment.save();
+
+    // 📝 Audit log
+    logAction(req, {
+      action: "accomplishment.status.update",
+      targetType: "SubAccomplishment",
+      targetId: accomplishment._id,
+      organizationProfile: orgProfileId || accomplishment.organizationProfile || null,
+      organizationName: orgName || null,
+      meta: {
+        overallStatus: accomplishment.overallStatus || overallStatus,
+        inquiryText: inquiryText || null,
+      },
+    });
 
     // 📧 Optional: Send email inquiry
     if (inquiryText && inquirySubject) {
@@ -321,6 +348,16 @@ export const addAccomplishment = async (req, res) => {
     report.accomplishments.push(subAcc._id);
     await report.save();
 
+    // 📝 Audit log
+    logAction(req, {
+      action: "accomplishment.add",
+      targetType: "SubAccomplishment",
+      targetId: subAcc._id,
+      organizationProfile: organizationProfile || report.organizationProfile || null,
+      organizationName: organization || null,
+      meta: { category, title },
+    });
+
     return res.status(201).json({
       message: "Sub-accomplishment added successfully.",
       subAccomplishment: subAcc,
@@ -342,7 +379,10 @@ export const AddDocumentToSubAccomplishment = async (req, res) => {
         .json({ error: "Missing subAccomplishmentId in request body." });
     }
 
-    const subAcc = await SubAccomplishment.findById(subAccomplishmentId);
+    const subAcc = await SubAccomplishment.findById(subAccomplishmentId).populate({
+      path: "organizationProfile",
+      select: "orgName",
+    });
     if (!subAcc) {
       return res.status(404).json({ error: "Sub-accomplishment not found." });
     }
@@ -350,6 +390,25 @@ export const AddDocumentToSubAccomplishment = async (req, res) => {
     // ✅ Push the new document into documents array
     subAcc.documents.push(documentId);
     await subAcc.save();
+
+    // Optionally load document info for better meta readability
+    let docMeta = { documentId };
+    try {
+      const doc = await Document.findById(documentId).select("fileName label status");
+      if (doc) {
+        docMeta = { documentId, fileName: doc.fileName, label: doc.label, status: doc.status };
+      }
+    } catch (_e) {}
+
+    // 📝 Audit log: accomplishment document added
+    logAction(req, {
+      action: "accomplishment.document.add",
+      targetType: "SubAccomplishment",
+      targetId: subAcc._id,
+      organizationProfile: subAcc.organizationProfile || null,
+      organizationName: subAcc.organizationProfile?.orgName || null,
+      meta: docMeta,
+    });
 
     return res.status(201).json({
       message: "Document uploaded and linked to sub-accomplishment.",
@@ -391,6 +450,16 @@ export const updateAccomplishment = async (req, res) => {
     );
 
     await document.save();
+
+    // 📝 Audit log: accomplishment document updated
+    logAction(req, {
+      action: "accomplishment.document.update",
+      targetType: "Document",
+      targetId: document._id,
+      organizationProfile: document.organizationProfile || null,
+      organizationName: null,
+      meta: { from: oldFileName, to: newFileName },
+    });
 
     return res.status(200).json({
       message: "Log added to document successfully",

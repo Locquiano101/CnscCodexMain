@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import * as Controller from "./controller/index.js";
+import { ensureAuthenticated, requireRoles } from "./middleware/auth.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -131,6 +132,15 @@ router.get("/getOrgProfilePosts/:orgProfileId", Controller.getPostByOrgProfile);
 router.get(
   "/OrganizationNotification/:organizationProfileId",
   Controller.GetNotificationsByOrgProfile
+);
+
+/* ---------- ADMIN / AUDIT ---------- */
+router.get(
+  "/audit-logs",
+  ensureAuthenticated,
+  // SDU-only visibility; adjust roles here as needed
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.ListAuditLogs
 );
 
 /* =========================================================

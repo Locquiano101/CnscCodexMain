@@ -25,6 +25,7 @@ import { SduMainAccomplishmentOrganization } from "./accomplishment/sdu-individu
 import { SduMainOverallProposedActioPlanConduct } from "./proposal-conduct/sdu-main-overall-proposed-action-plan";
 import { SduMainIndividualProposeActionPlan } from "./proposal-conduct/sdu-main-individual-proposed-action-plan";
 import { SduGenerateReports } from "./generate-reports/sdu-generate-report";
+import SduAuditLogsPage from "./logs/sdu-audit-logs";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -234,6 +235,9 @@ export function SduMainComponents({ user }) {
 
           {/* Posts */}
           <Route path="/post" element={<UnderDevelopment />} />
+
+          {/* Activity Logs (SDU-only) */}
+          <Route path="/logs" element={<SduAuditLogsPage />} />
 
           {/* User Management */}
           <Route path="/user-management" element={<SduUserManagement />} />

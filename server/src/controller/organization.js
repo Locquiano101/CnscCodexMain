@@ -5,6 +5,7 @@ import {
   User,
 } from "../models/index.js";
 import { NodeEmail } from "../middleware/emailer.js";
+import { logAction } from "../middleware/audit.js";
 const verificationStore = {};
 
 export const PostOrganizationalLogo = async (req, res) => {
@@ -137,6 +138,16 @@ CNSC CODEX Accreditation System
         }
       }
     }
+
+    // 📝 Audit log: organization profile status update
+    logAction(req, {
+      action: "organization.profile.status.update",
+      targetType: "OrganizationProfile",
+      targetId: updatedOrganization._id,
+      organizationProfile: updatedOrganization._id,
+      organizationName: organization.orgName || null,
+      meta: { status: overAllStatus, hasRevisionNotes: Boolean(revisionNotes) },
+    });
 
     // ✅ Response
     res.status(200).json({

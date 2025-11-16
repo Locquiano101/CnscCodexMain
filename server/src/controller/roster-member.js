@@ -6,6 +6,7 @@ import {
   Notification,
 } from "../models/index.js";
 import { NodeEmail } from "../middleware/emailer.js";
+import { logAction } from "../middleware/audit.js";
 
 export const ApprovedRosterList = async (req, res) => {
   try {
@@ -100,6 +101,20 @@ Accreditation Support Team
     await notification.save();
 
     // ✅ Respond
+    // 📝 Audit log
+    logAction(req, {
+      action: "roster.status.update",
+      targetType: "Roster",
+      targetId: updatedRoster._id,
+      organizationProfile: updatedRoster.organizationProfile?._id,
+      organizationName: updatedRoster.organizationProfile?.orgName,
+      meta: {
+        status: overAllStatus || "Updated",
+        revisionNotes: revisionNotes || null,
+        isComplete: isComplete ?? null,
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: `Roster ${
@@ -169,6 +184,16 @@ export const revisionNoteRosterList = async (req, res) => {
       return res.status(404).json({ message: "Roster not found" });
     }
 
+    // 📝 Audit log
+    logAction(req, {
+      action: "roster.revision",
+      targetType: "Roster",
+      targetId: updatedRoster._id,
+      organizationProfile: updatedRoster.organizationProfile || null,
+      organizationName: null,
+      meta: { revisionNotes, from: position },
+    });
+
     res.status(200).json({
       message: "Roster status updated successfully",
       roster: updatedRoster,
@@ -193,6 +218,15 @@ export const CompleteRosterList = async (req, res) => {
     if (!updatedRoster) {
       return res.status(404).json({ message: "Roster not found" });
     }
+
+    // 📝 Audit log
+    logAction(req, {
+      action: "roster.complete",
+      targetType: "Roster",
+      targetId: updatedRoster._id,
+      organizationProfile: updatedRoster.organizationProfile || null,
+      organizationName: null,
+    });
 
     res.status(200).json({
       message: "Roster status updated successfully",
@@ -319,6 +353,16 @@ export const AddNewRosterMember = async (req, res) => {
 
     // Step 3: Save the new member
     const savedMember = await newMember.save();
+
+    // 📝 Audit log
+    logAction(req, {
+      action: "roster.member.add",
+      targetType: "RosterMember",
+      targetId: savedMember._id,
+      organizationProfile: organizationProfile,
+      organizationName: null,
+      meta: { name, email, position },
+    });
 
     return res.status(201).json({
       message: "Roster member added successfully.",

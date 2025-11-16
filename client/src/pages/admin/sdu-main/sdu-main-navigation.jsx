@@ -116,6 +116,12 @@ export function SduMainNavigation() {
       label: "Posts & Announcements",
       path: "/SDU/post",
     },
+    {
+      key: "logs",
+      icon: <ClipboardList className="w-5 h-5" />,
+      label: "Activity Logs",
+      path: "/SDU/logs",
+    },
   ];
 
   const subProposalItems = [

@@ -1,4 +1,5 @@
 import { Receipt, FinancialReport, Accreditation } from "../models/index.js";
+import { logAction } from "../middleware/audit.js";
 
 export const getFinancialReportAll = async (req, res) => {
   try {
@@ -174,6 +175,16 @@ export const AddReceipt = async (req, res) => {
       updatedFinancialReport = new FinancialReport(newReportData);
       await updatedFinancialReport.save();
     }
+
+    // 📝 Audit log: financial receipt added
+    logAction(req, {
+      action: "financial-report.add",
+      targetType: "FinancialReport",
+      targetId: updatedFinancialReport?._id || null,
+      organizationProfile: organizationProfile || updatedFinancialReport?.organizationProfile || null,
+      organizationName: null,
+      meta: { type, amount, description, name },
+    });
 
     return res.status(201).json({
       message: "Receipt successfully created and linked to financial report.",

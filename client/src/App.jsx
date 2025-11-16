@@ -26,6 +26,9 @@ export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
 export const DOCU_API_ROUTER =
   import.meta.env.VITE_UPLOADS_URL || `${MAIN_API_ROUTER}/uploads`;
 
+// Ensure session cookies are sent for all API calls by default
+axios.defaults.withCredentials = true;
+
 export default function App() {
   return (
     <Routes>

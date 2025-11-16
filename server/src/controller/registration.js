@@ -6,6 +6,7 @@ import {
 } from "../models/index.js";
 import { NodeEmail } from "../middleware/emailer.js";
 import { customAlphabet } from "nanoid";
+import { logAction } from "../middleware/audit.js";
 
 const verificationStore = {};
 const nanoid = customAlphabet(
@@ -47,6 +48,16 @@ export const UpdateUser = async (req, res) => {
 
     // 💾 Save updated user
     const updatedUser = await existingUser.save();
+
+    // 📝 Audit log: user updated
+    logAction(req, {
+      action: "user.update",
+      targetType: "User",
+      targetId: updatedUser._id,
+      organizationProfile: updatedUser.organizationProfile || null,
+      organizationName: null,
+      meta: { name: updatedUser.name, email: updatedUser.email, position: updatedUser.position },
+    });
 
     return res.status(200).json({
       message: "User updated successfully",
@@ -113,6 +124,16 @@ export const PostUser = async (req, res) => {
     // TODO: UNCOMMENT
     await NodeEmail(email, subject, message);
 
+    // 📝 Audit log: user created
+    logAction(req, {
+      action: "user.create",
+      targetType: "User",
+      targetId: savedUser._id,
+      organizationProfile: savedUser.organizationProfile || null,
+      organizationName: null,
+      meta: { name, email, position, deliveryUnit },
+    });
+
     res.status(201).json({
       message: "User created successfully and email sent",
       user: savedUser,
@@ -149,6 +170,16 @@ export const DeleteUser = async (req, res) => {
     `;
 
     await NodeEmail(user.email, subject, message);
+
+    // 📝 Audit log: user deleted
+    logAction(req, {
+      action: "user.delete",
+      targetType: "User",
+      targetId: id,
+      organizationProfile: user.organizationProfile || null,
+      organizationName: null,
+      meta: { name: user.name, email: user.email, position: user.position },
+    });
 
     res.status(200).json({
       sucess: true,
@@ -439,6 +470,16 @@ export const PostInitialOrganizationProfile = async (req, res) => {
     // If you have an `orgEmail` field in your schema, use that instead of adviserEmail
     await NodeEmail(orgEmail, org_notify_subject, org_notify_message);
 
+    // 📝 Audit log: registration init
+    logAction(req, {
+      action: "registration.init",
+      targetType: "OrganizationProfile",
+      targetId: savedOrgProfile._id,
+      organizationProfile: savedOrgProfile._id,
+      organizationName: orgName,
+      meta: { adviserName, adviserEmail, orgAcronym },
+    });
+
     res.status(200).json({
       message: "Organization profile created and adviser assigned.",
       organizationProfile: savedOrgProfile,
@@ -592,6 +633,16 @@ export const ReRegisterOrganizationProfile = async (req, res) => {
       { new: true }
     );
 
+    // 📝 Audit log: registration reinit
+    logAction(req, {
+      action: "registration.reinit",
+      targetType: "OrganizationProfile",
+      targetId: savedOrgProfile._id,
+      organizationProfile: savedOrgProfile._id,
+      organizationName: orgName,
+      meta: { adviserName, adviserEmail, orgAcronym },
+    });
+
     res.status(200).json({
       message: "Organization successfully re-registered.",
       organizationProfile: savedOrgProfile,
@@ -654,6 +705,15 @@ export const ConfirmRegistration = async (req, res, next) => {
   const { email, code } = req.body;
   const storedCode = verificationStore[email];
   if (storedCode && storedCode === code) {
+    // 📝 Audit log: registration confirmed
+    logAction(req, {
+      action: "registration.confirm",
+      targetType: "Registration",
+      targetId: null,
+      organizationProfile: null,
+      organizationName: null,
+      meta: { email },
+    });
     delete verificationStore[email];
     next();
   } else {
@@ -673,6 +733,16 @@ export const RegisterUser = async (req, res) => {
     });
 
     await newUser.save();
+
+    // 📝 Audit log: user created via registration
+    logAction(req, {
+      action: "user.create",
+      targetType: "User",
+      targetId: newUser._id,
+      organizationProfile: newUser.organizationProfile || null,
+      organizationName: null,
+      meta: { email, position, via: "RegisterUser" },
+    });
 
     res.status(201).json(newUser);
   } catch (error) {

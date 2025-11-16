@@ -1,5 +1,6 @@
 import { NodeEmail } from "../middleware/emailer.js";
 import { ProposalConduct, Proposal, User } from "../models/index.js";
+import { logAction } from "../middleware/audit.js";
 
 export const updateProposalConductStatus = async (req, res) => {
   try {
@@ -53,6 +54,19 @@ export const updateProposalConductStatus = async (req, res) => {
     }
 
     await proposalConduct.save();
+
+    // 📝 Audit log
+    logAction(req, {
+      action: "proposal-conduct.status.update",
+      targetType: "ProposalConduct",
+      targetId: proposalConduct._id,
+      organizationProfile: proposalConduct.organizationProfile || orgProfileId || null,
+      organizationName: orgName || null,
+      meta: {
+        overallStatus: proposalConduct.overallStatus || overallStatus,
+        inquiryText: inquiryText || null,
+      },
+    });
 
     // 📧 Optional: Send email inquiry
     if (inquiryText && inquirySubject) {
@@ -202,6 +216,16 @@ export const postNewProposalConduct = async (req, res) => {
 
     await proposalConduct.save();
 
+    // 📝 Audit log
+    logAction(req, {
+      action: "proposal-conduct.create",
+      targetType: "ProposalConduct",
+      targetId: proposalConduct._id,
+      organizationProfile: organizationProfile || proposalConduct.organizationProfile || null,
+      organizationName: organization || null,
+      meta: { activityTitle },
+    });
+
     return res.status(201).json({
       success: true,
       message:
@@ -268,6 +292,16 @@ export const updateProposalConduct = async (req, res) => {
     proposalConduct.collaboratingEntities = collaboratingEntities || [];
     proposalConduct.overallStatus = "Revision Update from Student Leader";
     await proposalConduct.save();
+
+    // 📝 Audit log
+    logAction(req, {
+      action: "proposal-conduct.update",
+      targetType: "ProposalConduct",
+      targetId: proposalConduct._id,
+      organizationProfile: proposalConduct.organizationProfile || organizationProfile || null,
+      organizationName: organization || null,
+      meta: { activityTitle },
+    });
 
     return res.status(200).json({
       success: true,

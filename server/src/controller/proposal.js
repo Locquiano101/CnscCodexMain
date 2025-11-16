@@ -1,4 +1,5 @@
 import { Proposal, ProposedActionPlan } from "../models/index.js";
+import { logAction } from "../middleware/audit.js";
 
 export const ApprovedProposal = async (req, res) => {
   try {
@@ -48,6 +49,16 @@ export const ApprovedProposal = async (req, res) => {
 
       await actionPlan.save();
     }
+
+    // 📝 Audit log
+    logAction(req, {
+      action: "proposal.approval.update",
+      targetType: "Proposal",
+      targetId: proposal._id,
+      organizationProfile: proposal.organizationProfile || null,
+      organizationName: null,
+      meta: { overallStatus, hasRevisionNotes: Boolean(revisionNotes) },
+    });
 
     return res.status(200).json({
       message: "Proposal status updated successfully",
@@ -99,6 +110,21 @@ export const updateStudentLeaderProposal = async (req, res) => {
     if (!updatedProposal) {
       return res.status(404).json({ error: "Proposal not found" });
     }
+
+    // 📝 Audit log: proposal updated
+    logAction(req, {
+      action: "proposal.update",
+      targetType: "Proposal",
+      targetId: updatedProposal._id,
+      organizationProfile: updatedProposal.organizationProfile || null,
+      organizationName: null,
+      meta: {
+        activityTitle: updatedProposal.activityTitle,
+        proposalType: updatedProposal.proposalType,
+        proposalCategory: updatedProposal.proposalCategory,
+        proposedDate: updatedProposal.proposedDate,
+      },
+    });
 
     res.status(200).json({
       message: "Proposal updated successfully",
@@ -176,6 +202,21 @@ export const postStudentLeaderProposal = async (req, res) => {
     // 🔗 Step 4: Push proposal into ProposedActionPlan.ProposedIndividualActionPlan
     existingPlan.ProposedIndividualActionPlan.push(proposal._id);
     await existingPlan.save();
+
+    // 📝 Audit log: proposal created
+    logAction(req, {
+      action: "proposal.create",
+      targetType: "Proposal",
+      targetId: proposal._id,
+      organizationProfile: proposal.organizationProfile || null,
+      organizationName: null,
+      meta: {
+        activityTitle: proposal.activityTitle,
+        proposalType: proposal.proposalType,
+        proposalCategory: proposal.proposalCategory,
+        proposedDate: proposal.proposedDate,
+      },
+    });
 
     res.status(201).json({
       message: "Proposal created successfully",

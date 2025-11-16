@@ -1,4 +1,5 @@
 import { NodeEmail } from "../middleware/emailer.js";
+import { logAction } from "../middleware/audit.js";
 import {
   User,
   Accreditation,
@@ -72,6 +73,22 @@ Thank you.
     `;
 
     await NodeEmail(orgEmail, Subject, Message);
+
+    // 📝 Audit log: financial inquiry sent
+    logAction(req, {
+      action: "financial-report.inquiry.send",
+      targetType: "FinancialReport",
+      targetId: null,
+      organizationProfile: orgId || null,
+      organizationName: orgName || null,
+      meta: {
+        userPosition,
+        userName,
+        type: selectedTransaction?.type,
+        amount: selectedTransaction?.amount,
+        description: selectedTransaction?.description,
+      },
+    });
 
     return res.status(200).json({
       success: true,

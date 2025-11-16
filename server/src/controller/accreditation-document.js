@@ -8,6 +8,7 @@ import {
   Accomplishment,
   SubAccomplishment,
 } from "../models/index.js";
+import { logAction } from "../middleware/audit.js";
 
 export const GetAccreditationDocumentsByOrg = async (req, res) => {
   const orgProfileId = req.params.orgProfileId;
@@ -103,6 +104,20 @@ Accreditation Support Team
 
     // Send email notification to all users
     await NodeEmail(recipientEmails, subject, message);
+
+    // 📝 Audit log: accreditation deactivated (system-wide)
+    logAction(req, {
+      action: "accreditation.deactivate.all",
+      targetType: "AccreditationSystem",
+      targetId: null,
+      organizationProfile: null,
+      organizationName: null,
+      meta: {
+        modifiedAccreditations: result.modifiedCount,
+        modifiedOrganizations: resultOrganizationProfile.modifiedCount,
+        notifiedUsers: recipientEmails.length,
+      },
+    });
 
     // Respond to client
     res.status(200).json({
@@ -200,6 +215,25 @@ Accreditation Support Team
           emailsSent = recipientEmails.length;
         }
       }
+    }
+
+    // 📝 Audit log: system reset (unless dryRun)
+    if (!dryRun) {
+      logAction(req, {
+        action: "accreditation.system.reset",
+        targetType: "AccreditationSystem",
+        targetId: null,
+        organizationProfile: null,
+        organizationName: null,
+        meta: {
+          initiatedBy,
+          reason,
+          modifiedAccreditations,
+          modifiedOrganizations,
+          accomplishmentsReset,
+          emailsSent,
+        },
+      });
     }
 
     return res.status(200).json({
@@ -388,6 +422,19 @@ Accreditation Support Team
     await notification.save();
 
     // ✅ Respond
+    // 📝 Audit log
+    logAction(req, {
+      action: "document.status.update",
+      targetType: "Document",
+      targetId: document._id,
+      organizationProfile: document.organizationProfile?._id,
+      organizationName: document.organizationProfile?.orgName,
+      meta: {
+        status,
+        hasRevisionNotes: Boolean(revisionNotes),
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: `Document status updated to "${status}", notifications sent, and log recorded.`,

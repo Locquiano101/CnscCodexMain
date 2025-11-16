@@ -1,4 +1,5 @@
 import { sendNotification } from "../middleware/notification.js";
+import { logAction } from "../middleware/audit.js";
 import {
   Notification,
   Organization,
@@ -214,6 +215,16 @@ Accreditation Committee`;
       success: true,
       message: "Deadline notifications sent to all active organizations",
       results,
+    });
+
+    // 📝 Audit log: accreditation deadline updated
+    logAction(req, {
+      action: "accreditation.deadline.update",
+      targetType: "AccreditationSystem",
+      targetId: null,
+      organizationProfile: null,
+      organizationName: null,
+      meta: { deadline },
     });
   } catch (err) {
     console.error("NotifcationAccreditationDeadlineSet error:", err);

@@ -6,6 +6,7 @@ import {
   User,
 } from "../models/index.js";
 import { NodeEmail } from "./../middleware/emailer.js";
+import { logAction } from "../middleware/audit.js";
 
 export const NotifyPresidentOrg = async (req, res) => {
   try {
@@ -172,6 +173,19 @@ Accreditation Support Team
     await notification.save();
 
     // ✅ Response
+    // 📝 Audit log
+    logAction(req, {
+      action: "president.status.update",
+      targetType: "PresidentProfile",
+      targetId: profile._id,
+      organizationProfile: profile.organizationProfile?._id,
+      organizationName: profile.organizationProfile?.orgName,
+      meta: {
+        newStatus: overallStatus,
+        hasRevisionNotes: Boolean(revisionNotes),
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: `President profile ${overallStatus.toLowerCase()} successfully, notifications sent, and log recorded.`,

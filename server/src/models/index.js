@@ -21,6 +21,7 @@ import { presidentProfileSchema } from "./president_profile.js";
 import { ReceiptSchema, financialReportSchema } from "./financial_report.js";
 import { postSchema } from "./post.js";
 import { notificationSchema } from "./notification.js";
+import { auditLogSchema } from "./audit_log.js";
 // Compile models
 const User = mongoose.model("Users", userSchema);
 const Adviser = mongoose.model("Advisers", AdviserSchema);
@@ -35,6 +36,7 @@ const ProposalConduct = mongoose.model(
   proposalConductSchema
 );
 const Notification = mongoose.model("Notification", notificationSchema);
+const AuditLog = mongoose.model("AuditLog", auditLogSchema);
 
 const Roster = mongoose.model("Roster", rosterSchema);
 const Logs = mongoose.model("Logs", LogsSchema);
@@ -69,6 +71,7 @@ const FinancialReport = mongoose.model(
 export {
   User,
   Notification,
+  AuditLog,
   Adviser,
   Post,
   Proposal,
