@@ -143,6 +143,35 @@ router.get(
   Controller.ListAuditLogs
 );
 
+/* ---------- ROOMS / LOCATIONS ---------- */
+// Public read (authenticated): active rooms filtered by optional campus
+router.get("/rooms", ensureAuthenticated, Controller.listRooms);
+// Admin management (SDU roles)
+router.get(
+  "/admin/rooms",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.adminListRooms
+);
+router.post(
+  "/admin/rooms",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.createRoom
+);
+router.patch(
+  "/admin/rooms/:id",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.updateRoom
+);
+router.patch(
+  "/admin/rooms/:id/active",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.setRoomActive
+);
+
 /* =========================================================
    ✉️ POST / PUT / DELETE ROUTES
 ========================================================= */

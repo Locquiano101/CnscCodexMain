@@ -226,6 +226,18 @@ export const postNewProposalConduct = async (req, res) => {
       meta: { activityTitle },
     });
 
+    // 📝 Room assignment audit if venue provided
+    if (venue) {
+      logAction(req, {
+        action: "schedule.room.assign",
+        targetType: "ProposalConduct",
+        targetId: proposalConduct._id,
+        organizationProfile: organizationProfile || proposalConduct.organizationProfile || null,
+        organizationName: organization || null,
+        meta: { venue },
+      });
+    }
+
     return res.status(201).json({
       success: true,
       message:
@@ -267,6 +279,8 @@ export const updateProposalConduct = async (req, res) => {
         .json({ success: false, message: "ProposalConduct not found" });
     }
 
+    const prevVenue = proposalConduct?.ProposedIndividualActionPlan?.venue;
+
     // 🔄 Update embedded ProposedIndividualActionPlan object
     proposalConduct.ProposedIndividualActionPlan = {
       ...proposalConduct.ProposedIndividualActionPlan, // keep existing fields
@@ -302,6 +316,21 @@ export const updateProposalConduct = async (req, res) => {
       organizationName: organization || null,
       meta: { activityTitle },
     });
+
+    // 📝 Room change audit if venue changed
+    if (typeof venue !== "undefined") {
+      const newVenue = venue;
+      if (newVenue && newVenue !== prevVenue) {
+        logAction(req, {
+          action: "schedule.room.change",
+          targetType: "ProposalConduct",
+          targetId: proposalConduct._id,
+          organizationProfile: proposalConduct.organizationProfile || organizationProfile || null,
+          organizationName: organization || null,
+          meta: { from: prevVenue || null, to: newVenue },
+        });
+      }
+    }
 
     return res.status(200).json({
       success: true,

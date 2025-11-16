@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Upload, FileText, X } from "lucide-react";
 import CurrencyInput from "../../../../components/currency-input";
 import { Banknote } from "lucide-react";
@@ -20,6 +20,8 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
       : "",
     budget: proposal.ProposedIndividualActionPlan.budgetaryRequirements || "",
     venue: proposal.ProposedIndividualActionPlan.venue || "",
+  otherVenue: "",
+  isCustomVenue: false,
     alignedSDG: proposal.ProposedIndividualActionPlan.alignedSDG || [],
     organizationProfile: proposal.organizationProfile || "",
     organization: proposal.organization || "",
@@ -32,6 +34,42 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [showPopup, setShowPopup] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  const [roomsError, setRoomsError] = useState(null);
+
+  // Fetch active rooms for venue select
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setRoomsLoading(true);
+        setRoomsError(null);
+        const res = await axios.get(`${API_ROUTER}/rooms`, {
+          withCredentials: true,
+        });
+        const list = Array.isArray(res.data) ? res.data : res.data?.items || [];
+        setRooms(list);
+      } catch (err) {
+        setRoomsError(err?.response?.data?.message || err.message);
+      } finally {
+        setRoomsLoading(false);
+      }
+    };
+    fetchRooms();
+  }, [API_ROUTER]);
+
+  const roomOptions = useMemo(() => {
+    return rooms.map((r) => ({ id: r._id, label: r.name, campus: r.campus }));
+  }, [rooms]);
+
+  // If current venue isn't in rooms list, default to Other and prefill otherVenue
+  useEffect(() => {
+    if (!rooms || rooms.length === 0) return;
+    const exists = roomOptions.some((opt) => opt.label === formData.venue);
+    if (formData.venue && !exists && !formData.isCustomVenue) {
+      setFormData((prev) => ({ ...prev, isCustomVenue: true, otherVenue: prev.venue, venue: "" }));
+    }
+  }, [rooms, roomOptions]);
 
   // Existing PDF URL if available
   const [existingPdfUrl] = useState(
@@ -111,8 +149,10 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
       newErrors.alignedObjective = "Aligned objective is required";
     }
 
-    if (!formData.venue.trim()) {
-      newErrors.venue = "Venue is required";
+    if (formData.isCustomVenue) {
+      if (!formData.otherVenue.trim()) newErrors.venue = "Please specify the venue";
+    } else {
+      if (!formData.venue.trim()) newErrors.venue = "Venue is required";
     }
 
     if (!formData.date) {
@@ -157,7 +197,7 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
     data.append("AlignedObjective", formData.alignedObjective);
     data.append("proposedDate", formData.date);
     data.append("budgetaryRequirements", formData.budget);
-    data.append("venue", formData.venue);
+  data.append("venue", formData.isCustomVenue ? formData.otherVenue : formData.venue);
     formData.alignedSDG.forEach((sdg) => data.append("alignedSDG[]", sdg));
     data.append("overallStatus", formData.overallStatus);
 
@@ -277,16 +317,58 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Venue *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="venue"
-                    value={formData.venue}
-                    onChange={handleInputChange}
+                    value={formData.isCustomVenue ? "Other" : formData.venue}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "Other") {
+                        setFormData((prev) => ({
+                          ...prev,
+                          isCustomVenue: true,
+                          // Keep any existing otherVenue or default to previous venue
+                          otherVenue: prev.otherVenue || prev.venue || "",
+                          venue: "",
+                        }));
+                      } else {
+                        setFormData((prev) => ({
+                          ...prev,
+                          isCustomVenue: false,
+                          venue: value,
+                          otherVenue: "",
+                        }));
+                      }
+                      if (errors.venue) setErrors((p) => ({ ...p, venue: "" }));
+                    }}
                     className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                       errors.venue ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Event venue"
-                  />
+                    disabled={roomsLoading}
+                  >
+                    <option value="">{roomsLoading ? "Loading rooms…" : "-- Select Venue --"}</option>
+                    {roomOptions.map((opt) => (
+                      <option key={opt.id} value={opt.label}>
+                        {opt.label}
+                        {opt.campus ? ` — ${opt.campus}` : ""}
+                      </option>
+                    ))}
+                    <option value="Other">Other</option>
+                  </select>
+
+                  {formData.isCustomVenue && (
+                    <input
+                      type="text"
+                      name="otherVenue"
+                      value={formData.otherVenue}
+                      onChange={handleInputChange}
+                      placeholder="Enter other venue"
+                      className="mt-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                    />
+                  )}
+
+                  {roomsError && (
+                    <p className="text-amber-600 text-xs mt-1">{roomsError} — showing fallback options if any.</p>
+                  )}
                   {errors.venue && (
                     <p className="text-red-500 text-sm mt-1">{errors.venue}</p>
                   )}

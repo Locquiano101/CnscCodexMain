@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Upload, Banknote } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 import CurrencyInput from "../../../../components/currency-input";
@@ -22,6 +22,34 @@ export function AddNewProposal({ onClose, orgData }) {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [showPopup, setShowPopup] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  const [roomsError, setRoomsError] = useState(null);
+
+  // Fetch active rooms (optionally could be filtered by campus)
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setRoomsLoading(true);
+        setRoomsError(null);
+        const res = await axios.get(`${API_ROUTER}/rooms`, {
+          withCredentials: true,
+          params: {},
+        });
+        const list = Array.isArray(res.data) ? res.data : res.data?.items || [];
+        setRooms(list);
+      } catch (err) {
+        setRoomsError(err?.response?.data?.message || err.message);
+      } finally {
+        setRoomsLoading(false);
+      }
+    };
+    fetchRooms();
+  }, []);
+
+  const roomOptions = useMemo(() => {
+    return rooms.map((r) => ({ id: r._id, label: r.name, campus: r.campus }));
+  }, [rooms]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -264,7 +292,7 @@ export function AddNewProposal({ onClose, orgData }) {
 
               {/* Venue and Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Venue Dropdown */}
+                {/* Venue Dropdown (from Rooms/Locations) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Venue *
@@ -276,15 +304,17 @@ export function AddNewProposal({ onClose, orgData }) {
                     className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                       errors.venue ? "border-red-500" : "border-gray-300"
                     }`}
+                    disabled={roomsLoading}
                   >
-                    <option value="">-- Select Venue --</option>
-                    <option value="Covered Court">Covered Court</option>
-                    <option value="Student Activity Center">
-                      Student Activity Center
+                    <option value="">
+                      {roomsLoading ? "Loading rooms…" : "-- Select Venue --"}
                     </option>
-                    <option value="Pavilion">Pavilion</option>
-                    <option value="Student Park">Student Park</option>
-                    <option value="Cafeteria">Cafeteria</option>
+                    {roomOptions.map((opt) => (
+                      <option key={opt.id} value={opt.label}>
+                        {opt.label}
+                        {opt.campus ? ` — ${opt.campus}` : ""}
+                      </option>
+                    ))}
                     <option value="Other">Other</option>
                   </select>
 
@@ -297,6 +327,12 @@ export function AddNewProposal({ onClose, orgData }) {
                       placeholder="Enter other venue"
                       className="mt-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                     />
+                  )}
+
+                  {roomsError && (
+                    <p className="text-amber-600 text-xs mt-1">
+                      {roomsError} — showing fallback options if any.
+                    </p>
                   )}
 
                   {errors.venue && (

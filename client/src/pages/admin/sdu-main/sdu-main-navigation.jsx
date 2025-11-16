@@ -23,6 +23,7 @@ import {
   CheckCircle,
   Settings,
   File,
+  Building,
 } from "lucide-react";
 import { LogoutButton } from "../../../components/components";
 
@@ -64,6 +65,8 @@ export function SduMainNavigation() {
       setActiveKey("post");
     } else if (path.includes("/log")) {
       setActiveKey("logs");
+    } else if (path.includes("/rooms")) {
+      setActiveKey("rooms");
     }
   }, [location.pathname]);
 
@@ -109,6 +112,12 @@ export function SduMainNavigation() {
       icon: <File className="w-5 h-5" />,
       label: "Reports",
       path: "/SDU/reports",
+    },
+    {
+      key: "rooms",
+      icon: <Building className="w-5 h-5" />,
+      label: "Rooms / Locations",
+      path: "/SDU/rooms",
     },
     {
       key: "post",
