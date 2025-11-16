@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import axios from "axios";
-import { MoreHorizontal, MoreVertical, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { DonePopUp } from "../../../../components/components";
 
 export function SduCoorRosterData({ selectedOrg }) {
-  const [showDropdown, setShowDropdown] = useState(false);
+  // Replaced three-dots dropdown with visible action buttons
   const [alertModal, setAlertModal] = useState(false);
   const [revisionModal, setRevisionModal] = useState(false);
   const [approvalModal, setApprovalModal] = useState(false);
@@ -49,19 +49,7 @@ export function SduCoorRosterData({ selectedOrg }) {
     }
   }, [selectedOrg._id]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest(".dropdown-container")) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDropdown]);
+  // Removed dropdown click-outside handler
 
   const SendNotification = async () => {
     if (!message.trim()) {
@@ -270,33 +258,21 @@ export function SduCoorRosterData({ selectedOrg }) {
         );
       }
 
-      setConfirmUpdateModal(true);
-      setShowDropdown(false);
-      return;
+  setConfirmUpdateModal(true);
+  return;
     }
 
-    // Otherwise, open modal normally
-    if (id === "revision") setShowRevisionModal(true);
-    else if (id === "Approval") setShowApproveModal(true);
-
-    setShowDropdown(false);
+  // Otherwise, open modal normally
+  if (id === "revision") setRevisionModal(true);
+  else if (id === "Approval") setApprovalModal(true);
   };
 
   const rosterMembers = rosterData?.rosterMembers || [];
 
-  const dropdownItems = [
-    {
-      id: "revision",
-      label: "Revision of Roster",
-    },
-    {
-      id: "Approval",
-      label: "Approval of Roster",
-    },
-    {
-      id: "export",
-      label: "Export Roster as Spread Sheet",
-    },
+  const actions = [
+    { id: "revision", label: "Request Revision", onClick: () => handleDropdownAction("revision"), tone: "warning" },
+    { id: "Approval", label: "Approve Roster", onClick: () => handleDropdownAction("Approval"), tone: "primary" },
+    { id: "export", label: "Export Spreadsheet", onClick: () => setExportModal(true), tone: "ghost" },
   ];
 
   return (
@@ -316,35 +292,23 @@ export function SduCoorRosterData({ selectedOrg }) {
           </h1>
         </div>
 
-        {/* Dropdown Container */}
-        <div className="relative flex justify-end w-64 dropdown-container">
-          <button
-            className={`text-5xl transition-colors flex items-center gap-2 ${
-              showDropdown ? "rounded-t-lg" : "rounded-lg"
-            }`}
-            onClick={() => setShowDropdown(!showDropdown)}
-          >
-            <MoreHorizontal size={42} className=" text-cnsc-primary-color" />
-          </button>
-
-          {/* Dropdown Menu */}
-          {showDropdown && (
-            <div className="absolute right-0 w-fit bg-white shadow-lg border border-gray-300 z-10">
-              <div className="flex flex-col justify-end gap-1">
-                {dropdownItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      handleDropdownAction(item.id);
-                    }} // ✅ now it works
-                    className="w-full  justify-end px-4 py-3 flex hover:bg-amber-200 items-center gap-3 transition-colors duration-300"
-                  >
-                    <span className="font-medium text-black">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Action Buttons (Replaces three-dots menu) */}
+        <div className="flex flex-wrap gap-2 items-center justify-end w-64">
+          {actions.map((a) => (
+            <button
+              key={a.id}
+              onClick={a.onClick}
+              className={
+                a.tone === "primary"
+                  ? "px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                  : a.tone === "warning"
+                  ? "px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
+                  : "px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }
+            >
+              {a.label}
+            </button>
+          ))}
         </div>
       </div>
       {/* Content */}

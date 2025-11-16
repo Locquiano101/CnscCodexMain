@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDown, Search, CheckCircle, X } from "lucide-react";
+import { ChevronDown, Search, CheckCircle, X, Banknote } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
+import CurrencyInput from "../../../../../components/currency-input";
 
 export default function EditPpa({
   selectedProposal,
@@ -158,20 +159,17 @@ export default function EditPpa({
             </div>
 
             {/* Budgetary Requirements */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Budgetary Requirements *
-              </label>
-              <input
-                type="text"
-                name="budgetaryRequirements"
-                value={formData.budgetaryRequirements}
-                onChange={handleInputChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                placeholder="e.g., ₱50,000 - ₱100,000"
-              />
-            </div>
+            <CurrencyInput
+              label="Budgetary Requirements *"
+              Icon={Banknote}
+              name="budgetaryRequirements"
+              value={formData.budgetaryRequirements}
+              onChange={handleInputChange}
+              required
+              inputMode="text"
+              placeholder="e.g., 50,000 - 100,000"
+              inputClassName="rounded-md focus:ring-amber-500 focus:border-transparent"
+            />
           </div>
 
           {/* Full-width fields */}

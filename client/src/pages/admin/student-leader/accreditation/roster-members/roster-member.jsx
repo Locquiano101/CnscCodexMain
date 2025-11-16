@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import AddRosterForm from "./add-roster-member";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 import axios from "axios";
-import { MoreHorizontal, X, Search } from "lucide-react";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import { X, Search } from "lucide-react";
 
 export default function StudentLeaderRosters({ orgData }) {
-  const [showDropdown, setShowDropdown] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'add', 'edit', 'import', etc.
   const [rosterData, setRosterData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,24 +42,74 @@ export default function StudentLeaderRosters({ orgData }) {
     fetchRosterMembers(); // Refresh the roster data
   };
 
-  const handleDropdownAction = (action) => {
-    setShowDropdown(false);
+  const handleAction = (action) => {
     setActiveModal(action);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest(".dropdown-container")) {
-        setShowDropdown(false);
-      }
-    };
+  const handleExportExcel = async () => {
+    const rosterMembers = rosterData?.rosterMembers || [];
+    if (!rosterMembers || rosterMembers.length === 0) {
+      alert("No roster data to export.");
+      return;
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDropdown]);
+    try {
+      // Create workbook & worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Roster Members");
+
+      // Define headers
+      worksheet.columns = [
+        { header: "Name", key: "name", width: 25 },
+        { header: "Position", key: "position", width: 20 },
+        { header: "Email", key: "email", width: 30 },
+        { header: "Contact Number", key: "contactNumber", width: 20 },
+        { header: "Address", key: "address", width: 40 },
+        { header: "Birth Date", key: "birthDate", width: 15 },
+        { header: "Status", key: "status", width: 15 },
+      ];
+
+      // Add data rows
+      rosterMembers.forEach((member) => {
+        worksheet.addRow({
+          name: member.name,
+          position: member.position,
+          email: member.email,
+          contactNumber: member.contactNumber,
+          address: member.address,
+          birthDate: member.birthDate
+            ? new Date(member.birthDate).toLocaleDateString()
+            : "Not provided",
+          status: member.status,
+        });
+      });
+
+      // Style header row
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFDCE6F1" },
+        };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+
+      // Generate buffer and save file
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), "RosterMembers.xlsx");
+    } catch (e) {
+      console.error("Export failed:", e);
+      alert("Failed to export. Please try again.");
+    } finally {
+      setActiveModal(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -100,22 +151,10 @@ export default function StudentLeaderRosters({ orgData }) {
     );
   });
 
-  const dropdownItems = [
-    {
-      id: "add",
-      label: "Add Roster Member",
-      icon: "👤",
-    },
-    {
-      id: "Completion",
-      label: "Submit For Completion",
-      icon: "📊",
-    },
-    {
-      id: "export",
-      label: "Export Roster as Spread Sheet",
-      icon: "📤",
-    },
+  const actions = [
+    { id: "add", label: "Add Roster Member", onClick: () => handleAction("add"), tone: "primary" },
+    { id: "Completion", label: "Submit For Completion", onClick: () => handleAction("Completion"), tone: "secondary" },
+    { id: "export", label: "Export Spreadsheet", onClick: () => handleAction("export"), tone: "ghost" },
   ];
 
   return (
@@ -133,33 +172,23 @@ export default function StudentLeaderRosters({ orgData }) {
             </h1>
           </div>
 
-          {/* Dropdown Container */}
-          <div className="relative dropdown-container">
-            <MoreHorizontal
-              size={32}
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="cursor-pointer"
-            />
-
-            {/* Dropdown Menu */}
-            {showDropdown && (
-              <div className="absolute right-0 rounded-lg w-64 bg-white shadow-lg border border-gray-300 z-10">
-                <div className="flex flex-col gap-1">
-                  {dropdownItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleDropdownAction(item.id)}
-                      className="w-full text-left px-4 py-3 flex hover:bg-amber-200 items-center gap-3 transition-colors duration-300"
-                    >
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="font-medium text-black">
-                        {item.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Action Buttons (Replaces three-dots menu) */}
+          <div className="flex flex-wrap gap-2 items-center justify-end">
+            {actions.map((a) => (
+              <button
+                key={a.id}
+                onClick={a.onClick}
+                className={
+                  a.tone === "primary"
+                    ? "px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                    : a.tone === "secondary"
+                    ? "px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
+                    : "px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                }
+              >
+                {a.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -230,11 +259,34 @@ export default function StudentLeaderRosters({ orgData }) {
       )}
 
       {activeModal === "export" && (
-        <SubmitForCompletion
-          rosterId={rosterData.roster._id}
-          onFinish={(() => setActiveModal(null), fetchRosterMembers())}
-          onClose={() => setActiveModal(null)}
-        />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="h-fit relative w-full max-w-md px-6 py-6 bg-white flex flex-col justify-center rounded-xl shadow-xl">
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <h1 className="text-lg font-semibold mb-2">Export Roster</h1>
+            <p className="text-sm text-gray-600 mb-6">
+              Do you want to export the roster members into an Excel file?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExportExcel}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md transition"
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

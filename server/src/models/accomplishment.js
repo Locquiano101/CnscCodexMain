@@ -39,6 +39,28 @@ export const subAccomplishmentSchema = new Schema(
       gradedBy: { type: String },
     },
 
+    // History of previous grading snapshots when resets/edits occur
+    gradingHistory: [
+      new Schema(
+        {
+          snapshotAt: { type: Date, default: Date.now },
+          reason: { type: String, default: "reset" },
+          resetBy: { type: String },
+          awardedPoints: { type: Number, default: 0 },
+          grading: {
+            totalPoints: { type: Number, default: 0 },
+            maxPoints: { type: Number },
+            breakdown: { type: Schema.Types.Mixed, default: {} },
+            comments: { type: String, default: "" },
+            status: { type: String, default: "Pending" },
+            gradedAt: { type: Date },
+            gradedBy: { type: String },
+          },
+        },
+        { _id: false }
+      ),
+    ],
+
     awardedPoints: { type: Number, default: 0 },
     awardPointsBreakdown: Object,
   },

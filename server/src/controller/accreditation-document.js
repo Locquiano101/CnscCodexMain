@@ -5,6 +5,8 @@ import {
   OrganizationProfile,
   Notification,
   User,
+  Accomplishment,
+  SubAccomplishment,
 } from "../models/index.js";
 
 export const GetAccreditationDocumentsByOrg = async (req, res) => {
@@ -114,6 +116,106 @@ Accreditation Support Team
   } catch (error) {
     console.error("Error deactivating accreditations:", error);
     res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
+// Orchestrates a system-wide reset: deactivate accreditations/org profiles and reset all accomplishment points with history
+export const SystemResetAccreditation = async (req, res) => {
+  const { initiatedBy = "System", reason = "system reset", dryRun = false, sendEmail = true } = req.body || {};
+  try {
+    // 1) Counts for dry-run preview
+    const [accCount, orgCount, subCount, reportCount, userCount] = await Promise.all([
+      Accreditation.countDocuments({}),
+      OrganizationProfile.countDocuments({}),
+      SubAccomplishment.countDocuments({}),
+      Accomplishment.countDocuments({}),
+      User.countDocuments({}),
+    ]);
+
+    let modifiedAccreditations = 0;
+    let modifiedOrganizations = 0;
+    let accomplishmentsReset = 0;
+    let emailsSent = 0;
+
+    if (!dryRun) {
+      // 2) Deactivate all accreditations and org profiles
+      const accRes = await Accreditation.updateMany({}, { $set: { isActive: false } });
+      const orgRes = await OrganizationProfile.updateMany({}, { $set: { isActive: false } });
+      modifiedAccreditations = accRes.modifiedCount || 0;
+      modifiedOrganizations = orgRes.modifiedCount || 0;
+
+      // 3) Reset all sub-accomplishment grades and archive history
+      const cursor = SubAccomplishment.find({}).cursor();
+      for await (const sub of cursor) {
+        const prevAwarded = sub.awardedPoints || 0;
+        const prevGrading = sub.grading || {};
+        const hadPoints = prevAwarded > 0 || (prevGrading?.totalPoints || 0) > 0;
+        if (hadPoints) {
+          sub.gradingHistory = sub.gradingHistory || [];
+          sub.gradingHistory.push({
+            snapshotAt: new Date(),
+            reason,
+            resetBy: initiatedBy,
+            awardedPoints: prevAwarded,
+            grading: prevGrading,
+          });
+        }
+        sub.grading = {
+          totalPoints: 0,
+          maxPoints: prevGrading?.maxPoints,
+          breakdown: {},
+          comments: "",
+          status: "Pending",
+          gradedAt: undefined,
+          gradedBy: undefined,
+        };
+        sub.awardedPoints = 0;
+        await sub.save();
+        accomplishmentsReset++;
+      }
+
+      // 4) Recompute all accomplishment report grand totals to 0
+      await Accomplishment.updateMany({}, { $set: { grandTotal: 0 } });
+
+      // 5) Optional email blast
+      if (sendEmail) {
+        const users = await User.find().select("email");
+        const recipientEmails = users.map((u) => u.email).filter(Boolean);
+        if (recipientEmails.length > 0) {
+          const subject = "Accreditation Reset: System-wide Deactivation & Points Reset";
+          const message = `
+Hello,
+
+Please be informed that all accreditations and organization profiles have been deactivated, and all accomplishment points have been reset to zero as part of a system-wide reset.
+
+Initiated by: ${initiatedBy}
+Reason: ${reason}
+
+Previous grading records have been archived for audit and viewing.
+
+Thank you,
+Accreditation Support Team
+          `;
+          await NodeEmail(recipientEmails, subject, message);
+          emailsSent = recipientEmails.length;
+        }
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      dryRun,
+      summary: {
+        totals: { accreditations: accCount, organizationProfiles: orgCount, subAccomplishments: subCount, reports: reportCount, users: userCount },
+        modified: { modifiedAccreditations, modifiedOrganizations, accomplishmentsReset, emailsSent },
+      },
+      message: dryRun
+        ? "Dry run completed. No changes were written."
+        : "System-wide reset completed successfully.",
+    });
+  } catch (error) {
+    console.error("❌ Error in SystemResetAccreditation:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

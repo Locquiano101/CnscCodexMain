@@ -190,6 +190,10 @@ router.post(
   "/sendAccreditationConfirmationEmail/:orgProfileId",
   Controller.SendAccreditationCompletionEmail
 );
+router.post(
+  "/systemResetAccreditation",
+  Controller.SystemResetAccreditation
+);
 
 /* ---------- STUDENT DEVELOPMENT PRESIDENT ---------- */
 router.post(
@@ -208,6 +212,10 @@ router.post("/CompleteStudentRoster/:rosterId", Controller.CompleteRosterList);
 router.post("/ApproveRosterList/:rosterId", Controller.ApprovedRosterList);
 router.post("/RevisionRosterList/:rosterId", Controller.revisionNoteRosterList);
 router.post("/gradeAccomplishment/", Controller.gradeAccomplishment);
+router.post(
+  "/resetAccomplishmentGrades/:OrgProfileId",
+  Controller.resetAccomplishmentGradesForOrg
+);
 
 /* ---------- ADVISER ACCREDITATION ---------- */
 router.post("/postUpdateProposal/:id", Controller.ApprovedProposal);

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 
-import { X, CheckCircle, ChevronDown, Search } from "lucide-react";
+import { X, CheckCircle, ChevronDown, Search, Banknote } from "lucide-react";
+import CurrencyInput from "../../../../../components/currency-input";
 
 export function AddProposedActionPlan({
   orgData,
@@ -222,23 +223,17 @@ export function AddProposedActionPlan({
 
           {/* Budgetary Requirements */}
           <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Budgetary Requirements *
-            </label>
-            <input
-              type="text"
+            <CurrencyInput
+              label="Budgetary Requirements *"
+              Icon={Banknote}
               name="budgetaryRequirements"
               value={
                 formData.budgetaryRequirements
-                  ? `₱${Number(
-                      formData.budgetaryRequirements
-                    ).toLocaleString()}`
+                  ? Number(formData.budgetaryRequirements).toLocaleString()
                   : ""
               }
               onChange={(e) => {
-                // Remove non-numeric characters
                 const rawValue = e.target.value.replace(/[^\d]/g, "");
-                // Update state with raw number (no commas or currency symbol)
                 handleInputChange({
                   target: {
                     name: "budgetaryRequirements",
@@ -247,8 +242,8 @@ export function AddProposedActionPlan({
                 });
               }}
               required
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              placeholder="e.g., ₱50,000"
+              placeholder="e.g., 50,000"
+              inputClassName="rounded-md focus:ring-amber-500 focus:border-transparent"
             />
           </div>
 

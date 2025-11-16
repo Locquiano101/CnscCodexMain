@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import PlaceholderLogo from "../../../../assets/cnsc-codex.svg";
 import axios from "axios";
-import { MoreHorizontal, MoreVertical, Users } from "lucide-react";
+import { Users } from "lucide-react";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import { DonePopUp } from "../../../../components/components";
 
 export function DeanRosterData({ selectedOrg }) {
-  const [showDropdown, setShowDropdown] = useState(false);
+  // Replaced three-dots dropdown with visible action buttons
   const [notificationModal, setNotificationModal] = useState(false);
   const [revisionModal, setRevisionModal] = useState(false);
   const [approvalModal, setApprovalModal] = useState(false);
@@ -49,16 +51,7 @@ export function DeanRosterData({ selectedOrg }) {
     }
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest(".dropdown-container")) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showDropdown]);
+  // Removed dropdown click-outside handler
 
   const sendNotification = async () => {
     if (!message.trim()) {
@@ -164,23 +157,74 @@ export function DeanRosterData({ selectedOrg }) {
           ? "This roster has already been updated by the Dean. Do you want to continue updating it again?"
           : "This roster has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
       );
-      setConfirmUpdateModal(true);
-      setShowDropdown(false);
-      return;
+  setConfirmUpdateModal(true);
+  return;
     }
 
-    if (id === "revision") setRevisionModal(true);
-    else if (id === "Approval") setApprovalModal(true);
-
-    setShowDropdown(false);
+  if (id === "revision") setRevisionModal(true);
+  else if (id === "Approval") setApprovalModal(true);
   };
 
   const rosterMembers = rosterData?.rosterMembers || [];
 
-  const dropdownItems = [
-    { id: "revision", label: "Revision of Roster" },
-    { id: "Approval", label: "Approval of Roster" },
-    { id: "export", label: "Export Roster as Spread Sheet" },
+  const handleExportExcel = async () => {
+    const members = rosterData?.rosterMembers || [];
+    if (!members.length) {
+      alert("No roster data to export.");
+      return;
+    }
+
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Roster Members");
+
+      worksheet.columns = [
+        { header: "Name", key: "name", width: 25 },
+        { header: "Position", key: "position", width: 20 },
+        { header: "Email", key: "email", width: 30 },
+        { header: "Contact Number", key: "contactNumber", width: 20 },
+        { header: "Address", key: "address", width: 40 },
+        { header: "Birth Date", key: "birthDate", width: 15 },
+        { header: "Status", key: "status", width: 15 },
+      ];
+
+      members.forEach((m) => {
+        worksheet.addRow({
+          name: m.name,
+          position: m.position,
+          email: m.email,
+          contactNumber: m.contactNumber,
+          address: m.address,
+          birthDate: m.birthDate
+            ? new Date(m.birthDate).toLocaleDateString()
+            : "Not provided",
+          status: m.status,
+        });
+      });
+
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDCE6F1" } };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), "RosterMembers.xlsx");
+    } catch (e) {
+      console.error("Export failed:", e);
+      alert("Failed to export. Please try again.");
+    }
+  };
+
+  const actions = [
+    { id: "revision", label: "Request Revision", onClick: () => handleDropdownAction("revision"), tone: "warning" },
+    { id: "Approval", label: "Approve Roster", onClick: () => handleDropdownAction("Approval"), tone: "primary" },
+    { id: "export", label: "Export Spreadsheet", onClick: handleExportExcel, tone: "ghost" },
   ];
 
   if (loading) {
@@ -226,32 +270,23 @@ export function DeanRosterData({ selectedOrg }) {
           </h1>
         </div>
 
-        {/* Dropdown Container */}
-        <div className="relative flex justify-end w-64 dropdown-container">
-          <button
-            className={`text-5xl transition-colors flex items-center gap-2 ${
-              showDropdown ? "rounded-t-lg" : "rounded-lg"
-            }`}
-            onClick={() => setShowDropdown(!showDropdown)}
-          >
-            <MoreHorizontal size={42} className="text-cnsc-primary-color" />
-          </button>
-
-          {showDropdown && (
-            <div className="absolute right-0 w-fit bg-white shadow-lg border border-gray-300 z-10">
-              <div className="flex flex-col justify-end gap-1">
-                {dropdownItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleDropdownAction(item.id)}
-                    className="w-full justify-end px-4 py-3 flex hover:bg-amber-200 items-center gap-3 transition-colors duration-300"
-                  >
-                    <span className="font-medium text-black">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Action Buttons (Replaces three-dots menu) */}
+        <div className="flex gap-2 items-center justify-end">
+          {actions.map((a) => (
+            <button
+              key={a.id}
+              onClick={a.onClick}
+              className={
+                a.tone === "primary"
+                  ? "px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                  : a.tone === "warning"
+                  ? "px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
+                  : "px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }
+            >
+              {a.label}
+            </button>
+          ))}
         </div>
       </div>
 

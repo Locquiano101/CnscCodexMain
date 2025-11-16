@@ -2,6 +2,8 @@ import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import { useState, useEffect } from "react";
 import { Upload, FileText, X } from "lucide-react";
+import CurrencyInput from "../../../../components/currency-input";
+import { Banknote } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 export function EditProposal({ proposal, onClose, onUpdated }) {
   console.log(proposal);
@@ -310,26 +312,20 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
               </div>
 
               {/* Budget */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Budget (₱) *
-                </label>
-                <input
-                  type="number"
-                  name="budget"
-                  value={formData.budget}
-                  onChange={handleInputChange}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.budget ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                />
-                {errors.budget && (
-                  <p className="text-red-500 text-sm mt-1">{errors.budget}</p>
-                )}
-              </div>
+              <CurrencyInput
+                label="Budget *"
+                Icon={Banknote}
+                type="number"
+                inputMode="decimal"
+                name="budget"
+                value={formData.budget}
+                onChange={handleInputChange}
+                placeholder="0.00"
+                min={0}
+                step={0.01}
+                inputClassName={`rounded-lg ${errors.budget ? "border-red-500" : "border-gray-300"} focus:ring-blue-500 focus:border-transparent`}
+                error={errors.budget}
+              />
             </div>
 
             {/* Right Side - SDG Selection and File Upload */}

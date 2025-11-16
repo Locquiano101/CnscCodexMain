@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Calendar, User, FileText, Tag } from "lucide-react";
+import { X, Calendar, User, FileText, Tag, Banknote } from "lucide-react";
+import CurrencyInput from "../../../../../components/currency-input";
 import DocumentUploader from "../../../../../components/document_uploader";
 import { DOCU_API_ROUTER } from "../../../../../App";
 
@@ -343,20 +344,15 @@ export function TransactionModal({
               </div>
 
               {/* Amount */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  ₱ Amount
-                </label>
-                <input
-                  type="text"
-                  name="amount"
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
-                  value={formData.amount}
-                  onChange={handleAmountChange}
-                  required
-                />
-              </div>
+              <CurrencyInput
+                label="Amount"
+                Icon={Banknote}
+                name="amount"
+                value={formData.amount}
+                onChange={handleAmountChange}
+                required
+                placeholder="0.00"
+              />
 
               {/* Date */}
               <div>

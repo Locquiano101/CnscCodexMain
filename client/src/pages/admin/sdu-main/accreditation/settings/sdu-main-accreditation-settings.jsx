@@ -15,7 +15,7 @@ import { SuspendAccreditationProcess } from "./sdu-main-suspend-accreditation";
 import { SduMainUpdateAccreditationDeadline } from "./sdu-main-update-deadline";
 import { SduMainAccreditationWarning } from "./sdu-main-warning-accreditation";
 
-export function SduMainAccreditationSettings() {
+export function SduMainAccreditationSettings({ selectedOrg }) {
   const [deadline, setDeadline] = useState("2024-12-31");
 
   const [resetAccreditationModal, setResetAccreditationModal] = useState(false);
@@ -191,6 +191,8 @@ export function SduMainAccreditationSettings() {
 
       {resetAccreditationModal && (
         <ResetAccreditationModal
+          orgProfileId={selectedOrg?._id}
+          orgName={selectedOrg?.orgName}
           onCancel={() => setResetAccreditationModal(false)}
         />
       )}

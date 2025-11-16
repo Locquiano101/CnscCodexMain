@@ -404,3 +404,71 @@ export const updateAccomplishment = async (req, res) => {
     });
   }
 };
+
+// Reset all accomplishment grades for an organization profile, preserving history
+export const resetAccomplishmentGradesForOrg = async (req, res) => {
+  try {
+    const { OrgProfileId } = req.params;
+    const { resetBy, reason } = req.body || {};
+
+    if (!OrgProfileId) {
+      return res.status(400).json({ success: false, message: "Missing organization profile id" });
+    }
+
+    // Find parent report
+    const report = await Accomplishment.findOne({ organizationProfile: OrgProfileId });
+    if (!report) {
+      return res.status(404).json({ success: false, message: "Accomplishment report not found" });
+    }
+
+    // Load all sub accomplishments
+    const subs = await SubAccomplishment.find({ _id: { $in: report.accomplishments } });
+
+    let modifiedCount = 0;
+    for (const sub of subs) {
+      const prevAwarded = sub.awardedPoints || 0;
+      const prevGrading = sub.grading || {};
+
+      // Only snapshot when there is something to preserve
+      const hadPointsOrGrading = prevAwarded > 0 || (prevGrading && (prevGrading.totalPoints || 0) > 0);
+      if (hadPointsOrGrading) {
+        sub.gradingHistory = sub.gradingHistory || [];
+        sub.gradingHistory.push({
+          snapshotAt: new Date(),
+          reason: reason || "reset",
+          resetBy: resetBy || "System",
+          awardedPoints: prevAwarded,
+          grading: prevGrading,
+        });
+      }
+
+      // Reset current grading
+      sub.grading = {
+        totalPoints: 0,
+        maxPoints: prevGrading?.maxPoints,
+        breakdown: {},
+        comments: "",
+        status: "Pending",
+        gradedAt: undefined,
+        gradedBy: undefined,
+      };
+      sub.awardedPoints = 0;
+
+      await sub.save();
+      modifiedCount++;
+    }
+
+    // Recompute grand total (will be 0 after reset)
+    report.grandTotal = 0;
+    await report.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Reset grades for ${modifiedCount} accomplishments`,
+      grandTotal: report.grandTotal,
+    });
+  } catch (err) {
+    console.error("❌ Error resetting accomplishment grades:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

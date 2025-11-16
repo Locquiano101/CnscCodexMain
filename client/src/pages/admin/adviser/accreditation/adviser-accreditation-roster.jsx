@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import axios from "axios";
-import { MoreHorizontal, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 import { EmailModal } from "../../../../components/accreditation-email";
 import { RosterMemberCard } from "../../../../components/roster-card";
 
 export function AdviserRosterData({ orgData, user }) {
-  const [showDropdown, setShowDropdown] = useState(false);
   const [alertModal, setAlertModal] = useState(false);
   const [revisionModal, setRevisionModal] = useState(false);
   const [approvalModal, setApprovalModal] = useState(false);
@@ -42,18 +41,7 @@ export function AdviserRosterData({ orgData, user }) {
     if (orgData._id) fetchRosterMembers();
   }, [orgData._id]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest(".dropdown-container")) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDropdown]);
+  // Removed dropdown click-outside handler (replaced with visible buttons)
 
   const handleApproval = async ({
     status,
@@ -128,7 +116,6 @@ export function AdviserRosterData({ orgData, user }) {
   }
 
   const handleDropdownAction = (id) => {
-    setShowDropdown(false);
     if (id === "revision") setRevisionModal(true);
     else if (id === "Approval") setApprovalModal(true);
   };
@@ -138,9 +125,9 @@ export function AdviserRosterData({ orgData, user }) {
     member.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const dropdownItems = [
-    { id: "revision", label: "Revision of Roster" },
-    { id: "Approval", label: "Approval of Roster" },
+  const actions = [
+    { id: "revision", label: "Request Revision", tone: "warning" },
+    { id: "Approval", label: "Approve Roster", tone: "primary" },
   ];
 
   return (
@@ -173,34 +160,21 @@ export function AdviserRosterData({ orgData, user }) {
               </span>
             </p>
 
-            {/* Dropdown */}
-            <div className="relative dropdown-container">
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDropdown((prev) => !prev);
-                }}
-              >
-                <MoreHorizontal size={26} className="text-cnsc-primary-color" />
-              </button>
-
-              {showDropdown && (
-                <div
-                  className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden"
-                  onClick={(e) => e.stopPropagation()} // keep open while clicking inside
+            {/* Action Buttons (Replaces dropdown) */}
+            <div className="flex gap-2 items-center">
+              {actions.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => handleDropdownAction(a.id)}
+                  className={
+                    a.tone === "primary"
+                      ? "px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                      : "px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
+                  }
                 >
-                  {dropdownItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleDropdownAction(item.id)}
-                      className="w-full text-left px-4 py-3 text-sm hover:bg-amber-100 transition"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+                  {a.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>

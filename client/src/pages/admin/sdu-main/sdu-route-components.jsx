@@ -197,7 +197,10 @@ export function SduMainComponents({ user }) {
               )}
             />
 
-            <Route path="settings" element={<SduMainAccreditationSettings />} />
+            <Route
+              path="settings"
+              element={<SduMainAccreditationSettings selectedOrg={selectedOrg} />}
+            />
           </Route>
 
           <Route path="reports" element={<SduGenerateReports />} />

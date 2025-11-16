@@ -3,7 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER } from "../../../../../App";
 
-export function ResetAccreditationModal({ action, onCancel }) {
+export function ResetAccreditationModal({ action = "Reset Accreditation Settings", onCancel }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   const [step, setStep] = useState(1);
@@ -13,9 +13,13 @@ export function ResetAccreditationModal({ action, onCancel }) {
     setIsProcessing(true);
 
     try {
-      const res = await axios.post(`${API_ROUTER}/DeactivateAllAccreditation`);
+      const res = await axios.post(
+        `${API_ROUTER}/systemResetAccreditation`,
+        { initiatedBy: "SDU Admin", reason: "manual reset from settings" }
+      );
       console.log("Axios response:", res.data);
       alert("All accreditations have been reset.");
+      onCancel && onCancel();
     } catch (error) {
       console.error("Axios error:", error);
       alert("Failed to reset accreditations.");
@@ -33,10 +37,10 @@ export function ResetAccreditationModal({ action, onCancel }) {
         {step === 1 && (
           <>
             <p className="text-gray-700 mb-6">
-              You are about to <span className="font-semibold">{action}</span>.
-              This action is{" "}
-              <span className="text-red-600 font-semibold">permanent</span> and
-              cannot be undone.
+              You are about to <span className="font-semibold">{action}</span> for the entire system.
+              This will deactivate all accreditations and organization profiles and reset all accomplishment points to 0.
+              Previous grades will be archived for viewing. This action is
+              <span className="text-red-600 font-semibold"> permanent</span> and cannot be undone.
             </p>
             <div className="flex gap-3">
               <button

@@ -1,4 +1,4 @@
-import { Award, FileText, FileTextIcon, MoreHorizontal } from "lucide-react";
+import { Award, FileText, FileTextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UpdateStatusAccomplishment } from "../../../../components/update-status-accomplishment";
 
@@ -14,7 +14,7 @@ export function DeanAccomplishmentReportDetailed({
   const [statusModal, setStatusModal] = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [showDropdown, setShowDropdown] = useState(false);
+  // Replaced three-dots dropdown with visible action buttons
   useEffect(() => {
     if (selectedAccomplishment) {
       setLoading(false);
@@ -114,41 +114,30 @@ export function DeanAccomplishmentReportDetailed({
                 </span>
               </div>
 
-              {/* More Options Dropdown */}
-              <div className="relative">
+              {/* Visible Action Buttons (replacing dropdown) */}
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowDropdown((prev) => !prev)}
-                  className="p-2 rounded-full hover:bg-gray-100 border border-gray-200 transition"
+                  className="px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
+                  onClick={() =>
+                    setStatusModal({
+                      type: "revision",
+                      status: "Revision from Dean",
+                    })
+                  }
                 >
-                  <MoreHorizontal className="text-gray-600" />
+                  Request Revision
                 </button>
-
-                {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition"
-                      onClick={() =>
-                        setStatusModal({
-                          type: "approval",
-                          status: "Approved by Dean",
-                        })
-                      }
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition"
-                      onClick={() =>
-                        setStatusModal({
-                          type: "revision",
-                          status: "Revision from Dean",
-                        })
-                      }
-                    >
-                      Request Revision
-                    </button>
-                  </div>
-                )}
+                <button
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                  onClick={() =>
+                    setStatusModal({
+                      type: "approval",
+                      status: "Approved by Dean",
+                    })
+                  }
+                >
+                  Approve
+                </button>
               </div>
             </div>
           </div>

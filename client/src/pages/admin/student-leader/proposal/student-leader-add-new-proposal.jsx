@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, Banknote } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
+import CurrencyInput from "../../../../components/currency-input";
 import { API_ROUTER } from "../../../../App";
 import axios from "axios";
 
@@ -325,36 +326,27 @@ export function AddNewProposal({ onClose, orgData }) {
               </div>
 
               {/* Budget */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Budget (₱) *
-                </label>
-                <input
-                  type="text"
-                  name="budget"
-                  value={formData.budget}
-                  onChange={(e) => {
-                    let rawValue = e.target.value.replace(/,/g, "");
-                    if (!isNaN(rawValue) && rawValue !== "") {
-                      const formatted =
-                        parseFloat(rawValue).toLocaleString("en-US");
-                      setFormData((prev) => ({ ...prev, budget: formatted }));
-                    } else {
-                      setFormData((prev) => ({ ...prev, budget: "" }));
-                    }
-                    if (errors.budget) {
-                      setErrors((prev) => ({ ...prev, budget: "" }));
-                    }
-                  }}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.budget ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="0.00"
-                />
-                {errors.budget && (
-                  <p className="text-red-500 text-sm mt-1">{errors.budget}</p>
-                )}
-              </div>
+              <CurrencyInput
+                label="Budget *"
+                Icon={Banknote}
+                name="budget"
+                value={formData.budget}
+                onChange={(e) => {
+                  let rawValue = e.target.value.replace(/,/g, "");
+                  if (!isNaN(rawValue) && rawValue !== "") {
+                    const formatted = parseFloat(rawValue).toLocaleString("en-US");
+                    setFormData((prev) => ({ ...prev, budget: formatted }));
+                  } else {
+                    setFormData((prev) => ({ ...prev, budget: "" }));
+                  }
+                  if (errors.budget) {
+                    setErrors((prev) => ({ ...prev, budget: "" }));
+                  }
+                }}
+                placeholder="0.00"
+                inputClassName={`${errors.budget ? "border-red-500" : "border-gray-300"} focus:ring-blue-500 focus:border-transparent`}
+                error={errors.budget}
+              />
             </div>
 
             {/* Right Side - SDG Selection and File Upload */}
