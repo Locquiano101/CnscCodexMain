@@ -10,6 +10,7 @@ export default function Login({ onShowRegistration }) {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log({ email: username, password });
