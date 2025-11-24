@@ -102,7 +102,6 @@ export function OrganizationComponent() {
             currentOrgs.map((org) => (
               console.log(
                       `${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`
-
               ),
               <div
                 key={org?._id || Math.random()}
