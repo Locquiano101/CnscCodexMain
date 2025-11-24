@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import path, { dirname } from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import MongoStore from "connect-mongo";
@@ -131,42 +130,8 @@ app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
 // app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); // LOCALHOST
 
-// Serve uploaded organization files
-// Accreditation and many document uploads are saved to `server/uploads/<organizationProfileId>/<file>`
-// by controller/general-document.js (process.cwd() === server/)
-// Serve uploaded organization files
-// General document uploads are stored at: <repo>/server/uploads/<organizationProfile>/<file>
-// Map them to /uploads to match client DOCU_API_ROUTER usage
-// Try both storage roots: server/uploads (primary) then repo-level public (legacy)
-
-app.get("/uploads/:orgId/:fileName", (req, res, next) => {
-  const { orgId, fileName } = req.params;
-  const primary = path.join(__dirname, "../uploads", orgId, fileName);
-  if (fs.existsSync(primary)) return res.sendFile(primary);
-
-  const legacy = path.join(__dirname, "../../public", orgId, fileName);
-  if (fs.existsSync(legacy)) return res.sendFile(legacy);
-
-  return res.status(404).send("File not found");
-});
-
-// If you want /uploads to point to server/uploads
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
-    maxAge: "30d",
-    etag: true,
-  })
-);
-
-// If you also have files in /app/uploads (optional)
-app.use(
-  "/global-uploads",
-  express.static(path.join(__dirname, "../uploads"), {
-    maxAge: "30d",
-    etag: true,
-  })
-);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+console.log("Serving uploads from:", path.join(__dirname, "../uploads"));
 
 // -------------------- Start Server --------------------
 app.listen(PORT, "0.0.0.0", () => {
