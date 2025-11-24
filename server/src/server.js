@@ -150,8 +150,18 @@ app.get("/uploads/:orgId/:fileName", (req, res, next) => {
   return res.status(404).send("File not found");
 });
 
+// If you want /uploads to point to server/uploads
 app.use(
   "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    maxAge: "30d",
+    etag: true,
+  })
+);
+
+// If you also have files in /app/uploads (optional)
+app.use(
+  "/global-uploads",
   express.static(path.join(__dirname, "../uploads"), {
     maxAge: "30d",
     etag: true,
