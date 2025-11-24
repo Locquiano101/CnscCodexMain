@@ -38,6 +38,7 @@ export function OrganizationComponent() {
     });
   };
 
+
   // --- PAGINATION LOGIC ---
   const totalSections = Math.ceil(filteredOrgs.length / ORGS_PER_PAGE);
   const currentOrgs = filteredOrgs.slice(
@@ -99,6 +100,10 @@ export function OrganizationComponent() {
             </div>
           ) : (
             currentOrgs.map((org) => (
+              console.log(
+                      `${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`
+
+              ),
               <div
                 key={org?._id || Math.random()}
                 onClick={() => handleOrgClick(org)}

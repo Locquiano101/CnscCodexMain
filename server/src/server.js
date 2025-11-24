@@ -138,9 +138,10 @@ app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 // General document uploads are stored at: <repo>/server/uploads/<organizationProfile>/<file>
 // Map them to /uploads to match client DOCU_API_ROUTER usage
 // Try both storage roots: server/uploads (primary) then repo-level public (legacy)
+
 app.get("/uploads/:orgId/:fileName", (req, res, next) => {
   const { orgId, fileName } = req.params;
-  const primary = path.join(__dirname, "../uploads", orgId, fileName);
+  const primary = path.join(process.cwd(), "server/uploads", orgId, fileName);
   if (fs.existsSync(primary)) return res.sendFile(primary);
 
   const legacy = path.join(__dirname, "../../public", orgId, fileName);
@@ -151,7 +152,7 @@ app.get("/uploads/:orgId/:fileName", (req, res, next) => {
 
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "../uploads"), {
+  express.static(path.join(process.cwd(), "server/uploads"), {
     maxAge: "30d",
     etag: true,
   })
