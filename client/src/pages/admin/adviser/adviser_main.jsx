@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { AdviserAccreditationNavigationPage } from "./accreditation/adviser-accreditation.main";
+import AdviserCustomRequirementViewer from "./accreditation/adviser-custom-requirement-viewer";
 import { AdviserFinancialReport } from "./accreditation/adviser-accreditation-financial-report";
 import { AdviserAccreditationDocument } from "./accreditation/adviser-accreditation-documents";
 import { AdviserRosterData } from "./accreditation/adviser-accreditation-roster";
@@ -250,6 +251,35 @@ function AdviserNavigation({ orgData }) {
 }
 // AdviserRoutes.jsx
 function AdviserRoutes({ orgData, user }) {
+  // Fetch visible accreditation requirements for dynamic custom routes
+  const [visibleRequirements, setVisibleRequirements] = useState([]);
+  useEffect(() => {
+    let ignore = false;
+    async function fetchVisible() {
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
+        if (!ignore) setVisibleRequirements(data || []);
+      } catch (err) {
+        console.warn("AdviserRoutes: failed to fetch visible requirements", err?.message);
+      }
+    }
+    fetchVisible();
+    return () => { ignore = true; };
+  }, []);
+
+  const customRequirementRoutes = visibleRequirements
+    .filter((r) => r.type === "custom")
+    .map((r) => (
+      <Route
+        key={r.key}
+        path={`custom-${r.key}`}
+        element={<AdviserCustomRequirementViewer requirementKey={r.key} title={r.title} orgData={orgData} user={user} />}
+      />
+    ));
+
   return (
     <div className="flex flex-col w-full h-full bg-gray-200 overflow-hidden">
       <Routes>
@@ -298,6 +328,7 @@ function AdviserRoutes({ orgData, user }) {
             path="ppa"
             element={<AdviserProposal user={user} orgData={orgData} />}
           />
+          {customRequirementRoutes}
         </Route>
 
         <Route

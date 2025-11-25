@@ -50,41 +50,114 @@ export default function StudentHomePage({ orgData, accreditationData }) {
 
 function AccreditationComponent({ accreditationData }) {
   const { overallStatus } = accreditationData;
+  const [visibleRequirements, setVisibleRequirements] = useState([]);
+  const [customStatusMap, setCustomStatusMap] = useState({});
+  const [loadingCustom, setLoadingCustom] = useState(true);
+  const orgId = accreditationData?.organizationProfile?._id;
 
-  const requirements = [
-    {
-      name: "Joint Statement",
-      status: accreditationData.JointStatement?.status || "Not Submitted",
-    },
-    {
-      name: "Pledge Against Hazing",
-      status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
-    },
-    {
-      name: "Constitution And By-Laws",
-      status:
-        accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-    },
-    {
+  // Fetch visible requirements and custom statuses
+  useEffect(() => {
+    let ignore = false;
+    async function loadCustomRequirements() {
+      setLoadingCustom(true);
+      try {
+        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
+        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        if (!orgId || customs.length === 0) {
+          if (!ignore) setLoadingCustom(false);
+          return;
+        }
+        const results = await Promise.all(
+          customs.map(async (r) => {
+            try {
+              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
+              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+            } catch (e) {
+              return { key: r.key, status: 'Not Submitted' };
+            }
+          })
+        );
+        if (!ignore) {
+          const map = {};
+          results.forEach(({ key, status }) => { map[key] = status; });
+          setCustomStatusMap(map);
+        }
+      } catch (err) {
+        console.error("Failed to load custom requirements:", err);
+        if (!ignore) setVisibleRequirements([]);
+      } finally {
+        if (!ignore) setLoadingCustom(false);
+      }
+    }
+    loadCustomRequirements();
+    return () => { ignore = true; };
+  }, [orgId]);
+
+  // Determine which template requirements are enabled
+  const enabledTemplateKeys = new Set(
+    (visibleRequirements || [])
+      .filter((r) => r.type === "template")
+      .map((r) => r.key)
+  );
+
+  const requirements = [];
+  // Only include document trio if template 'accreditation-documents' is enabled
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+    requirements.push(
+      {
+        name: "Joint Statement",
+        status: accreditationData.JointStatement?.status || "Not Submitted",
+      },
+      {
+        name: "Pledge Against Hazing",
+        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+      },
+      {
+        name: "Constitution And By-Laws",
+        status:
+          accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
+      }
+    );
+  }
+  // Roster
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("roster")) {
+    requirements.push({
       name: "Roster Members",
       status: accreditationData.Roster?.overAllStatus || "Incomplete",
-    },
-    {
+    });
+  }
+  // President profile
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+    requirements.push({
       name: "President Profile",
       status:
         accreditationData.PresidentProfile?.overAllStatus || "Not Submitted",
-    },
-    {
+    });
+  }
+  // Financial Report
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+    requirements.push({
       name: "Financial Report",
       status: accreditationData.FinancialReport?.isActive
         ? "Active"
         : "Inactive",
-    },
-  ];
+    });
+  }
 
-  const completedRequirements = requirements.filter((req) =>
-    ["approved", "submitted", "active"].includes(req.status?.toLowerCase())
-  ).length;
+  // Append custom requirements
+  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  for (const req of customVisible) {
+    requirements.push({
+      name: req.title,
+      status: customStatusMap[req.key] || "Not Submitted",
+    });
+  }
+
+  const completedRequirements = requirements.filter((req) => {
+    const s = (req.status || "").toLowerCase();
+    return s === "approved" || s === "submitted" || s === "active";
+  }).length;
   const progressPercentage =
     (completedRequirements / requirements.length) * 100;
 
@@ -93,19 +166,51 @@ function AccreditationComponent({ accreditationData }) {
     if (["approved", "submitted", "active"].includes(statusLower)) {
       return "text-emerald-700 bg-emerald-50";
     }
+    if (statusLower === "deanapproved") {
+      return "text-indigo-700 bg-indigo-50";
+    }
+    if (statusLower === "adviserapproved") {
+      return "text-blue-700 bg-blue-50";
+    }
+    if (statusLower === "revisionrequested") {
+      return "text-orange-700 bg-orange-50";
+    }
     if (statusLower === "pending") {
       return "text-amber-700 bg-amber-50";
+    }
+    if (statusLower === "rejected") {
+      return "text-red-700 bg-red-50";
     }
     return "text-slate-700 bg-slate-100";
   };
 
+  const getDisplayStatus = (status) => {
+    const statusMap = {
+      "DeanApproved": "Approved by the Dean",
+      "AdviserApproved": "Approved by the Adviser",
+      "RevisionRequested": "Revision Requested",
+      "Not Submitted": "Not Submitted",
+      "Incomplete": "Incomplete",
+      "Approved": "Approved",
+      "Pending": "Pending",
+      "Rejected": "Rejected",
+      "Submitted": "Submitted",
+      "Active": "Active",
+      "Inactive": "Inactive"
+    };
+    return statusMap[status] || status;
+  };
+
   const getStatusIcon = (status) => {
     const statusLower = status?.toLowerCase();
-    if (["approved", "submitted", "active"].includes(statusLower)) {
+    if (["approved", "submitted", "active", "deanapproved", "adviserapproved"].includes(statusLower)) {
       return <CheckCircle className="w-4 h-4 text-emerald-600" />;
     }
-    if (statusLower === "pending") {
+    if (["pending", "revisionrequested"].includes(statusLower)) {
       return <Clock className="w-4 h-4 text-amber-600" />;
+    }
+    if (statusLower === "rejected") {
+      return <AlertCircle className="w-4 h-4 text-red-600" />;
     }
     return <AlertCircle className="w-4 h-4 text-slate-500" />;
   };
@@ -150,27 +255,36 @@ function AccreditationComponent({ accreditationData }) {
         <h3 className="text-lg font-semibold text-slate-800 mb-4">
           Requirements Checklist
         </h3>
-        {requirements.map((req, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-slate-400" />
-              <span className="font-medium text-slate-800 text-sm">
-                {req.name}
-              </span>
-            </div>
+        {requirements.map((req, index) => {
+          const displayStatus = getDisplayStatus(req.status);
+          return (
             <div
-              className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${getStatusColor(
-                req.status
-              )}`}
+              key={index}
+              className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
             >
-              {getStatusIcon(req.status)}
-              <span>{req.status}</span>
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-slate-400" />
+                <span className="font-medium text-slate-800 text-sm">
+                  {req.name}
+                </span>
+              </div>
+              <div
+                className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${getStatusColor(
+                  req.status
+                )}`}
+              >
+                {getStatusIcon(req.status)}
+                <span>{displayStatus}</span>
+              </div>
             </div>
+          );
+        })}
+        {loadingCustom && (
+          <div className="flex items-center justify-center p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+            <Clock className="w-4 h-4 mr-2 animate-spin" />
+            Loading custom requirements...
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

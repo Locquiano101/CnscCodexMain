@@ -9,6 +9,7 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 
 import apiRoutes from "./routers.js";
+import { AccreditationRequirement } from "./models/index.js";
 
 dotenv.config();
 
@@ -31,6 +32,44 @@ async function connectDB() {
 }
 
 connectDB();
+
+// -------------------- Seed Accreditation Requirements --------------------
+async function seedAccreditationRequirements() {
+  try {
+    const templates = [
+      { key: "president-info", title: "President's Information" },
+      { key: "financial-report", title: "Financial Report" },
+      { key: "roster", title: "Members Roster" },
+      { key: "accreditation-documents", title: "Accreditation Documents" },
+      { key: "action-plan", title: "Action Plan" },
+    ];
+
+    for (const tpl of templates) {
+      const existing = await AccreditationRequirement.findOne({ key: tpl.key });
+      if (!existing) {
+        await AccreditationRequirement.create({
+          key: tpl.key,
+          type: "template",
+          title: tpl.title,
+          removable: false,
+          enabled: true,
+        });
+        console.log(`✅ Seeded accreditation template: ${tpl.key}`);
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error seeding accreditation requirements", err.message);
+  }
+}
+
+seedAccreditationRequirements();
+
+// Log gating status early for operational visibility
+if (process.env.ENABLE_REQUIREMENT_GATING === "true") {
+  console.log("🔐 Accreditation requirement gating ENABLED");
+} else {
+  console.log("🔓 Accreditation requirement gating DISABLED (set ENABLE_REQUIREMENT_GATING=true to activate)");
+}
 
 // -------------------- Profanity Middleware --------------------
 const badWords = [
@@ -128,10 +167,15 @@ const activityMiddleware = (req, res, next) => {
 // -------------------- Routes --------------------
 app.use("/api", profanityMiddleware, activityMiddleware, apiRoutes);
 
-// app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); // LOCALHOST
-
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-console.log("Serving uploads from:", path.join(__dirname, "../uploads"));
+// Serve uploaded files statically
+// All uploads are stored at: server/uploads/<organizationProfile>/<file>
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"), {
+    maxAge: "30d",
+    etag: true,
+  })
+);
 
 // -------------------- Start Server --------------------
 app.listen(PORT, "0.0.0.0", () => {

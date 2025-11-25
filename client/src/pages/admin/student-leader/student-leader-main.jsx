@@ -39,6 +39,7 @@ import backgroundImage from "./../../../assets/cnsc-codex-2.svg";
 
 import { StudentPost } from "./posts/student-post";
 import { StudentLeaderNotification } from "./student-leader-notification";
+import DocumentUploader from "../../../components/document_uploader";
 
 export default function StudentLeaderMainPage() {
   // User and organization data
@@ -188,6 +189,7 @@ export default function StudentLeaderMainPage() {
           <StudentRoutes
             orgData={orgData}
             accreditationData={accreditationData}
+            user={user}
           />
         </div>
       </div>
@@ -210,7 +212,38 @@ export default function StudentLeaderMainPage() {
   );
 }
 
-function StudentRoutes({ orgData, accreditationData }) {
+function StudentRoutes({ orgData, accreditationData, user }) {
+  // Fetch visible accreditation requirements for dynamic custom routes
+  const [visibleRequirements, setVisibleRequirements] = useState([]);
+  useEffect(() => {
+    let ignore = false;
+    async function fetchVisible() {
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
+        if (!ignore) setVisibleRequirements(data || []);
+      } catch (err) {
+        console.warn("StudentRoutes: failed to fetch visible requirements", err?.message);
+      }
+    }
+    fetchVisible();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const customRequirementRoutes = visibleRequirements
+    .filter((r) => r.type === "custom")
+    .map((r) => (
+      <Route
+        key={r.key}
+        path={`custom-${r.key}`}
+        element={<StudentLeaderCustomRequirementViewer requirementKey={r.key} title={r.title} orgData={orgData} user={user} />}
+      />
+    ));
+
   return (
     <div className="flex flex-col w-full h-full bg-gray-200 overflow-hidden">
       <Routes>
@@ -277,6 +310,7 @@ function StudentRoutes({ orgData, accreditationData }) {
               />
             }
           />
+          {customRequirementRoutes}
         </Route>
 
         <Route
@@ -301,6 +335,154 @@ function StudentRoutes({ orgData, accreditationData }) {
           }
         />
       </Routes>
+    </div>
+  );
+}
+
+// Lightweight viewer for custom accreditation requirements for student leaders.
+// Future enhancement: allow document upload per custom requirement.
+function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, user }) {
+  const [submission, setSubmission] = useState(null); // { status, document { fileName } }
+  const [loading, setLoading] = useState(true);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  // Derive organization profile id directly from orgData passed down
+  const orgProfileId = orgData?._id || user?.organization?._id;
+
+  useEffect(() => {
+    let ignore = false;
+    async function fetchSubmission() {
+      if (!orgProfileId) return;
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/${requirementKey}/submission/${orgProfileId}`,
+          { withCredentials: true }
+        );
+        if (!ignore) setSubmission(data.submission);
+      } catch (err) {
+        console.warn("Failed to fetch requirement submission", err?.message);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    fetchSubmission();
+    return () => {
+      ignore = true;
+    };
+  }, [orgProfileId, requirementKey]);
+
+  const handleUpload = async () => {
+    if (!file || !orgProfileId) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("organizationProfile", orgProfileId);
+      const { data } = await axios.post(
+        `${API_ROUTER}/accreditation/requirements/${requirementKey}/submit`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" }, withCredentials: true }
+      );
+      setSubmission(data.submission);
+      setFile(null);
+    } catch (err) {
+      alert(err.response?.data?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const statusStyles = {
+    Approved: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    Pending: "bg-amber-50 text-amber-700 border border-amber-200",
+    Rejected: "bg-red-50 text-red-700 border border-red-200",
+  };
+  const pill = submission?.status ? (
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[submission.status] || "bg-gray-100 text-gray-600 border"}`}>{submission.status}</span>
+  ) : null;
+
+  return (
+    <div className="p-6">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">{title} {pill}</h2>
+        </div>
+        <p className="text-sm text-gray-600">
+          Upload the document corresponding to <code>{requirementKey}</code>. Re-uploading will replace the previous file and reset status to Pending.
+        </p>
+        {loading && <div className="text-gray-500 text-sm">Loading submission info...</div>}
+        <div className="flex flex-col lg:flex-row gap-6 overflow-hidden">
+          {/* Left: Uploader + logs */}
+          <div className="w-full lg:w-1/3 flex flex-col gap-4">
+            <DocumentUploader
+              onFileSelect={setFile}
+              acceptedFormats="application/pdf"
+              title={submission ? "Select a document to replace" : "Select a document to upload"}
+              showReset={true}
+              className="mb-2"
+            />
+            <button
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              onClick={handleUpload}
+              disabled={!file || uploading}
+            >
+              {uploading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block mr-2"></div>
+                  Uploading...
+                </>
+              ) : submission ? (
+                "Replace File"
+              ) : (
+                "Upload File"
+              )}
+            </button>
+            {submission?.logs && submission.logs.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <h4 className="font-semibold text-gray-900 mb-2">Document Logs</h4>
+                <ul className="space-y-1 text-sm text-gray-700 max-h-32 overflow-y-auto">
+                  {submission.logs.map((log, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full mt-1"></span>
+                      <span>{log}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          {/* Right: Preview */}
+          <div className="flex-1 min-h-[420px] flex flex-col">
+            {!loading && submission?.document?.fileName ? (
+              <div className="flex-1 flex flex-col gap-3">
+                <div className="border rounded-lg overflow-hidden bg-white shadow-sm flex-1">
+                  <iframe
+                    className="w-full h-[520px]"
+                    src={`${DOCU_API_ROUTER}/${orgProfileId}/${submission.document.fileName}#toolbar=0&navpanes=0&scrollbar=0`}
+                    title="Requirement Submission Preview"
+                    onError={() => setPreviewError(true)}
+                  />
+                </div>
+                {previewError && (
+                  <div className="p-4 text-sm rounded-md bg-red-50 border border-red-200 text-red-700 flex flex-col gap-2">
+                    <span>File not found at the expected path.</span>
+                    <span>It may be stored in a legacy folder. Use the fallback link or re-upload.</span>
+                  </div>
+                )}
+                
+              </div>
+            ) : (
+              !loading && (
+                <div className="flex-1 border border-dashed rounded-xl text-center text-gray-500 bg-white flex items-center justify-center">
+                  No submission yet.
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -663,28 +845,77 @@ function LogoutButton() {
   );
 }
 function StudentAccreditationNavigationPage() {
-  const tabs = [
-    { to: ".", label: "Overview", end: true },
-    { to: "financial-report", label: "Financial Report" },
-    { to: "documents", label: "Accreditation Documents" },
-    { to: "roster-of-members", label: "Roster of Members" },
-    { to: "president-information", label: "President's Information Sheet" },
-    { to: "PPA", label: "Proposed Action Plan" },
+  // Fetch all visible requirements so we can display both template and custom items.
+  const [visibleRequirements, setVisibleRequirements] = useState(null); // null = loading; [] = none
+  useEffect(() => {
+    let ignore = false;
+    async function fetchVisible() {
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
+        if (!ignore) setVisibleRequirements(data || []);
+      } catch (err) {
+        console.warn("StudentAccreditationNavigationPage: failed to fetch requirements", err?.message);
+        setVisibleRequirements([]); // fallback show all templates by default below
+      }
+    }
+    fetchVisible();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const templateMap = {
+    "financial-report": { to: "financial-report", label: "Financial Report" },
+    "accreditation-documents": { to: "documents", label: "Accreditation Documents" },
+    roster: { to: "roster-of-members", label: "Roster of Members" },
+    "president-info": { to: "president-information", label: "President's Information Sheet" },
+    "action-plan": { to: "PPA", label: "Proposed Action Plan" },
+  };
+  const orderedTemplateKeys = [
+    "financial-report",
+    "accreditation-documents",
+    "roster",
+    "president-info",
+    "action-plan",
   ];
+
+  const enabledTemplateTabs = orderedTemplateKeys
+    .filter((key) => {
+      if (visibleRequirements === null) return true; // optimistic show while loading
+      const anyDisabledFallback = visibleRequirements.length === 0; // we treat empty as error fallback
+      if (anyDisabledFallback) return true;
+      return visibleRequirements.some((r) => r.type === "template" && r.key === key);
+    })
+    .map((key) => templateMap[key]);
+
+  const customTabs = (visibleRequirements || [])
+    .filter((r) => r.type === "custom")
+    .map((r) => ({ to: `custom-${r.key}`, label: r.title }));
+
+  const tabs = [{ to: ".", label: "Overview", end: true }, ...enabledTemplateTabs, ...customTabs];
 
   return (
     <div className="h-full flex flex-col ">
       {/* Navigation */}
-      <nav className="flex gap-4 px-6 py-4 bg-white  ">
+      <nav
+        className="flex gap-4 px-6 py-4 bg-white overflow-x-auto flex-nowrap nav-scroll relative"
+        role="tablist"
+        aria-label="Accreditation Sections"
+      >
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}
             end={tab.end}
+            role="tab"
+            aria-selected={undefined}
             className={({ isActive }) =>
-              `text-lg font-semibold px-4 pt-2 ${
+              `text-lg font-semibold px-4 pt-2 whitespace-nowrap transition-colors ${
                 isActive
-                  ? "border-b-2 border-cnsc-primary-z color text-cnsc-primary-color"
+                  ? "border-b-2 border-cnsc-primary-color text-cnsc-primary-color"
                   : "text-gray-600 hover:text-cnsc-primary-color"
               }`
             }
@@ -694,8 +925,8 @@ function StudentAccreditationNavigationPage() {
         ))}
       </nav>
 
-      {/* Tab Content */}
-      <div className="h-full overflow-hidden  flex flex-col ">
+      {/* Tab Content (make scrollable) */}
+      <div className="h-full overflow-y-auto flex flex-col ">
         <Outlet />
       </div>
     </div>

@@ -21,7 +21,11 @@ import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import DocumentUploader from "../../../../components/document_uploader";
 
 export default function StudentAccreditationMainComponent({ orgId }) {
+  console.log("🎯 StudentAccreditationMainComponent mounted with orgId:", orgId);
   const [accreditationData, setAccreditationData] = useState(null);
+  const [visibleRequirements, setVisibleRequirements] = useState([]); // enabled templates + custom
+  const [customStatusMap, setCustomStatusMap] = useState({}); // { key: status }
+  const [loadingCustom, setLoadingCustom] = useState(true); // track custom requirements loading
   const [uploadingDocType, setUploadingDocType] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -64,6 +68,55 @@ export default function StudentAccreditationMainComponent({ orgId }) {
     };
 
     GetAccreditationInformation();
+  }, [orgId]);
+
+  // Load visible requirements and current student's submission statuses for custom ones
+  useEffect(() => {
+    console.log("🚀 Starting to load visible requirements, orgId:", orgId);
+    let ignore = false;
+    async function loadVisibleAndStatuses() {
+      setLoadingCustom(true);
+      try {
+        console.log("🌐 Fetching from:", `${API_ROUTER}/accreditation/requirements/visible`);
+        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        console.log("📋 Visible requirements fetched:", data);
+        if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
+        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        console.log("🔧 Custom requirements found:", customs);
+        if (!orgId || customs.length === 0) {
+          console.log("⚠️ No orgId or no custom requirements, skipping submission fetch");
+          if (!ignore) setLoadingCustom(false);
+          return;
+        }
+        const results = await Promise.all(
+          customs.map(async (r) => {
+            try {
+              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
+              console.log(`✅ Submission for ${r.key}:`, sub);
+              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+            } catch (e) {
+              console.warn(`❌ Failed to fetch submission for ${r.key}:`, e.message);
+              return { key: r.key, status: 'Not Submitted' };
+            }
+          })
+        );
+        if (!ignore) {
+          const map = {};
+          results.forEach(({ key, status }) => { map[key] = status; });
+          console.log("🗺️ Custom status map:", map);
+          setCustomStatusMap(map);
+        }
+      } catch (err) {
+        console.error("❌ Failed to load visible requirements:", err);
+        if (!ignore) {
+          setVisibleRequirements([]);
+        }
+      } finally {
+        if (!ignore) setLoadingCustom(false);
+      }
+    }
+    loadVisibleAndStatuses();
+    return () => { ignore = true; };
   }, [orgId]);
 
   // Create new accreditation for this org
@@ -162,7 +215,12 @@ export default function StudentAccreditationMainComponent({ orgId }) {
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-1">
           <div className="lg:col-span-2 xl:col-span-3 p-1">
-            <OverallStatus accreditationData={accreditationData} />
+            <OverallStatus
+              accreditationData={accreditationData}
+              visibleRequirements={visibleRequirements}
+              customStatusMap={customStatusMap}
+              loadingCustom={loadingCustom}
+            />
           </div>
 
           <div className="lg:col-span-2 p-1 ">
@@ -352,43 +410,82 @@ function ErrorState({ error, onRetry }) {
   </div>;
 }
 
-function OverallStatus({ accreditationData }) {
+function OverallStatus({ accreditationData, visibleRequirements = [], customStatusMap = {}, loadingCustom = false }) {
   const { overallStatus } = accreditationData ?? {};
-  const requirements = [
-    {
-      name: "Joint Statement",
-      status: accreditationData.JointStatement?.status || "Not Submitted",
-    },
-    {
-      name: "Pledge Against Hazing",
-      status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
-    },
-    {
-      name: "Constitution And By-Laws",
-      status:
-        accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-    },
+  
+  console.log("📊 OverallStatus received:", {
+    visibleRequirements,
+    customStatusMap,
+    loadingCustom,
+    accreditationData
+  });
 
-    {
+  // Determine which template requirements are enabled (by key)
+  const enabledTemplateKeys = new Set(
+    (visibleRequirements || [])
+      .filter((r) => r.type === "template")
+      .map((r) => r.key)
+  );
+
+  console.log("🔑 Enabled template keys:", Array.from(enabledTemplateKeys));
+
+  const requirements = [];
+  // Only include document trio if template 'accreditation-documents' is enabled
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+    requirements.push(
+      {
+        name: "Joint Statement",
+        status: accreditationData.JointStatement?.status || "Not Submitted",
+      },
+      {
+        name: "Pledge Against Hazing",
+        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+      },
+      {
+        name: "Constitution And By-Laws",
+        status:
+          accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
+      }
+    );
+  }
+  // Roster
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("roster")) {
+    requirements.push({
       name: "Roster Members",
       status: accreditationData.Roster?.overAllStatus || "Incomplete",
-    },
-    {
+    });
+  }
+  // President profile
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+    requirements.push({
       name: "President Profile",
-      status:
-        accreditationData.PresidentProfile?.overAllStatus || "Not Submitted",
-    },
-    {
+      status: accreditationData.PresidentProfile?.overAllStatus || "Not Submitted",
+    });
+  }
+  // Financial Report
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+    requirements.push({
       name: "Finacial Report",
-      status: accreditationData.FinancialReport?.isActive
-        ? "Active"
-        : "Inactive",
-    },
-  ];
+      status: accreditationData.FinancialReport?.isActive ? "Active" : "Inactive",
+    });
+  }
 
-  const completedRequirements = requirements.filter((req) =>
-    ["approved", "submitted", "active"].includes(req.status?.toLowerCase())
-  ).length;
+  // Append custom requirements (enabled ones only)
+  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  console.log("🎨 Custom visible requirements to add:", customVisible);
+  for (const req of customVisible) {
+    requirements.push({
+      name: req.title,
+      status: customStatusMap[req.key] || "Not Submitted",
+    });
+  }
+
+  console.log("📝 Final requirements list:", requirements);
+
+  const completedRequirements = requirements.filter((req) => {
+    const s = (req.status || "").toLowerCase();
+    return s === "approved" || s === "submitted" || s === "active";
+  }).length;
   const progressPercentage =
     (completedRequirements / requirements.length) * 100;
 
@@ -424,21 +521,31 @@ function OverallStatus({ accreditationData }) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Requirements Checklist
         </h3>
-        {requirements.map((req, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between p-3 bg-gray-50 "
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-gray-400" />
-              <span className="font-medium text-gray-900">{req.name}</span>
+        {requirements.map((req, index) => {
+          const displayStatus = getDisplayStatus(req.status);
+          const statusColor = getStatusColor(req.status);
+          return (
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-gray-400" />
+                <span className="font-medium text-gray-900">{req.name}</span>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-sm flex items-center gap-2 ${statusColor}`}>
+                {getStatusIcon(req.status)}
+                <span>{displayStatus}</span>
+              </div>
             </div>
-            <div className={`px-3 py-1 -full text-sm flex items-center gap-2 `}>
-              {getStatusIcon(req.status)}
-              <span>{req.status}</span>
-            </div>
+          );
+        })}
+        {loadingCustom && (
+          <div className="flex items-center justify-center p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+            <Clock className="w-4 h-4 mr-2 animate-spin" />
+            Loading custom requirements...
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -770,6 +877,12 @@ function getStatusColor(status) {
   switch (status?.toLowerCase()) {
     case "approved":
       return "text-green-600 bg-green-50";
+    case "deanapproved":
+      return "text-indigo-700 bg-indigo-50";
+    case "adviserapproved":
+      return "text-blue-700 bg-blue-50";
+    case "revisionrequested":
+      return "text-orange-700 bg-orange-50";
     case "pending":
       return "text-yellow-600 bg-yellow-50";
     case "rejected":
@@ -783,10 +896,33 @@ function getStatusColor(status) {
   }
 }
 
+function getDisplayStatus(status) {
+  const statusMap = {
+    "DeanApproved": "Approved by the Dean",
+    "AdviserApproved": "Approved by the Adviser",
+    "RevisionRequested": "Revision Requested",
+    "Not Submitted": "Not Submitted",
+    "Incomplete": "Incomplete",
+    "Approved": "Approved",
+    "Pending": "Pending",
+    "Rejected": "Rejected",
+    "Submitted": "Submitted",
+    "Active": "Active",
+    "Inactive": "Inactive"
+  };
+  return statusMap[status] || status;
+}
+
 function getStatusIcon(status) {
   switch (status?.toLowerCase()) {
     case "approved":
       return <CheckCircle className="w-4 h-4" />;
+    case "deanapproved":
+      return <CheckCircle className="w-4 h-4" />;
+    case "adviserapproved":
+      return <CheckCircle className="w-4 h-4" />;
+    case "revisionrequested":
+      return <AlertCircle className="w-4 h-4" />;
     case "pending":
       return <Clock className="w-4 h-4" />;
     case "rejected":

@@ -27,6 +27,8 @@ import { SduMainIndividualProposeActionPlan } from "./proposal-conduct/sdu-main-
 import { SduGenerateReports } from "./generate-reports/sdu-generate-report";
 import SduAuditLogsPage from "./logs/sdu-audit-logs";
 import SduRoomsLocations from "./rooms/sdu-rooms-locations";
+import SduAccreditationRequirementsManager from "./accreditation/requirements_manager";
+import SduCustomRequirementViewer from "./accreditation/sdu-custom-requirement-viewer";
 
 export function SduMainComponents({ user }) {
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -202,6 +204,14 @@ export function SduMainComponents({ user }) {
             <Route
               path="settings"
               element={<SduMainAccreditationSettings selectedOrg={selectedOrg} />}
+            />
+            <Route
+              path="requirements"
+              element={<SduAccreditationRequirementsManager />}
+            />
+            <Route
+              path="req/:reqKey"
+              element={<SduCustomRequirementViewer selectedOrg={selectedOrg} />}
             />
           </Route>
 

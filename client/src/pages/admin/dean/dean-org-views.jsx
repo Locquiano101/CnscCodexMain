@@ -14,6 +14,7 @@ import {
 
 import axios from "axios";
 import { API_ROUTER } from "../../../App";
+// TODO: Migrate API_ROUTER import to central config if available (parity with adviser pages)
 
 import { DeanFinancialReport } from "./individual-accreditation/dean-accreditation-financial-report";
 import { DeanRosterData } from "./individual-accreditation/dean-accreditation-roster";
@@ -22,6 +23,7 @@ import { DeanAccreditationDocument } from "./individual-accreditation/dean-accre
 import { DeanAccomplishmentReport } from "./accomplishment/dean-accomplishment";
 import { DeanProposalConduct } from "./proposals/dean-proposal";
 import { DeanProposedPlan } from "./individual-accreditation/dean-accreditation-proposed-plan";
+import DeanCustomRequirementViewer from "./individual-accreditation/dean-custom-requirement-viewer";
 
 export function OrgHome({
   displayOrg, // latest active profile OR baseOrg
@@ -32,8 +34,10 @@ export function OrgHome({
   const [tab, setTab] = useState("Overview");
   const [underlineStyle, setUnderlineStyle] = useState({});
   const tabsRef = useRef([]);
-
-  const headertabs = useMemo(
+  // Visible accreditation requirements (template + custom) for dynamic dean tabs
+  const [visibleRequirements, setVisibleRequirements] = useState(null); // null = loading, [] = loaded none/error
+  // Dean header tabs: start with templates then append custom requirement titles
+  const templateHeadertabs = useMemo(
     () => [
       { label: "Overview" },
       { label: "President Information" },
@@ -43,16 +47,40 @@ export function OrgHome({
     ],
     []
   );
+  const customHeadertabs = useMemo(
+    () => (visibleRequirements || [])
+      .filter(r => r.type === 'custom')
+      .map(r => ({ label: r.title, key: r.key })),
+    [visibleRequirements]
+  );
+  const headertabs = useMemo(
+    () => [...templateHeadertabs, ...customHeadertabs],
+    [templateHeadertabs, customHeadertabs]
+  );
+
+  // Fetch visible requirements once (global list) to build dean custom tabs
+  useEffect(() => {
+    let ignore = false;
+    async function fetchVisible() {
+      try {
+        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        if (!ignore) setVisibleRequirements(data || []);
+      } catch (e) {
+        if (!ignore) setVisibleRequirements([]);
+        console.warn("Dean OrgHome: failed to fetch visible requirements", e?.message);
+      }
+    }
+    fetchVisible();
+    return () => { ignore = true; };
+  }, []);
 
   // underline animation
   useEffect(() => {
     const activeIndex = headertabs.findIndex((t) => t.label === tab);
     const activeEl = tabsRef.current[activeIndex];
     if (activeEl) {
-      setUnderlineStyle({
-        left: activeEl.offsetLeft,
-        width: activeEl.offsetWidth,
-      });
+      const next = { left: activeEl.offsetLeft, width: activeEl.offsetWidth };
+      setUnderlineStyle(prev => (prev.left === next.left && prev.width === next.width) ? prev : next);
     }
   }, [tab, headertabs]);
 
@@ -170,26 +198,19 @@ export function OrgHome({
 
   return (
     <>
-      {/* Tabs Header */}
-      <header className="relative flex h-14 w-full border-b border-gray-400">
+      {/* Tabs Header (includes dynamic custom requirement tabs) */}
+      <header className="relative flex h-14 w-full border-b border-gray-400 overflow-x-auto custom-scroll whitespace-nowrap">
         {headertabs.map(({ label }, idx) => (
           <button
             key={label}
             ref={(el) => (tabsRef.current[idx] = el)}
             onClick={() => setTab(label)}
-            className={`w-40 text-sm font-semibold px-4 py-2 flex items-center justify-center transition-colors duration-300 ${
-              tab === label
-                ? "text-cnsc-primary-color"
-                : "text-gray-600 hover:text-cnsc-primary-color hover:bg-gray-100"
-            }`}
+            className={`flex-shrink-0 w-40 text-sm font-semibold px-4 py-2 flex items-center justify-center transition-colors duration-300 ${tab === label ? 'text-cnsc-primary-color' : 'text-gray-600 hover:text-cnsc-primary-color hover:bg-gray-100'}`}
           >
             {label}
           </button>
         ))}
-        <span
-          className="absolute bottom-0 h-[2px] bg-cnsc-primary-color transition-all duration-500 ease-in-out"
-          style={underlineStyle}
-        />
+        <span className="absolute bottom-0 h-[2px] bg-cnsc-primary-color transition-all duration-500 ease-in-out" style={underlineStyle} />
       </header>
 
       {/* Tab Content */}
@@ -369,6 +390,18 @@ export function OrgHome({
             <DeanProposedPlan selectedOrg={displayOrg} />
           </div>
         )}
+        {/* Dynamic Custom Requirement Viewer Tabs */}
+        {customHeadertabs.map(cr => (
+          tab === cr.label ? (
+            <div key={cr.key} className="w-full h-full">
+              <DeanCustomRequirementViewer
+                requirementKey={cr.key}
+                title={cr.label}
+                selectedOrg={displayOrg}
+              />
+            </div>
+          ) : null
+        ))}
       </div>
     </>
   );

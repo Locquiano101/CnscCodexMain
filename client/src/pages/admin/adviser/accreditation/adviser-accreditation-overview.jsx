@@ -233,42 +233,119 @@ function ErrorState({ error, onRetry }) {
 
 function OverallStatus({ accreditationData }) {
   const { overallStatus } = accreditationData;
-  const requirements = [
-    {
-      name: "Joint Statement",
-      status: accreditationData.JointStatement?.status || "Not Submitted",
-    },
-    {
-      name: "Pledge Against Hazing",
-      status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
-    },
-    {
-      name: "Constitution And By-Laws",
-      status:
-        accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-    },
+  const [visibleRequirements, setVisibleRequirements] = useState([]);
+  const [customStatusMap, setCustomStatusMap] = useState({});
+  const [loadingCustom, setLoadingCustom] = useState(true);
 
-    {
+  // Fetch visible requirements and custom statuses
+  useEffect(() => {
+    let ignore = false;
+    async function loadCustomRequirements() {
+      setLoadingCustom(true);
+      try {
+        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
+        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        const orgId = accreditationData.organizationProfile?._id;
+        if (!orgId || customs.length === 0) {
+          if (!ignore) setLoadingCustom(false);
+          return;
+        }
+        const results = await Promise.all(
+          customs.map(async (r) => {
+            try {
+              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
+              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+            } catch (e) {
+              return { key: r.key, status: 'Not Submitted' };
+            }
+          })
+        );
+        if (!ignore) {
+          const map = {};
+          results.forEach(({ key, status }) => { map[key] = status; });
+          setCustomStatusMap(map);
+        }
+      } catch (err) {
+        console.error("Failed to load custom requirements:", err);
+        if (!ignore) setVisibleRequirements([]);
+      } finally {
+        if (!ignore) setLoadingCustom(false);
+      }
+    }
+    if (accreditationData?.organizationProfile?._id) {
+      loadCustomRequirements();
+    }
+    return () => { ignore = true; };
+  }, [accreditationData]);
+
+  // Determine which template requirements are enabled
+  const enabledTemplateKeys = new Set(
+    (visibleRequirements || [])
+      .filter((r) => r.type === "template")
+      .map((r) => r.key)
+  );
+
+  const requirements = [];
+  // Only include document trio if template 'accreditation-documents' is enabled
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+    requirements.push(
+      {
+        name: "Joint Statement",
+        status: accreditationData.JointStatement?.status || "Not Submitted",
+      },
+      {
+        name: "Pledge Against Hazing",
+        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+      },
+      {
+        name: "Constitution And By-Laws",
+        status:
+          accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
+      }
+    );
+  }
+  // Roster
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("roster")) {
+    requirements.push({
       name: "Roster Members",
       status: accreditationData.Roster?.overAllStatus || "Incomplete",
-    },
-    {
+    });
+  }
+  // President profile
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+    requirements.push({
       name: "President Profile",
-      status: accreditationData.PresidentProfile?.overAllStatus,
-    },
-    {
-      name: "Finacial Report",
+      status:
+        accreditationData.PresidentProfile?.overAllStatus || "Not Submitted",
+    });
+  }
+  // Financial Report
+  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+    requirements.push({
+      name: "Financial Report",
       status: accreditationData.FinancialReport?.isActive
         ? "Active"
         : "Inactive",
-    },
-  ];
+    });
+  }
 
-  const completedRequirements = requirements.filter((req) =>
-    ["approved", "submitted", "active"].includes(req.status?.toLowerCase())
-  ).length;
-  const progressPercentage =
-    (completedRequirements / requirements.length) * 100;
+  // Append custom requirements
+  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  for (const req of customVisible) {
+    requirements.push({
+      name: req.title,
+      status: customStatusMap[req.key] || "Not Submitted",
+    });
+  }
+
+  const completedRequirements = requirements.filter((req) => {
+    const s = (req.status || "").toLowerCase();
+    return s === "approved" || s === "submitted" || s === "active";
+  }).length;
+  const progressPercentage = requirements.length > 0
+    ? (completedRequirements / requirements.length) * 100
+    : 0;
 
   return (
     <div className="bg-white  border border-gray-400 p-6 h-full">
@@ -307,6 +384,12 @@ function OverallStatus({ accreditationData }) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Requirements Checklist
         </h3>
+        {loadingCustom && (
+          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg text-blue-700 text-sm">
+            <div className="animate-spin">⏳</div>
+            <span>Loading custom requirements...</span>
+          </div>
+        )}
         {requirements.map((req, index) => (
           <div
             key={index}
@@ -322,7 +405,7 @@ function OverallStatus({ accreditationData }) {
               )}`}
             >
               {getStatusIcon(req.status)}
-              <span>{req.status}</span>
+              <span>{getDisplayStatus(req.status)}</span>
             </div>
           </div>
         ))}
@@ -751,10 +834,16 @@ function getStatusColor(status) {
   switch (status?.toLowerCase()) {
     case "approved":
       return "text-green-600 bg-green-50";
+    case "advicerapproved":
+      return "text-blue-500 bg-blue-50";
+    case "deanapproved":
+      return "text-indigo-600 bg-indigo-50";
     case "pending":
       return "text-yellow-600 bg-yellow-50";
     case "rejected":
       return "text-red-600 bg-red-50";
+    case "revisionrequested":
+      return "text-orange-600 bg-orange-50";
     case "submitted":
       return "text-blue-600 bg-blue-50";
     case "active":
@@ -764,13 +853,33 @@ function getStatusColor(status) {
   }
 }
 
+function getDisplayStatus(status) {
+  const statusMap = {
+    Pending: "Pending",
+    AdviserApproved: "Approved by the Adviser",
+    DeanApproved: "Approved by the Dean",
+    Approved: "Fully Approved",
+    RevisionRequested: "Revision Requested",
+    Rejected: "Rejected",
+    Submitted: "Submitted",
+    Active: "Active",
+    Incomplete: "Incomplete",
+    "Not Submitted": "Not Submitted",
+    Inactive: "Inactive",
+  };
+  return statusMap[status] || status;
+}
+
 function getStatusIcon(status) {
   switch (status?.toLowerCase()) {
     case "approved":
+    case "advicerapproved":
+    case "deanapproved":
       return <CheckCircle className="w-4 h-4" />;
     case "pending":
       return <Clock className="w-4 h-4" />;
     case "rejected":
+    case "revisionrequested":
       return <AlertCircle className="w-4 h-4" />;
     case "submitted":
       return <CheckCircle className="w-4 h-4" />;

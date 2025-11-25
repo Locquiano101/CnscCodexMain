@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_ROUTER } from "../../../App";
+import { API_ROUTER } from "../../../config/api.js";
 import {
   Home,
   FolderOpen,
@@ -31,6 +32,9 @@ export function SduMainNavigation() {
   const [activeKey, setActiveKey] = useState("home");
   const navigate = useNavigate();
   const location = useLocation();
+  const [requirementsLoading, setRequirementsLoading] = useState(true);
+  const [visibleRequirements, setVisibleRequirements] = useState(new Set());
+  const [requirementsError, setRequirementsError] = useState(null);
 
   useEffect(() => {
     const path = location.pathname;
@@ -69,6 +73,31 @@ export function SduMainNavigation() {
       setActiveKey("rooms");
     }
   }, [location.pathname]);
+
+  // Fetch enabled accreditation requirements to drive dynamic menu filtering
+  useEffect(() => {
+    let canceled = false;
+    async function loadVisibleRequirements() {
+      try {
+        setRequirementsLoading(true);
+        setRequirementsError(null);
+        const res = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        if (canceled) return;
+        const keys = new Set((res.data || []).map(r => r.key));
+        setVisibleRequirements(keys);
+      } catch (err) {
+        if (!canceled) setRequirementsError(err.response?.data?.message || err.message);
+      } finally {
+        if (!canceled) setRequirementsLoading(false);
+      }
+    }
+    loadVisibleRequirements();
+    const interval = setInterval(loadVisibleRequirements, 60_000); // refresh every minute
+    return () => {
+      canceled = true;
+      clearInterval(interval);
+    };
+  }, []);
 
   const navigationItems = [
     {
@@ -148,7 +177,8 @@ export function SduMainNavigation() {
     },
   ];
 
-  const subAccreditationItems = [
+  // Map nav items to requirement keys; items without mapping always shown
+  const subAccreditationItemsAll = [
     {
       key: "accreditation-president",
       label: "Organizations President's Information",
@@ -185,7 +215,73 @@ export function SduMainNavigation() {
       icon: <Settings className="w-4 h-4" />,
       path: `/SDU/accreditation/settings`,
     },
+    {
+      key: "accreditation-requirements",
+      label: "Requirements Management",
+      icon: <File className="w-4 h-4" />,
+      path: `/SDU/accreditation/requirements`,
+    },
   ];
+
+  const requirementKeyMap = {
+    "accreditation-president": "president-info",
+    "accreditation-financial": "financial-report",
+    "accreditation-roster": "roster",
+    "accreditation-plan": "action-plan",
+    "accreditation-documents": "accreditation-documents",
+    // settings & requirements manager always shown
+  };
+
+  // Build dynamic custom requirement submenu items (enabled custom requirements not mapped above)
+  const dynamicCustomItems = [];
+  if (!requirementsLoading && visibleRequirements.size > 0) {
+    // We need raw list of visible requirements with types; refetch lightweight if necessary
+    // We'll store the response objects in state instead of only keys; using an effect below.
+  }
+
+  // We actually need requirement meta (title/type). We'll keep a separate state.
+  const [visibleRequirementMeta, setVisibleRequirementMeta] = useState([]);
+  useEffect(() => {
+    // Separate meta fetch (already have keys but need titles for dynamic custom items)
+    let cancel = false;
+    async function loadMeta() {
+      try {
+        const res = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        if (cancel) return;
+        setVisibleRequirementMeta(res.data || []);
+      } catch (_) {
+        // ignore
+      }
+    }
+    loadMeta();
+  }, []);
+
+  const customMeta = visibleRequirementMeta.filter(r => r.type === 'custom');
+  customMeta.forEach(r => {
+    // Create navigation entry if not already mapped
+    dynamicCustomItems.push({
+      key: `custom-${r.key}`,
+      label: r.title,
+      icon: <FileText className="w-4 h-4" />, // generic file icon
+      path: `/SDU/accreditation/req/${r.key}`,
+      __customRequirementKey: r.key,
+    });
+  });
+
+  // Filter base (template) items by visibility, then inject custom items BEFORE 'settings'
+  const filteredBaseItems = subAccreditationItemsAll.filter(item => {
+    const reqKey = requirementKeyMap[item.key];
+    if (!reqKey) return true; // settings & requirements manager always shown
+    return visibleRequirements.has(reqKey);
+  });
+  const subAccreditationItems = [];
+  filteredBaseItems.forEach(item => {
+    if (item.key === 'settings') {
+      // Insert all dynamic custom requirement tabs before the settings item
+      subAccreditationItems.push(...dynamicCustomItems);
+    }
+    subAccreditationItems.push(item);
+  });
 
   // Check if any sub-proposal item is active
   const isAnySubProposalActive = subProposalItems.some(
@@ -271,6 +367,12 @@ export function SduMainNavigation() {
             >
               {item.key === "accreditations" && (
                 <div className="border-l-4 border-amber-500 ml-4">
+                  {requirementsError && (
+                    <div className="text-xs text-red-600 px-4 py-2">Failed to load requirements: {requirementsError}</div>
+                  )}
+                  {requirementsLoading && (
+                    <div className="text-xs text-gray-500 px-4 py-2">Loading requirements...</div>
+                  )}
                   {subAccreditationItems.map((subItem) => (
                     <button
                       key={subItem.key}
