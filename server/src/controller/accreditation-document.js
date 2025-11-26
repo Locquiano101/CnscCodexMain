@@ -255,29 +255,110 @@ Accreditation Support Team
 
 export const GetAllAccreditationId = async (req, res) => {
   try {
-    const accreditations = await Accreditation.find({}).populate([
-      "organizationProfile",
-      "FinancialReport",
-      "JointStatement",
-      "PledgeAgainstHazing",
-      "ConstitutionAndByLaws",
-      "Roster",
-      "PresidentProfile",
-    ]);
+    const accreditations = await Accreditation.find({})
+      .populate([
+        {
+          path: "organizationProfile",
+          populate: {
+            path: "adviser",
+            model: "Advisers"
+          }
+        },
+        "FinancialReport",
+        "JointStatement",
+        "PledgeAgainstHazing",
+        "ConstitutionAndByLaws",
+        "Roster",
+        "PresidentProfile",
+      ]);
 
-    // Filter out any accreditation that has missing (null) populated fields
+    // More lenient filtering - only require organizationProfile
     const filtered = accreditations.filter(
-      (acc) =>
-        acc.organizationProfile &&
-        acc.FinancialReport &&
-        acc.JointStatement &&
-        acc.PledgeAgainstHazing &&
-        acc.ConstitutionAndByLaws &&
-        acc.Roster &&
-        acc.PresidentProfile
+      (acc) => acc.organizationProfile
     );
 
-    res.status(200).json(filtered);
+    // Import Accomplishment model to fetch points
+    const { Accomplishment } = await import("../models/index.js");
+
+    // Enhance with accomplishment data
+    const enriched = await Promise.all(
+      filtered.map(async (acc) => {
+        const accObj = acc.toObject();
+        
+        // Fetch accomplishment data for this organization profile
+        const accomplishment = await Accomplishment.findOne({
+          organizationProfile: acc.organizationProfile._id,
+        }).populate("accomplishments");
+        
+        if (accomplishment) {
+          let firstSemPoints = 0;
+          let secondSemPoints = 0;
+
+          // Calculate semester-based points from individual accomplishments
+          if (accomplishment.accomplishments && accomplishment.accomplishments.length > 0) {
+            accomplishment.accomplishments.forEach((subAcc) => {
+              const points = subAcc.awardedPoints || 0;
+              
+              // Determine semester based on date (use date field or fallback to createdAt)
+              const dateToUse = subAcc.date || subAcc.createdAt;
+              
+              if (dateToUse) {
+                const month = new Date(dateToUse).getMonth(); // 0-11
+                
+                // 1st Semester: August (7) - December (11)
+                if (month >= 7 && month <= 11) {
+                  firstSemPoints += points;
+                } 
+                // 2nd Semester: January (0) - July (6)
+                else {
+                  secondSemPoints += points;
+                }
+              }
+            });
+          }
+
+          const totalPoints = accomplishment.grandTotal || 0;
+
+          accObj.accomplishmentData = {
+            grandTotal: totalPoints,
+            firstSemPoints: firstSemPoints,
+            secondSemPoints: secondSemPoints,
+            totalOrganizationalDevelopment: accomplishment.totalOrganizationalDevelopment || 0,
+            totalOrganizationalPerformance: accomplishment.totalOrganizationalPerformance || 0,
+            totalServiceCommunity: accomplishment.totalServiceCommunity || 0,
+            academicYear: accomplishment.academicYear,
+            accomplishmentCount: accomplishment.accomplishments?.length || 0,
+          };
+
+          // Calculate accreditation status based on total points
+          if (totalPoints >= 90) {
+            accObj.calculatedAccreditationStatus = "Outstanding and Fully Accredited";
+          } else if (totalPoints >= 70 && totalPoints <= 89) {
+            accObj.calculatedAccreditationStatus = "Eligible for Renewal";
+          } else if (totalPoints >= 69) {
+            accObj.calculatedAccreditationStatus = "Under Probation";
+          } else {
+            accObj.calculatedAccreditationStatus = "Ineligible for Renewal";
+          }
+        } else {
+          accObj.accomplishmentData = {
+            grandTotal: 0,
+            firstSemPoints: 0,
+            secondSemPoints: 0,
+            totalOrganizationalDevelopment: 0,
+            totalOrganizationalPerformance: 0,
+            totalServiceCommunity: 0,
+            academicYear: null,
+            accomplishmentCount: 0,
+          };
+          accObj.calculatedAccreditationStatus = "No Data";
+        }
+
+        return accObj;
+      })
+    );
+
+    res.status(200).json(enriched);
   } catch (error) {
     console.error("Error fetching accreditation IDs:", error);
     res.status(500).json({ error: "Server error" });
