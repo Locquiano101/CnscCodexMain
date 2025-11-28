@@ -161,7 +161,7 @@ export function AccreditationDocuments({ orgData }) {
     doc?.fileName ? (
       <Card
         onClick={() => openDocumentDetails(doc, label, docKey)}
-        className="flex-1 h-full transition-all duration-500 hover:bg-amber-50 cursor-pointer bg-white"
+        className="flex-1 h-full min-h-[700px] transition-all duration-500 hover:bg-amber-50 cursor-pointer bg-white"
       >
         <CardContent className="h-full p-0">
           {/* Header */}
@@ -208,7 +208,7 @@ export function AccreditationDocuments({ orgData }) {
     ) : (
       <Card
         onClick={() => openUpload(docKey)}
-        className="flex-1 h-full min-h-0 border-2 border-dashed border-gray-300 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group bg-white"
+        className="flex-1 h-full min-h-[700px] border-2 border-dashed border-gray-300 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group bg-white"
       >
         <CardContent className="h-full flex flex-col justify-center items-center p-8">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
@@ -241,7 +241,7 @@ export function AccreditationDocuments({ orgData }) {
     accreditationData;
 
   return (
-    <div className="min-h-screen flex flex-col p-6 gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="flex flex-col p-6 gap-6">
       {/* Header Section */}
       <Card className="bg-white">
         <CardHeader>
@@ -304,7 +304,7 @@ export function AccreditationDocuments({ orgData }) {
       </h2>
 
       {/* Documents Grid */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 h-full">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         <DocumentCard
           label="Joint Statement"
           doc={JointStatement}

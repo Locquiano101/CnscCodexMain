@@ -237,7 +237,7 @@ export function OrgHome({
       </header>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto " style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
         {tab === "Overview" && (
           <>
             <div className="flex w-full items-center gap-x-6 mb-6">
