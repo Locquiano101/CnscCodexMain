@@ -554,218 +554,213 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading 
   };
 
   return (
-    <div className="w-full h-full grid grid-cols-1 grid-rows-[18rem_1fr] gap-0">
-      {/* mini dashboard */}
-      <div className="bg-gray-300 px-5 flex py-4 gap-x-3 justify-center">
-        {/* counters */}
-        <div className="w-[15%] h-full flex flex-col justify-between">
+    <div className="w-full h-full flex flex-col" style={{ backgroundColor: '#F5F5F9' }}>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <h1 className="text-2xl font-semibold text-gray-900">Dean Dashboard</h1>
+        <p className="text-sm text-gray-600">Overview of organizations and activities</p>
+      </div>
+
+      {/* Dashboard Content */}
+      <div className="flex-1 overflow-auto p-6">
+        {/* Summary Cards Row */}
+        <div className="grid grid-cols-5 gap-6 mb-6">
           {organizationSummary.map(({ label, value }, idx) => (
             <div
               key={idx}
-              className="rounded-md w-full h-20 flex flex-col bg-white p-2 items-start shadow-md shadow-gray-400"
+              className="bg-white rounded-lg shadow-sm p-6 flex flex-col"
             >
-              <span className="text-gray font-semibold">{label}</span>
-              <span className="ml-3 text-3xl font-bold">{value}</span>
+              <span className="text-sm text-gray-600 font-medium mb-2">{label}</span>
+              <span className="text-3xl font-bold text-gray-900">{value}</span>
             </div>
           ))}
-        </div>
 
-        {/* chart */}
-        <div className="w-[31%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex flex-col items-center justify-center">
-          <h2 className="text-sm font-semibold mb-1">
-            Organization Statuses
-          </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={statusCounts}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                dataKey="value"
-                label
-              >
-                {statusCounts.map((entry, idx) => (
-                  <Cell
-                    key={`cell-${idx}`}
-                    fill={COLORS[idx % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* activities */}
-        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex flex-col p-2">
-          <h2 className="text-sm font-semibold mb-1">Upcoming Activities</h2>
-          <div className="flex-1 overflow-y-auto text-xs">
-            {upcomingActivities.map((act, idx) => (
-              <div key={idx} className="border-b py-1">
-                <div className="font-medium">
-                  {act.ProposedIndividualActionPlan?.activityTitle}
-                </div>
-                <div className="text-gray-500">
-                  {new Date(
-                    act.ProposedIndividualActionPlan.proposedDate
-                  ).toLocaleDateString()}
-                  {" • "}
-                  {act.ProposedIndividualActionPlan?.venue}
-                </div>
-              </div>
-            ))}
-            {upcomingActivities.length === 0 && (
-              <div className="text-gray-400">No upcoming activities</div>
-            )}
-          </div>
-        </div>
-
-        {/* expiring orgs */}
-        <div className="w-[27%] h-full bg-white rounded-md shadow-md shadow-gray-400 flex flex-col p-2">
-          <h2 className="text-sm font-semibold mb-1">Expiring Orgs</h2>
-          <div className="flex-1 overflow-y-auto text-xs">
-            {expiringOrgs.map((o, idx) => (
-              <div key={idx} className="border-b py-1">
-                <div className="font-medium">{o.orgName}</div>
-                <div className="text-gray-500">
-                  Expiry:{" "}
-                  {new Date(o.accreditation.expiryDate).toLocaleDateString()}
-                </div>
-              </div>
-            ))}
-            {expiringOrgs.length === 0 && (
-              <div className="text-gray-400">No expiring orgs</div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* org cards */}
-      <div className="w-full h-full flex flex-col pt-3 items-center pb-2">
-        <div className="h-fit w-full px-4 mb-2 flex justify-between items-center">
-          <span className="text-3xl text-gray-600">Local Organizations</span>
-
-          {/* pagination */}
-          {!loading && totalPages > 1 && (
-            <div className="flex items-center gap-2 text-sm">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className={`px-2 py-1 rounded border ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white hover:bg-gray-100"
-                }`}
-              >
-                Prev
-              </button>
-              <span className="text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className={`px-2 py-1 rounded border ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white hover:bg-gray-100"
-                }`}
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-3 h-full w-[98%]">
-          {loading
-            ? // 🔹 Skeleton loaders
-              Array.from({ length: itemsPerPage }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="w-[32.75%] h-[48%] rounded-md border border-gray-300 shadow-md shadow-gray-300 flex items-center px-2 animate-pulse bg-gray-100"
+          {/* Chart Card */}
+          <div className="col-span-2 bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-base font-semibold mb-4 text-gray-900">
+              Organization Statuses
+            </h2>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={statusCounts}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  dataKey="value"
+                  label
                 >
-                  <div className="w-full max-w-[30%] h-24 bg-gray-300 rounded"></div>
-                  <div className="w-full h-full flex flex-col p-2 justify-center space-y-2">
-                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
-                    <div className="h-3 bg-gray-300 rounded w-2/3"></div>
-                    <div className="h-3 bg-gray-300 rounded w-1/3"></div>
+                  {statusCounts.map((entry, idx) => (
+                    <Cell
+                      key={`cell-${idx}`}
+                      fill={COLORS[idx % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Upcoming Activities Card */}
+          <div className="col-span-2 bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-base font-semibold mb-4 text-gray-900">Upcoming Activities</h2>
+            <div className="flex-1 overflow-y-auto space-y-3">
+              {upcomingActivities.map((act, idx) => (
+                <div key={idx} className="border-b border-gray-100 pb-3 last:border-0">
+                  <div className="font-medium text-sm text-gray-900">
+                    {act.ProposedIndividualActionPlan?.activityTitle}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {new Date(
+                      act.ProposedIndividualActionPlan.proposedDate
+                    ).toLocaleDateString()}
+                    {" • "}
+                    {act.ProposedIndividualActionPlan?.venue}
                   </div>
                 </div>
-              ))
-            : paginatedOrgs.map((org, idx) => {
-                const overallStatus =
-                  org.overAllStatus || org.overallStatus || org.status || "—";
+              ))}
+              {upcomingActivities.length === 0 && (
+                <div className="text-sm text-gray-400">No upcoming activities</div>
+              )}
+            </div>
+          </div>
 
-                return (
+          {/* Expiring Orgs Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-base font-semibold mb-4 text-gray-900">Expiring Organizations</h2>
+            <div className="flex-1 overflow-y-auto space-y-3">
+              {expiringOrgs.map((o, idx) => (
+                <div key={idx} className="border-b border-gray-100 pb-3 last:border-0">
+                  <div className="font-medium text-sm text-gray-900">{o.orgName}</div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Expiry:{" "}
+                    {new Date(o.accreditation.expiryDate).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+              {expiringOrgs.length === 0 && (
+                <div className="text-sm text-gray-400">No expiring organizations</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Organizations List */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Local Organizations</h2>
+
+            {/* pagination */}
+            {!loading && totalPages > 1 && (
+              <div className="flex items-center gap-2 text-sm">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                    currentPage === 1
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                      : "bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
+                  }`}
+                >
+                  Prev
+                </button>
+                <span className="text-gray-600">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                    currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                      : "bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            {loading
+              ? // Skeleton loaders
+                Array.from({ length: itemsPerPage }).map((_, idx) => (
                   <div
                     key={idx}
-                    onClick={() => onSelectOrg(org)}
-                    className="w-[32.75%] h-[48%] rounded-md border gap-x-5 border-gray-400 shadow-md shadow-gray-400 flex items-center px-2 cursor-pointer hover:shadow-lg hover:border-black transition-shadow"
+                    className="border border-gray-200 rounded-lg p-4 animate-pulse"
                   >
-                    <img
-                      src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
-                      alt={`${org.orgName} logo`}
-                      className="w-full max-w-[30%] h-auto object-contain"
-                    />
-                    <div className="w-full h-full flex flex-col p-2 justify-center">
-                      <div className="h-11 flex items-center">
-                        <h1 className="text-lg font-semibold text-gray-700 leading-4">
-                          {org.orgName} (<span>{org.orgAcronym}</span>)
-                        </h1>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-16 h-16 bg-gray-200 rounded"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                       </div>
-                      <div className="pt-1 border-t-1">
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                ))
+              : paginatedOrgs.map((org, idx) => {
+                  const overallStatus =
+                    org.overAllStatus || org.overallStatus || org.status || "—";
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => onSelectOrg(org)}
+                      className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-gray-300 transition-all"
+                    >
+                      <div className="flex items-center gap-4 mb-3">
+                        <img
+                          src={`${DOCU_API_ROUTER}/${org._id}/${org.orgLogo}`}
+                          alt={`${org.orgName} logo`}
+                          className="w-16 h-16 object-contain"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = PlaceholderLogo;
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-gray-900 leading-tight mb-1">
+                            {org.orgName}
+                          </h3>
+                          <p className="text-xs text-gray-600">{org.orgAcronym}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
                         <span
                           className={`${getStatusBadge(
                             overallStatus
-                          )} w-fit px-2 border rounded-xl mb-1 text-xs`}
+                          )} inline-block px-2 py-1 border rounded-md text-xs font-medium`}
                         >
                           {overallStatus}
                         </span>
-                      </div>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-start">
-                          <span className="text-gray-500 font-medium min-w-[40px]">
-                            Adviser:
-                          </span>
-                          <span className="text-gray-700 flex-1">
-                            {org.adviser?.name || "No adviser assigned"}
-                          </span>
-                        </div>
-                        <div className="flex items-start">
-                          <span className="text-gray-500 font-medium min-w-[40px]">
-                            Course:
-                          </span>
-                          <span className="text-gray-700 flex-1">
-                            {org.orgCourse || "No course specified"}
-                          </span>
-                        </div>
-                        {(org.updatedAt || org.createdAt) && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 font-medium min-w-[40px]">
-                              Updated:
-                            </span>
-                            <span className="text-gray-700 flex-1">
-                              {new Date(
-                                org.updatedAt || org.createdAt
-                              ).toLocaleString()}
-                            </span>
+                        <div className="text-xs space-y-1 text-gray-600">
+                          <div>
+                            <span className="font-medium">Adviser:</span>{" "}
+                            {org.adviser?.name || "No adviser"}
                           </div>
-                        )}
+                          <div>
+                            <span className="font-medium">Course:</span>{" "}
+                            {org.orgCourse || "Not specified"}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
 
-          {!loading && paginatedOrgs.length === 0 && (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">
-              No organizations available
-            </div>
-          )}
+            {!loading && paginatedOrgs.length === 0 && (
+              <div className="col-span-3 text-center py-12 text-gray-500">
+                No organizations available
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

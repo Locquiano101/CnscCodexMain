@@ -14,36 +14,45 @@ import {
   Users,
 } from "lucide-react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function StudentHomePage({ orgData, accreditationData }) {
   return (
-    <div className="bg-gray-100 min-h-screen space-y-4 overflow-auto">
+    <div className="h-full overflow-auto space-y-6 p-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header */}
-      <header className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Welcome, Student !</h1>
-
-        <div className="text-gray-600 text-right">
-          <p className="font-medium">{orgData?.orgName}</p>
-          <p className="text-sm">{orgData?.orgClass}</p>
-        </div>
-      </header>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="text-2xl">Welcome, Student!</CardTitle>
+              <CardDescription className="mt-1">Manage your organization's activities</CardDescription>
+            </div>
+            <div className="text-right">
+              <p className="font-medium">{orgData?.orgName}</p>
+              <p className="text-sm text-muted-foreground">{orgData?.orgClass}</p>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Accreditation Status */}
-        <div className="lg:col-span-1 ">
+        <div className="lg:col-span-1">
           <AccreditationComponent accreditationData={accreditationData} />
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200  ">
+        <div className="lg:col-span-2">
           <ProposalsComponent orgData={orgData} />
         </div>
       </div>
 
       {/* Posts Section */}
-      <div className="rounded-lg shadow ">
-        <PostComponent orgData={orgData} />
-      </div>
+      <PostComponent orgData={orgData} />
     </div>
   );
 }
@@ -216,77 +225,77 @@ function AccreditationComponent({ accreditationData }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 h-fit">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-slate-800">
-          Accreditation Status
-        </h2>
-        <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-          {overallStatus}
+    <Card className="h-fit">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Accreditation Status</CardTitle>
+          <Badge variant="secondary">{overallStatus}</Badge>
         </div>
-      </div>
-
-      {/* Progress Section */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-sm font-medium text-slate-700">
-            Overall Progress
-          </span>
-          <span className="text-sm font-bold text-slate-900">
-            {completedRequirements}/{requirements.length} completed
-          </span>
-        </div>
-        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-          <div
-            className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-        <div className="text-right mt-2">
-          <span className="text-sm text-slate-600">
-            {Math.round(progressPercentage)}%
-          </span>
-        </div>
-      </div>
-
-      {/* Requirements List */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">
-          Requirements Checklist
-        </h3>
-        {requirements.map((req, index) => {
-          const displayStatus = getDisplayStatus(req.status);
-          return (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
-            >
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-slate-400" />
-                <span className="font-medium text-slate-800 text-sm">
-                  {req.name}
-                </span>
-              </div>
-              <div
-                className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${getStatusColor(
-                  req.status
-                )}`}
-              >
-                {getStatusIcon(req.status)}
-                <span>{displayStatus}</span>
-              </div>
-            </div>
-          );
-        })}
-        {loadingCustom && (
-          <div className="flex items-center justify-center p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-            <Clock className="w-4 h-4 mr-2 animate-spin" />
-            Loading custom requirements...
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Progress Section */}
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              Overall Progress
+            </span>
+            <span className="text-sm font-semibold text-foreground">
+              {completedRequirements}/{requirements.length} completed
+            </span>
           </div>
-        )}
-      </div>
-    </div>
+          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+          <div className="text-right mt-2">
+            <span className="text-sm text-muted-foreground">
+              {Math.round(progressPercentage)}%
+            </span>
+          </div>
+        </div>
+
+        {/* Requirements List */}
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold">
+            Requirements Checklist
+          </h3>
+          {requirements.map((req, index) => {
+            const displayStatus = getDisplayStatus(req.status);
+            const badgeVariant = 
+              req.status === "Approved" || req.status === "Submitted" || req.status === "Active" ? "approved" :
+              req.status === "Pending" ? "pending" :
+              req.status === "Rejected" || req.status === "For Revision" ? "rejected" :
+              "default";
+            
+            return (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium text-sm">
+                    {req.name}
+                  </span>
+                </div>
+                <Badge variant={badgeVariant} className="gap-1.5">
+                  {getStatusIcon(req.status)}
+                  <span>{displayStatus}</span>
+                </Badge>
+              </div>
+            );
+          })}
+          {loadingCustom && (
+            <div className="flex items-center justify-center p-3 bg-secondary/10 rounded-lg text-sm text-secondary">
+              <Clock className="w-4 h-4 mr-2 animate-spin" />
+              Loading custom requirements...
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -329,144 +338,117 @@ function ProposalsComponent({ orgData }) {
   };
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      "Approved For Conduct": {
-        bg: "bg-emerald-100",
-        text: "text-emerald-800",
-        dot: "bg-emerald-500",
-      },
-      Pending: {
-        bg: "bg-amber-100",
-        text: "text-amber-800",
-        dot: "bg-amber-500",
-      },
-      "Ready For Accomplishments": {
-        bg: "bg-blue-100",
-        text: "text-blue-800",
-        dot: "bg-blue-500",
-      },
-      default: {
-        bg: "bg-slate-100",
-        text: "text-slate-800",
-        dot: "bg-slate-500",
-      },
+    const statusMap = {
+      "Approved For Conduct": "approved",
+      "Pending": "pending",
+      "Ready For Accomplishments": "secondary",
     };
-
-    const config = statusConfig[status] || statusConfig.default;
-
-    return (
-      <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-      >
-        <div className={`w-2 h-2 rounded-full mr-2 ${config.dot}`} />
-        {status}
-      </span>
-    );
+    return statusMap[status] || "default";
   };
 
   if (loading) {
     return (
-      <div className="">
-        <div className="animate-pulse">
-          <div className="h-6 bg-slate-200 rounded w-1/4 mb-4"></div>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-slate-100 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <Card className="col-span-2">
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-4 border-b border-slate-200">
+    <Card className="col-span-2">
+      <CardHeader>
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-slate-800">
-            Activity Proposals
-          </h3>
-          <div className="text-sm text-slate-600">
-            {proposalsConduct.length} proposals
-          </div>
+          <CardTitle>Activity Proposals</CardTitle>
+          <Badge variant="outline">{proposalsConduct.length} proposals</Badge>
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Content */}
-      <div className="overflow-x-auto">
+      <CardContent>
         {proposalsConduct.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <FileText className="w-8 h-8 text-slate-400" />
+          <div className="py-12 text-center">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
+              <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h4 className="text-lg font-medium text-slate-800 mb-2">
+            <h4 className="text-lg font-medium mb-2">
               No proposals yet
             </h4>
-            <p className="text-slate-600">
+            <p className="text-sm text-muted-foreground">
               Create your first proposal to get started with activities
             </p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Activity
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <Calendar className="w-4 h-4 inline mr-2" />
-                  Date
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <span className="inline mr-2 text-lg">₱</span>
-                  Budget
-                </th>
-
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Venue
-                  </div>
-                </th>
-
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {proposalsConduct.map((item) => (
-                <tr
-                  key={item._id}
-                  className="hover:bg-slate-50 transition-colors duration-150"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-slate-900 capitalize">
-                      {item.ProposedIndividualActionPlan.activityTitle}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                    Activity
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Date
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {formatDate(item.ProposedIndividualActionPlan.proposedDate)}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                    {formatCurrency(
-                      item.ProposedIndividualActionPlan.budgetaryRequirements
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 capitalize">
-                    {item.ProposedIndividualActionPlan.venue}
-                  </td>
-                  <td className="px-6 py-4">
-                    {getStatusBadge(item.overallStatus)}
-                  </td>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <span className="text-lg mr-2">₱</span>
+                      Budget
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Venue
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                    Status
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {proposalsConduct.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="hover:bg-muted/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-medium capitalize">
+                        {item.ProposedIndividualActionPlan.activityTitle}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {formatDate(item.ProposedIndividualActionPlan.proposedDate)}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      {formatCurrency(
+                        item.ProposedIndividualActionPlan.budgetaryRequirements
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground capitalize">
+                      {item.ProposedIndividualActionPlan.venue}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge variant={getStatusBadge(item.overallStatus)} className="text-white whitespace-nowrap">
+                        {item.overallStatus}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -523,120 +505,117 @@ function PostComponent({ orgData }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-64 mx-auto" />
+          <Skeleton className="h-4 w-96 mx-auto mt-2" />
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-slate-100 rounded-lg h-64"></div>
+              <Skeleton key={i} className="h-64 w-full" />
             ))}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">
-          Organization Updates
-        </h2>
-        <p className="text-slate-600">
+    <Card>
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">Organization Updates</CardTitle>
+        <CardDescription>
           Stay updated with the latest posts and announcements
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
 
-      {/* Posts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.length === 0 ? (
-          <div className="col-span-full bg-slate-50 rounded-lg p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-              <MessageCircle className="w-8 h-8 text-slate-400" />
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.length === 0 ? (
+            <div className="col-span-full bg-muted rounded-lg p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-muted-foreground/10 rounded-full flex items-center justify-center">
+                <MessageCircle className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">
+                No posts yet
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Be the first to share something with the community!
+              </p>
             </div>
-            <h3 className="text-lg font-medium text-slate-800 mb-2">
-              No posts yet
-            </h3>
-            <p className="text-slate-600">
-              Be the first to share something with the community!
-            </p>
-          </div>
-        ) : (
-          posts.map((post) => {
-            const imageUrl = getFirstImage(
-              post.content,
-              post.organizationProfile?._id
-            );
-            const tags = parseTags(post.tags);
-            const hasContent = post.caption && post.caption.trim().length > 0;
+          ) : (
+            posts.map((post) => {
+              const imageUrl = getFirstImage(
+                post.content,
+                post.organizationProfile?._id
+              );
+              const tags = parseTags(post.tags);
+              const hasContent = post.caption && post.caption.trim().length > 0;
 
-            return (
-              <div
-                key={post._id}
-                className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1"
-              >
-                {/* Image/Content Preview */}
-                {imageUrl && (
-                  <div className="relative h-48 bg-slate-100">
-                    <img
-                      src={imageUrl}
-                      alt={post.caption || "Post image"}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Content */}
-                <div className="p-4 space-y-3">
-                  <h3 className="font-medium text-slate-800 line-clamp-2 leading-snug">
-                    {hasContent ? post.caption : "Untitled Post"}
-                  </h3>
-
-                  {/* Tags */}
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {tags.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                          +{tags.length - 3} more
-                        </span>
-                      )}
+              return (
+                <Card
+                  key={post._id}
+                  className="overflow-hidden hover:shadow-md transition-all hover:-translate-y-1"
+                >
+                  {/* Image/Content Preview */}
+                  {imageUrl && (
+                    <div className="relative h-48 bg-muted">
+                      <img
+                        src={imageUrl}
+                        alt={post.caption || "Post image"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
                     </div>
                   )}
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                        {post.organizationProfile?.orgAcronym?.[0] || "O"}
+                  <CardContent className="p-4 space-y-3">
+                    <h3 className="font-medium line-clamp-2 leading-snug">
+                      {hasContent ? post.caption : "Untitled Post"}
+                    </h3>
+
+                    {/* Tags */}
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {tags.slice(0, 3).map((tag, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {tags.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{tags.length - 3} more
+                          </Badge>
+                        )}
                       </div>
-                      <span className="text-sm font-medium text-slate-700">
-                        {post.organizationProfile?.orgAcronym || "Organization"}
-                      </span>
-                    </div>
-                    {post.createdAt && (
-                      <span className="text-xs text-slate-500">
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </span>
                     )}
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                          {post.organizationProfile?.orgAcronym?.[0] || "O"}
+                        </div>
+                        <span className="text-sm font-medium">
+                          {post.organizationProfile?.orgAcronym || "Organization"}
+                        </span>
+                      </div>
+                      {post.createdAt && (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

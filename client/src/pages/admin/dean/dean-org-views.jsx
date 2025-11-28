@@ -197,24 +197,47 @@ export function OrgHome({
       : displayOrg?.orgPresident ?? "Not available!";
 
   return (
-    <>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Page Header */}
+      <div className="h-18 border-b bg-background flex items-center justify-between px-6 flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-semibold">Organization Overview</h1>
+          <p className="text-sm text-muted-foreground">View organization details and accreditation status</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{displayOrg?.orgName || "Organization"}</p>
+            <p className="text-xs text-muted-foreground">{displayOrg?.orgAcronym || ""}</p>
+          </div>
+          {displayOrg?._id && displayOrg?.orgLogo && (
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+              <img
+                src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
+                alt="Organization Logo"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Tabs Header (includes dynamic custom requirement tabs) */}
-      <header className="relative flex h-14 w-full border-b border-gray-400 overflow-x-auto custom-scroll whitespace-nowrap">
+      <header className="relative flex h-14 w-full border-b border-gray-200 overflow-x-auto custom-scroll whitespace-nowrap flex-shrink-0 bg-background">
         {headertabs.map(({ label }, idx) => (
           <button
             key={label}
             ref={(el) => (tabsRef.current[idx] = el)}
             onClick={() => setTab(label)}
-            className={`flex-shrink-0 w-40 text-sm font-semibold px-4 py-2 flex items-center justify-center transition-colors duration-300 ${tab === label ? 'text-cnsc-primary-color' : 'text-gray-600 hover:text-cnsc-primary-color hover:bg-gray-100'}`}
+            className={`flex-shrink-0 w-40 text-sm font-semibold px-4 py-2 flex items-center justify-center transition-colors duration-300 ${tab === label ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
           >
             {label}
           </button>
         ))}
-        <span className="absolute bottom-0 h-[2px] bg-cnsc-primary-color transition-all duration-500 ease-in-out" style={underlineStyle} />
+        <span className="absolute bottom-0 h-[2px] bg-primary transition-all duration-500 ease-in-out" style={underlineStyle} />
       </header>
 
       {/* Tab Content */}
-      <div className="p-4">
+      <div className="flex-1 overflow-y-auto " style={{ backgroundColor: '#F5F5F9' }}>
         {tab === "Overview" && (
           <>
             <div className="flex w-full items-center gap-x-6 mb-6">
@@ -403,7 +426,7 @@ export function OrgHome({
           ) : null
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -474,22 +497,43 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
   // UI RENDERING
   // ----------------------
   return (
-    <>
-      <div className="p-4">
-        <h2 className="text-xl font-semibold mb-2">Accreditations</h2>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Page Header */}
+      <div className="h-18 border-b bg-background flex items-center justify-between px-6 flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-semibold">Accreditation Status</h1>
+          <p className="text-sm text-muted-foreground">Monitor organization accreditation details</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{org?.orgName || baseOrg?.orgName || "Organization"}</p>
+            <p className="text-xs text-muted-foreground">{org?.orgAcronym || baseOrg?.orgAcronym || ""}</p>
+          </div>
+        </div>
+      </div>
 
+      <div className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
         {loading && (
-          <p className="text-sm text-gray-500">
-            Loading accomplishment data...
-          </p>
+          <div className="bg-white rounded-lg shadow-sm p-12">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <span className="ml-4 text-gray-600 font-medium">
+                Loading accomplishment data...
+              </span>
+            </div>
+          </div>
         )}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-      </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-8">
+            <p className="text-red-600 font-medium text-center">{error}</p>
+          </div>
+        )}
 
-      <div className="px-4 w-full h-fit">
-        <AccreditationTable data={orgData} />
+        {!loading && !error && (
+          <AccreditationTable data={orgData} />
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -498,40 +542,49 @@ export function OrgAccreditation({ org, accreditationData, baseOrg }) {
 // ----------------------
 export default function AccreditationTable({ data = [] }) {
   return (
-    <div className="w-full overflow-x-auto border border-gray-300 rounded-xl shadow-md bg-white">
-      <div className="max-h-[420px] overflow-y-auto rounded-b-xl">
-        <table className="min-w-[900px] w-full table-fixed border-separate border-spacing-0">
-          {/* 🧭 Table Header */}
-          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10 shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px]">
+          {/* Table Header */}
+          <thead className="bg-gray-50 border-b">
             <tr>
-              {[
-                "No.",
-                "Name of the Organization",
-                "Nature",
-                "Status of Accreditation",
-                "Adviser",
-                "President",
-                "Validation of Accreditation",
-                "APESOC Result (Total)",
-                "Final Status",
-              ].map((header, i) => (
-                <th
-                  key={i}
-                  className="border border-gray-300 px-3 py-2 text-[11px] font-semibold uppercase text-gray-700 text-center"
-                >
-                  {header}
-                </th>
-              ))}
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">
+                NO.
+              </th>
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                NAME OF THE ORGANIZATION
+              </th>
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-24">
+                NATURE
+              </th>
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-40">
+                STATUS OF ACCREDITATION
+              </th>
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-36">
+                ADVISER
+              </th>
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-36">
+                PRESIDENT
+              </th>
+              <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-40">
+                VALIDATION OF ACCREDITATION
+              </th>
+              <th className="px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-32">
+                APESOC RESULT (TOTAL)
+              </th>
+              <th className="px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-32">
+                FINAL STATUS
+              </th>
             </tr>
           </thead>
 
-          {/* 📋 Table Body */}
-          <tbody>
+          {/* Table Body */}
+          <tbody className="bg-white divide-y divide-gray-200">
             {data.length === 0 ? (
               <tr>
                 <td
                   colSpan={9}
-                  className="text-center py-10 text-gray-500 text-sm bg-gray-50"
+                  className="text-center py-12 text-gray-500 text-sm"
                 >
                   No accreditation records available.
                 </td>
@@ -540,52 +593,54 @@ export default function AccreditationTable({ data = [] }) {
               data.map((row, idx) => (
                 <tr
                   key={idx}
-                  className="odd:bg-white even:bg-gray-50 hover:bg-blue-50/40 transition-colors"
+                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">
+                  <td className="px-4 py-4 text-center text-sm font-medium text-gray-900">
                     {idx + 1}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-800">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-900">
                     {row.name}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700 text-center">
+                  <td className="px-4 py-4 text-sm text-gray-700">
                     {row.nature}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-center">
+                  <td className="px-4 py-4">
                     <span
-                      className={`inline-flex items-center justify-center px-2 py-1 text-[11px] rounded-full font-semibold
+                      className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
                         ${
                           row.accreditationStatus === "Accredited"
-                            ? "bg-emerald-100 text-emerald-700"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                             : row.accreditationStatus === "Pending"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-red-100 text-red-700"
+                            ? "bg-amber-50 text-amber-700 border border-amber-200"
+                            : "bg-red-50 text-red-700 border border-red-200"
                         }`}
                     >
                       {row.accreditationStatus}
                     </span>
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700">
+                  <td className="px-4 py-4 text-sm text-gray-700">
                     {row.adviser}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700">
+                  <td className="px-4 py-4 text-sm text-gray-700">
                     {row.president}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-gray-700 text-center">
+                  <td className="px-4 py-4 text-sm text-gray-700">
                     {row.validationDate}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm font-semibold text-indigo-700 text-center">
+                  <td className="px-4 py-4 text-sm font-semibold text-blue-600 text-center">
                     {row.apesocTotal}
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm text-center">
+                  <td className="px-4 py-4 text-center">
                     <span
-                      className={`inline-flex items-center justify-center px-3 py-1 text-[11px] rounded-full font-semibold
+                      className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
                         ${
                           row.finalStatus === "Approved"
-                            ? "bg-green-100 text-green-700"
+                            ? "bg-green-50 text-green-700 border border-green-200"
                             : row.finalStatus === "For Review"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-gray-100 text-gray-700"
+                            ? "bg-yellow-50 text-yellow-700 border border-yellow-200"
+                            : row.finalStatus === "Pending"
+                            ? "bg-gray-50 text-gray-700 border border-gray-200"
+                            : "bg-gray-50 text-gray-700 border border-gray-200"
                         }`}
                     >
                       {row.finalStatus}

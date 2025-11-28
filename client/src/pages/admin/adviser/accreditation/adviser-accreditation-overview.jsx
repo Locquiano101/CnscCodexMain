@@ -16,6 +16,12 @@ import {
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import { FileText, Upload, Mail, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function AdviserAccreditationMainComponent({ user, orgId }) {
   const [uploadingDocType, setUploadingDocType] = useState(null);
@@ -67,10 +73,10 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
   }
 
   return (
-    <div className="h-full mt-4 overflow-auto">
+    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
       <div className="w-full">
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-6">
           <div className="lg:col-span-2 xl:col-span-3">
             <OverallStatus accreditationData={accreditationData} />
           </div>
@@ -117,7 +123,7 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
 // Loading skeleton component
 function LoadingSkeleton() {
   return (
-    <div className="h-full bg-gray-50 p-6 overflow-auto">
+    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
       <div className="max-w-7xl mx-auto">
         {/* Header Skeleton */}
         <div className="mb-8">
@@ -129,69 +135,79 @@ function LoadingSkeleton() {
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {/* Overall Status Skeleton */}
           <div className="lg:col-span-2 xl:col-span-3">
-            <div className="bg-white  shadow-sm p-6">
-              <div className="h-6 bg-gray-200  w-48 mb-4 animate-pulse"></div>
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200  w-full animate-pulse"></div>
-                <div className="h-4 bg-gray-200  w-3/4 animate-pulse"></div>
-                <div className="h-4 bg-gray-200  w-1/2 animate-pulse"></div>
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="h-6 bg-gray-200 w-48 mb-4 animate-pulse rounded"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 w-full animate-pulse rounded"></div>
+                  <div className="h-4 bg-gray-200 w-3/4 animate-pulse rounded"></div>
+                  <div className="h-4 bg-gray-200 w-1/2 animate-pulse rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* President Information Skeleton */}
           <div className="lg:col-span-1 xl:col-span-2">
-            <div className="bg-white  shadow-sm p-6">
-              <div className="h-6 bg-gray-200  w-40 mb-4 animate-pulse"></div>
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200  w-full animate-pulse"></div>
-                <div className="h-4 bg-gray-200  w-2/3 animate-pulse"></div>
-                <div className="h-4 bg-gray-200  w-1/3 animate-pulse"></div>
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="h-6 bg-gray-200 w-40 mb-4 animate-pulse rounded"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 w-full animate-pulse rounded"></div>
+                  <div className="h-4 bg-gray-200 w-2/3 animate-pulse rounded"></div>
+                  <div className="h-4 bg-gray-200 w-1/3 animate-pulse rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* DocumentDisplayCard Skeleton */}
           <div className="lg:col-span-5 xl:col-span-2">
-            <div className="bg-white  shadow-sm p-6">
-              <div className="h-6 bg-gray-200  w-32 mb-4 animate-pulse"></div>
-              <div className="space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="border border-gray-200  p-4">
-                    <div className="h-4 bg-gray-200  w-32 mb-2 animate-pulse"></div>
-                    <div className="h-3 bg-gray-200  w-24 animate-pulse"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="h-6 bg-gray-200 w-32 mb-4 animate-pulse rounded"></div>
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="border border-gray-200 rounded p-4">
+                      <div className="h-4 bg-gray-200 w-32 mb-2 animate-pulse rounded"></div>
+                      <div className="h-3 bg-gray-200 w-24 animate-pulse rounded"></div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Organization Info Skeleton */}
           <div className="lg:col-span-1 xl:col-span-1">
-            <div className="bg-white  shadow-sm p-6">
-              <div className="h-6 bg-gray-200  w-36 mb-4 animate-pulse"></div>
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200  w-full animate-pulse"></div>
-                <div className="h-4 bg-gray-200  w-3/4 animate-pulse"></div>
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="h-6 bg-gray-200 w-36 mb-4 animate-pulse rounded"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 w-full animate-pulse rounded"></div>
+                  <div className="h-4 bg-gray-200 w-3/4 animate-pulse rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Roster Lists Skeleton */}
           <div className="lg:col-span-2 xl:col-span-2">
-            <div className="bg-white  shadow-sm p-6">
-              <div className="h-6 bg-gray-200  w-32 mb-4 animate-pulse"></div>
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center space-x-3">
-                    <div className="h-8 w-8 bg-gray-200 -full animate-pulse"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200  w-3/4 animate-pulse"></div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="h-6 bg-gray-200 w-32 mb-4 animate-pulse rounded"></div>
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center space-x-3">
+                      <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-200 w-3/4 animate-pulse rounded"></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -348,20 +364,21 @@ function OverallStatus({ accreditationData }) {
     : 0;
 
   return (
-    <div className="bg-white  border border-gray-400 p-6 h-full">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Accreditation Status
-        </h2>
-        <div
-          className={`px-4 py-2 -full flex items-center gap-2 ${getStatusColor(
-            overallStatus
-          )}`}
-        >
-          {getStatusIcon(overallStatus)}
-          <span className="font-medium">{overallStatus}</span>
+    <Card className="h-full">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Accreditation Status
+          </h2>
+          <div
+            className={`px-4 py-2 rounded-full flex items-center gap-2 ${getStatusColor(
+              overallStatus
+            )}`}
+          >
+            {getStatusIcon(overallStatus)}
+            <span className="font-medium">{overallStatus}</span>
+          </div>
         </div>
-      </div>
 
       {/* Progress Bar */}
       <div className="mb-8">
@@ -400,7 +417,7 @@ function OverallStatus({ accreditationData }) {
               <span className="font-medium text-gray-900">{req.name}</span>
             </div>
             <div
-              className={`px-3 py-1 -full text-sm flex items-center gap-2 ${getStatusColor(
+              className={`px-3 py-1 rounded-full text-sm flex items-center gap-2 ${getStatusColor(
                 req.status
               )}`}
             >
@@ -410,7 +427,8 @@ function OverallStatus({ accreditationData }) {
           </div>
         ))}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -419,94 +437,98 @@ function PresidentInformation({ accreditationData }) {
 
   if (!president) {
     return (
-      <div className="bg-white  border border-gray-400 p-6 h-full">
-        <h2 className="text-xl font-semibold mb-4">President Information</h2>
-        <div className="text-center text-gray-500">
-          <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-          <p>No president profile found</p>
-        </div>
-      </div>
+      <Card className="h-full">
+        <CardContent className="p-6">
+          <h2 className="text-xl font-semibold mb-4">President Information</h2>
+          <div className="text-center text-gray-500">
+            <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <p>No president profile found</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white  border border-gray-400 p-6 h-full">
-      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-        President Information
-      </h2>
+    <Card className="h-full">
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          President Information
+        </h2>
 
-      <div className="space-y-4">
-        {/* Profile Picture Placeholder */}
-        <div className="flex justify-center mb-4">
-          <div className="w-32 aspect-square -full  bg-gray-200  flex items-center justify-center">
-            <img
-              src={`${DOCU_API_ROUTER}/${president.organizationProfile}/${president.profilePicture}`}
-              alt="President"
-              className="w-full h-full -full"
-            />
+        <div className="space-y-4">
+          {/* Profile Picture Placeholder */}
+          <div className="flex justify-center mb-4">
+            <div className="w-32 aspect-square rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              <img
+                src={`${DOCU_API_ROUTER}/${president.organizationProfile}/${president.profilePicture}`}
+                alt="President"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Basic Info */}
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {president.name}
+            </h3>
+            <p className="text-gray-600">{president.course}</p>
+            <p className="text-gray-600">{president.year}</p>
+          </div>
+
+          {/* Contact Info */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Phone className="w-4 h-4 text-gray-400" />
+              <span className="text-gray-900">{president.contactNo}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin className="w-4 h-4 text-gray-400" />
+              <span className="text-gray-900">
+                {president.presentAddress.city},{" "}
+                {president.presentAddress.province}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Building className="w-4 h-4 text-gray-400" />
+              <span className="text-gray-900">{president.department}</span>
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="mt-6">
+            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Skills & Talents
+            </h4>
+            <div className="space-y-2">
+              {president.talentSkills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                >
+                  <span className="text-sm font-medium">{skill.skill}</span>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    {skill.level}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Financial Support */}
+          <div className="mt-4 p-3 bg-green-50 rounded">
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">
+                Financial Support: {president.sourceOfFinancialSupport}
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* Basic Info */}
-        <div className="text-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {president.name}
-          </h3>
-          <p className="text-gray-600">{president.course}</p>
-          <p className="text-gray-600">{president.year}</p>
-        </div>
-
-        {/* Contact Info */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm">
-            <Phone className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-900">{president.contactNo}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-900">
-              {president.presentAddress.city},{" "}
-              {president.presentAddress.province}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Building className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-900">{president.department}</span>
-          </div>
-        </div>
-
-        {/* Skills */}
-        <div className="mt-6">
-          <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-            <Star className="w-4 h-4" />
-            Skills & Talents
-          </h4>
-          <div className="space-y-2">
-            {president.talentSkills.map((skill, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center p-2 bg-gray-50 "
-              >
-                <span className="text-sm font-medium">{skill.skill}</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 -full">
-                  {skill.level}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Financial Support */}
-        <div className="mt-4 p-3 bg-green-50 ">
-          <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">
-              Financial Support: {president.sourceOfFinancialSupport}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -600,92 +622,97 @@ function DocumentDisplayCard({ user, accreditationData }) {
   };
 
   return (
-    <div className="flex  flex-col  w-full  bg-white  border border-gray-400 p-6 h-full">
-      <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-        <FileText className="w-5 h-5" />
-        Required DocumentDisplayCard
-      </h2>
-      <div className="space-y-4">
-        {renderDocumentCard(
-          "Joint Statement",
-          JointStatement,
-          "JointStatement"
-        )}
-        {renderDocumentCard(
-          "Constitution and By-Laws",
-          ConstitutionAndByLaws,
-          "ConstitutionAndByLaws"
-        )}
-        {renderDocumentCard(
-          "Pledge Against Hazing",
-          PledgeAgainstHazing,
-          "PledgeAgainstHazing"
-        )}
-      </div>
+    <Card className="flex flex-col w-full h-full">
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          Required DocumentDisplayCard
+        </h2>
+        <div className="space-y-4">
+          {renderDocumentCard(
+            "Joint Statement",
+            JointStatement,
+            "JointStatement"
+          )}
+          {renderDocumentCard(
+            "Constitution and By-Laws",
+            ConstitutionAndByLaws,
+            "ConstitutionAndByLaws"
+          )}
+          {renderDocumentCard(
+            "Pledge Against Hazing",
+            PledgeAgainstHazing,
+            "PledgeAgainstHazing"
+          )}
+        </div>
+      </CardContent>
 
       {/* Email Modal */}
-      {showEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
-            <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowEmailModal(false)}
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Compose Email – {emailType}</DialogTitle>
+            <DialogDescription>
+              Send an email regarding this accreditation section.
+            </DialogDescription>
+          </DialogHeader>
 
-            <h3 className="text-lg font-semibold mb-4">
-              Compose Email – {emailType}
-            </h3>
-
-            <div className="space-y-3">
-              <input
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="email-to">To</Label>
+              <Input
+                id="email-to"
                 type="email"
-                placeholder="To"
-                className="w-full border rounded px-3 py-2 text-sm"
+                placeholder="recipient@example.com"
                 value={emailData.to}
                 onChange={(e) =>
                   setEmailData({ ...emailData, to: e.target.value })
                 }
               />
-              <input
+            </div>
+            <div>
+              <Label htmlFor="email-subject">Subject</Label>
+              <Input
+                id="email-subject"
                 type="text"
-                placeholder="Subject"
-                className="w-full border rounded px-3 py-2 text-sm"
+                placeholder="Email subject"
                 value={emailData.inquirySubject}
                 onChange={(e) =>
                   setEmailData({ ...emailData, inquirySubject: e.target.value })
                 }
               />
-              <textarea
-                placeholder="Message"
+            </div>
+            <div>
+              <Label htmlFor="email-message">Message</Label>
+              <Textarea
+                id="email-message"
+                placeholder="Type your message here..."
                 rows={5}
-                className="w-full border rounded px-3 py-2 text-sm"
                 value={emailData.inquiryText}
                 onChange={(e) =>
                   setEmailData({ ...emailData, inquiryText: e.target.value })
                 }
-              ></textarea>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setShowEmailModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                onClick={handleSendEmail}
-              >
-                Send Email
-              </button>
+              />
             </div>
           </div>
-        </div>
-      )}
-    </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEmailModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendEmail}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Send Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 }
 
@@ -728,19 +755,20 @@ function RosterLists({ accreditationData }) {
     }
   };
   return (
-    <div className="bg-white border border-gray-400 p-6 h-full">
-      <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-        <Users className="w-5 h-5" />
-        Organization Roster
-      </h2>
+    <Card className="h-full">
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+          <Users className="w-5 h-5" />
+          Organization Roster
+        </h2>
 
-      {loading ? (
-        <p>Loading roster...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : rosterData.length > 0 ? (
-        <div className="space-y-4">
-          {rosterData.map((member) => (
+        {loading ? (
+          <p>Loading roster...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : rosterData.length > 0 ? (
+          <div className="space-y-4">
+            {rosterData.map((member) => (
             <div
               key={member._id}
               className="flex items-center justify-between p-4 bg-gray-50"
@@ -787,13 +815,14 @@ function RosterLists({ accreditationData }) {
           </p>
           <a
             href="./accreditation/roster-of-members"
-            className="bg-yellow-500 text-white px-6 py-2 hover:bg-blue-700 transition-colors"
+            className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
           >
             Notify organization
           </a>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -806,27 +835,29 @@ function UploadDocument({
   onCancel,
 }) {
   return (
-    <div className="absolute inset-0 h-full flex items-center justify-center 1w-full bg-black/50 backdrop-blur-sm">
-      <div className=" bg-white min-w-xl mx-auto p-6 border border-gray-300 -xl">
-        <h3 className="text-lg font-medium">{title}</h3>
-        <DocumentUploader onFileSelect={onFileSelect} title={title} />
+    <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            Select and upload your document below.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="flex justify-end mt-4 gap-4">
-          <button
-            onClick={onCancel}
-            className="bg-gray-200 text-gray-700 px-5 py-2  hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onSubmit}
-            className={`${buttonClass} text-white px-6 py-2  transition-colors font-medium`}
-          >
-            {buttonLabel}
-          </button>
+        <div className="py-4">
+          <DocumentUploader onFileSelect={onFileSelect} title={title} />
         </div>
-      </div>
-    </div>
+
+        <DialogFooter>
+          <Button onClick={onCancel} variant="outline">
+            Cancel
+          </Button>
+          <Button onClick={onSubmit} className={buttonClass}>
+            {buttonLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

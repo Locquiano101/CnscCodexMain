@@ -1,8 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-// Corrected import path for API constants (previous path ../../../App was invalid)
 import { API_ROUTER } from "../../../../config/api.js";
+import { cn } from "@/lib/utils";
 
 export function AdviserAccreditationNavigationPage() {
   // Fetch visible requirements to augment tabs with custom ones
@@ -28,7 +28,7 @@ export function AdviserAccreditationNavigationPage() {
     { to: "documents", label: "Accreditation Documents", key: "accreditation-documents" },
     { to: "roster-of-members", label: "Roster of Members", key: "roster" },
     { to: "president-information", label: "President's Information Sheet", key: "president-info" },
-    { to: "PPA", label: "Proposed Action Plan", key: "action-plan" },
+    { to: "ppa", label: "Proposed Action Plan", key: "action-plan" },
   ];
 
   // Determine which template tabs are enabled (optimistically show while loading)
@@ -47,9 +47,9 @@ export function AdviserAccreditationNavigationPage() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Navigation */}
+      {/* Navigation Tabs */}
       <nav
-        className="flex gap-4 px-6 py-4 bg-white overflow-x-auto flex-nowrap nav-scroll"
+        className="flex gap-1 px-6 py-3 bg-background border-b overflow-x-auto"
         role="tablist"
         aria-label="Accreditation Sections"
       >
@@ -60,14 +60,20 @@ export function AdviserAccreditationNavigationPage() {
             end={tab.end}
             role="tab"
             className={({ isActive }) =>
-              `text-lg font-semibold px-4 pt-2 whitespace-nowrap ${isActive ? 'border-b-2 border-cnsc-primary-color text-cnsc-primary-color' : 'text-gray-600 hover:text-cnsc-primary-color'}`
+              cn(
+                "px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors",
+                isActive
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )
             }
           >
             {tab.label}
           </NavLink>
         ))}
       </nav>
-      <div className="h-full overflow-y-auto flex flex-col">
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden">
         <Outlet />
       </div>
     </div>

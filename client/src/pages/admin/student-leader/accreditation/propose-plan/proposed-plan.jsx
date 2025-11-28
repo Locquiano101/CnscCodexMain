@@ -12,6 +12,10 @@ import axios from "axios";
 import { API_ROUTER } from "../../../../../App";
 import { AddProposedActionPlan } from "./proposed-plan-add";
 import EditPpa from "./proposed-plan-edit";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 export function StudentProposedPlan({ orgData, accreditationData }) {
   const [proposals, setProposals] = useState([]);
@@ -54,15 +58,15 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
   const getStatusColor = (status) => {
     switch (status) {
       case "Approved":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 hover:bg-green-200";
       case "Under Review":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
       case "Rejected":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 hover:bg-red-200";
       case "Pending":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
   };
 
@@ -103,60 +107,65 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
   };
 
   return (
-    <div className="p-6 bg-gray-50 w-full h-full">
+    <div className="p-6 w-full h-full" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           {orgData.orgName} Proposed Action Plans
         </h1>
         {!loading && proposals.length > 0 && (
-          <button
+          <Button
             onClick={() => setShowManageModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
           >
             <Plus size={16} />
             Add New Proposal
-          </button>
+          </Button>
         )}
       </div>
       {/* Loading State */}
-      {loading ||
-        (error && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      {loading && (
+        <Card className="bg-white">
+          <CardContent className="p-8">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <span className="ml-3 text-gray-600">Loading proposals...</span>
             </div>
-          </div>
-        ))}
+          </CardContent>
+        </Card>
+      )}
       {error && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="text-center">
-            <p className="text-red-600">{error}</p>
-          </div>
-        </div>
+        <Card className="bg-white">
+          <CardContent className="p-8">
+            <div className="text-center">
+              <p className="text-red-600">{error}</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
       {/* Empty State */}
       {!loading && !error && proposals.length === 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="text-center">
-            <Plus size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Proposals Found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              There are currently no proposed action plans for this
-              organization.
-            </p>
-            <button
-              onClick={() => setShowManageModal(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl flex items-center gap-3 transition-all duration-200 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <Plus size={20} />
-              Create First Proposal
-            </button>
-          </div>
-        </div>
+        <Card className="bg-white">
+          <CardContent className="p-8">
+            <div className="text-center">
+              <Plus size={48} className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No Proposals Found
+              </h3>
+              <p className="text-gray-600 mb-6">
+                There are currently no proposed action plans for this
+                organization.
+              </p>
+              <Button
+                onClick={() => setShowManageModal(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8 py-4 mx-auto shadow-lg hover:shadow-xl"
+              >
+                <Plus size={20} className="mr-2" />
+                Create First Proposal
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
       {/* Table */}
       {!loading && !error && proposals.length > 0 && (
@@ -204,13 +213,12 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                          proposal.overallStatus
-                        )}`}
+                      <Badge
+                        variant="secondary"
+                        className={getStatusColor(proposal.overallStatus)}
                       >
                         {proposal.overallStatus}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(proposal.proposedDate)}
@@ -223,24 +231,28 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button
+                        <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEdit(proposal);
                           }}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          variant="ghost"
+                          size="icon"
+                          className="text-blue-600 hover:text-blue-900 hover:bg-blue-50"
                         >
                           <Edit size={16} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDelete(proposal);
                           }}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:text-red-900 hover:bg-red-50"
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -252,17 +264,11 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
       )}
       {/* View Modal */}
       {showViewModal && selectedProposal && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-xs flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">View Proposal</h3>
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
+        <Dialog open={showViewModal} onOpenChange={() => setShowViewModal(false)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>View Proposal</DialogTitle>
+            </DialogHeader>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -279,13 +285,12 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Status
                   </label>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                      selectedProposal.overallStatus
-                    )}`}
+                  <Badge
+                    variant="secondary"
+                    className={getStatusColor(selectedProposal.overallStatus)}
                   >
                     {selectedProposal.overallStatus}
-                  </span>
+                  </Badge>
                 </div>
 
                 <div>
@@ -359,16 +364,16 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
                 )}
             </div>
 
-            <div className="flex justify-end mt-6">
-              <button
+            <DialogFooter>
+              <Button
                 onClick={() => setShowViewModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                variant="outline"
               >
                 Close
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
       {/* Edit Modal */}
       {showEditModal && (
@@ -382,39 +387,32 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
       )}
       {/* Delete Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-xs flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-red-600">
+        <Dialog open={showDeleteModal} onOpenChange={() => setShowDeleteModal(false)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-red-600">
                 Delete Proposal
-              </h3>
-              <button
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete "{selectedProposal?.activityTitle}"? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
                 onClick={() => setShowDeleteModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <p className="text-gray-700 mb-6">
-              Are you sure you want to delete "{selectedProposal?.activityTitle}
-              "? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                variant="outline"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="bg-red-600 hover:bg-red-700"
               >
                 Delete
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
       {/* Add/Manage Modal */}
       {showManageModal && (

@@ -1,5 +1,13 @@
 import React, { useState, useRef } from "react";
 import { Upload, X, RotateCcw, FileText, FileMinus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 export default function DocumentUploader({
   onFileSelect = null,
@@ -36,61 +44,67 @@ export default function DocumentUploader({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={cn("space-y-6", className)}>
       {!fileData ? (
-        <div
-          className={`border-2 border-dashed rounded-xl p-12 text-center text-black bg-gray-100 hover:bg-gray-200 transition-colors`}
-        >
-          <Upload className="mx-auto h-12 w-12 text-gray-500 mb-4" />
-          <h2 className="text-lg font-semibold mb-2">{title}</h2>
+        <Card className="border-2 border-dashed">
+          <CardContent className="p-12 text-center">
+            <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-lg font-semibold mb-2">{title}</h2>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={acceptedFormats}
-            onChange={(e) => handleFileUpload(e.target.files[0])}
-            className="hidden"
-          />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={acceptedFormats}
+              onChange={(e) => handleFileUpload(e.target.files[0])}
+              className="hidden"
+            />
 
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Choose PDF File
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4 bg-white border border-gray-300 p-6 rounded-xl shadow-md">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Selected Document</h3>
-            {showReset && (
-              <button
-                onClick={resetFile}
-                className="text-gray-500 hover:text-red-500 transition-colors"
-                title="Remove"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-          <div className="text-sm text-gray-700 space-y-1">
-            <p>
-              <strong>Filename:</strong> {fileData.name}
-            </p>
-            <p>
-              <strong>Size:</strong> {fileData.size} KB
-            </p>
-          </div>
-          {showReset && (
-            <button
-              onClick={resetFile}
-              className="mt-4 bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-4"
             >
-              <RotateCcw className="w-4 h-4" />
-              Reset
-            </button>
-          )}
-        </div>
+              Choose PDF File
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Selected Document</CardTitle>
+              {showReset && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={resetFile}
+                  title="Remove"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm space-y-1">
+              <p>
+                <strong>Filename:</strong> {fileData.name}
+              </p>
+              <p>
+                <strong>Size:</strong> {fileData.size} KB
+              </p>
+            </div>
+            {showReset && (
+              <Button
+                variant="secondary"
+                onClick={resetFile}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
@@ -105,8 +119,8 @@ export function DocumentDisplayCard({
   if (!name && !size && !downloadUrl) {
     return (
       <div className="flex items-center gap-4">
-        <FileMinus size={32} />
-        <p className="text-gray-500 italic">No document available.</p>
+        <FileMinus size={32} className="text-muted-foreground" />
+        <p className="text-muted-foreground italic">No document available.</p>
       </div>
     );
   }
@@ -124,20 +138,22 @@ export function DocumentDisplayCard({
   };
 
   return (
-    <div
+    <Card
       onClick={handleDownload}
-      className={`flex items-start gap-4 p-4 bg-white border rounded-xl shadow cursor-pointer hover:bg-gray-50 transition ${className}`}
+      className={cn("cursor-pointer hover:bg-muted/50 transition-colors", className)}
       title="Click to download"
     >
-      <div className="text-blue-600 bg-blue-100 rounded-full p-2">
-        <FileText className="w-6 h-6" />
-      </div>
+      <CardContent className="flex items-start gap-4 p-4">
+        <div className="text-primary bg-primary/10 rounded-full p-2">
+          <FileText className="w-6 h-6" />
+        </div>
 
-      <div className="flex-1 space-y-1">
-        {name && <p className="font-medium text-gray-800">{name}</p>}
-        {size && <p className="text-sm text-gray-500">Size: {size}</p>}
-      </div>
-    </div>
+        <div className="flex-1 space-y-1">
+          {name && <p className="font-medium">{name}</p>}
+          {size && <p className="text-sm text-muted-foreground">Size: {size}</p>}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -149,45 +165,48 @@ export function FileRenderer({ basePath, fileName }) {
   const [showModal, setShowModal] = useState(false);
   if (isImage) {
     return (
-      <div className="object-cover h-70 object-center  rounded-lg flex-shrink-0 flex flex-wrap relative overflow-hidden">
-        <img
-          src={url}
-          alt={fileName}
-          className="w-full h-70x-2 rounded-lg object-cover cursor-pointer"
-          onClick={() => setShowModal(true)}
-        />
+      <>
+        <div className="object-cover h-70 object-center rounded-lg flex-shrink-0 flex flex-wrap relative overflow-hidden">
+          <img
+            src={url}
+            alt={fileName}
+            className="w-full h-70x-2 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setShowModal(true)}
+          />
+        </div>
 
-        {showModal && (
-          <div
-            className="fixed inset-0 bg-black/25 w-full bg-opacity-70 flex items-center justify-center z-50"
-            onClick={() => setShowModal(false)}
-          >
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              <X className="w-8 h-8 text-red-600 absolute top-2 right-4 cursor-pointer" />
-
-              <img
-                src={url}
-                alt={fileName}
-                className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-lg"
-              />
-            </div>
-          </div>
-        )}
-      </div>
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0">
+            <DialogClose className="absolute top-4 right-4 z-50">
+              <Button variant="destructive" size="icon">
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogClose>
+            <img
+              src={url}
+              alt={fileName}
+              className="max-h-[90vh] max-w-full object-contain rounded-lg"
+            />
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
   return (
-    <div className=" p-2 w-full space-y-4 flex flex-col justify-center items-center rounded-lg shadow-md bg-white">
-      <FileText className="w-12 h-12 text-gray-800" />
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        className="text-blue-600 text-md underline h-full"
-      >
-        (preview) - {fileName}
-      </a>
-    </div>
+    <Card>
+      <CardContent className="p-4 space-y-4 flex flex-col justify-center items-center">
+        <FileText className="w-12 h-12 text-muted-foreground" />
+        <Button variant="link" asChild>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            (preview) - {fileName}
+          </a>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

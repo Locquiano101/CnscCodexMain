@@ -28,9 +28,9 @@ export function SduGenerateReports() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-gray-50">
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Page Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
@@ -64,7 +64,7 @@ export function SduGenerateReports() {
       )}
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6">
         {activeTab === "accreditation" && <AccreditationReportsView />}
         {/* Accomplishment reports temporarily hidden */}
         {/* {activeTab === "accomplishment" && <AccomplishmentReportsView />} */}

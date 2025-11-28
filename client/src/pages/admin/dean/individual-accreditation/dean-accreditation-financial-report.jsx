@@ -273,13 +273,28 @@ export function DeanFinancialReport({ selectedOrg, user }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full max-h-240  w-full pt-4 bg-gray-200 p-4 flex gap-4 ">
-      <div className="bg-white shadow-lg flex flex-col flex-1 p-6    border border-gray-100 overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Page Header */}
+      <div className="h-18 border-b bg-background flex items-center justify-between px-6 flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-semibold">Financial Statement</h1>
+          <p className="text-sm text-muted-foreground">Review financial reports and transactions</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{selectedOrg?.orgName || "Organization"}</p>
+            <p className="text-xs text-muted-foreground">{selectedOrg?.orgAcronym || ""}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-6 flex gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+        <div className="bg-white shadow-sm flex flex-col flex-1 p-6 rounded-lg border border-gray-200">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           {/* Left Section: Icon and Title */}
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-blue-100 ">
+            <div className="p-2 bg-blue-100 rounded">
               <span className="w-8 h-8 text-blue-600 text-2xl font-bold">₱</span>
 
             </div>
@@ -297,7 +312,7 @@ export function DeanFinancialReport({ selectedOrg, user }) {
         {/* Summary Cards */}
         <div className="flex flex-wrap gap-4">
           {/* Current Balance */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 flex-1 min-w-[200px] p-4 border border-blue-200 shadow-sm">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 flex-1 min-w-[200px] p-4 border border-blue-200 shadow-sm rounded-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-blue-600 font-medium">
@@ -554,6 +569,7 @@ export function DeanFinancialReport({ selectedOrg, user }) {
               ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

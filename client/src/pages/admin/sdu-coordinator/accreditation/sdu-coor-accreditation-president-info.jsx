@@ -573,7 +573,7 @@ const CurrentPresidentCard = ({ currentPresident, selectedOrg }) => {
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
                   <th className="p-2 border text-left">Subject</th>
-                  <th className="p-2 border text-left">Place</th>
+                  <th className="p-2 border text-left">Place/Room</th>
                   <th className="p-2 border text-left">Day</th>
                   <th className="p-2 border text-left">Class Start</th>
                   <th className="p-2 border text-left">Class End</th>

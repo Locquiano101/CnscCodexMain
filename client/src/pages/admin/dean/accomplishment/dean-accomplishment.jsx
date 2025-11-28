@@ -98,25 +98,33 @@ export function DeanAccomplishmentReport({ orgData, user }) {
   }, {});
 
   return (
-    <div className="h-full w-full overflow-hidden  flex flex-col bg-gray-100">
-      {/* Header Section */}
-      <div className="flex-shrink-0 border-b p-4 border-gray-200 bg-white shadow-sm">
-        <div className="flex justify-between items-center mb-3">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Accomplishment Reports Analytics
-          </h1>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Page Header */}
+      <div className="h-18 border-b bg-background flex items-center justify-between px-6 flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-semibold">Accomplishments</h1>
+          <p className="text-sm text-muted-foreground">View and review organizational accomplishments</p>
         </div>
-        <p className="text-gray-600">
-          Total Accomplishments: {accomplishments.length} | Grand Total Points:{" "}
-          {accomplishmentData?.grandTotal || 0}
-        </p>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{orgData?.orgName || "Organization"}</p>
+            <p className="text-xs text-muted-foreground">{orgData?.orgAcronym || ""}</p>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1  p-4 px-2  gap-4  overflow-auto flex flex-col ">
+      <div className="flex-1 overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
+        <div className="flex flex-col gap-6">
+          {/* Summary Stats */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <p className="text-gray-600">
+              Total Accomplishments: {accomplishments.length} | Grand Total Points:{" "}
+              {accomplishmentData?.grandTotal || 0}
+            </p>
+          </div>
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  gap-2">
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">
@@ -130,7 +138,7 @@ export function DeanAccomplishmentReport({ orgData, user }) {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">
@@ -144,7 +152,7 @@ export function DeanAccomplishmentReport({ orgData, user }) {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Categories</p>
@@ -156,7 +164,7 @@ export function DeanAccomplishmentReport({ orgData, user }) {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Most Recent</p>
@@ -183,10 +191,10 @@ export function DeanAccomplishmentReport({ orgData, user }) {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 border-2 border-gray-300 shadow-md text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 selectedCategory === category
-                  ? "bg-blue-500 text-white shadow-md"
-                  : "bg-white text-gray-700 hover:bg-gray-100 shadow-sm border border-gray-200"
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
               }`}
             >
               {category}{" "}
@@ -196,7 +204,7 @@ export function DeanAccomplishmentReport({ orgData, user }) {
         </div>
 
         {/* Main Content Grid */}
-        <div className="w-full  grid grid-cols-5 gap-2  overflow-hidden">
+        <div className="grid grid-cols-5 gap-4">
           {/* Left: Accomplishments List */}
           <div className="col-span-1 flex gap-2 flex-col overflow-auto pr-1">
             {filteredAccomplishments.length > 0 ? (
@@ -280,6 +288,7 @@ export function DeanAccomplishmentReport({ orgData, user }) {
               selectedAccomplishment={selectedAccomplishment}
             />
           </div>
+        </div>
         </div>
       </div>
     </div>

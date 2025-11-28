@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_ROUTER, DOCU_API_ROUTER } from '../../../../config/api.js';
 import { FileText, CheckCircle2, XCircle, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 // Minimal custom requirement viewer for Adviser role.
 // Advisers only interact with their own organization's submission.
@@ -180,46 +184,50 @@ function DecisionModal({ type, onClose, onConfirm, submitting, note, setNote }) 
   const actionLabel = type === 'approve' ? 'Confirm Adviser Approval' : 'Send Revision Request';
   const actionColor = type === 'approve' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700';
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h3 className="text-lg font-bold text-gray-800">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition" disabled={submitting}><X className="w-5 h-5"/></button>
-        </div>
-        <div className="px-6 py-5 space-y-4">
-          {type === 'approve' ? (
-            <p className="text-sm text-gray-600">You are about to mark this document as Approved. Optionally leave a note for the log.</p>
-          ) : (
-            <p className="text-sm text-gray-600">Provide clear revision instructions. This will log as a status change to Rejected (Revision Requested).</p>
-          )}
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {type === 'approve' 
+              ? 'You are about to mark this document as Approved. Optionally leave a note for the log.'
+              : 'Provide clear revision instructions. This will log as a status change to Rejected (Revision Requested).'}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4 space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Optional Note / Instructions</label>
-            <textarea
+            <Label htmlFor="note" className="text-xs font-semibold uppercase tracking-wide">
+              Optional Note / Instructions
+            </Label>
+            <Textarea
+              id="note"
               value={note}
               onChange={e => setNote(e.target.value)}
               rows={4}
               placeholder={type === 'approve' ? 'e.g. Meets all criteria.' : 'e.g. Please clarify section 2 and attach signed roster.'}
-              className="mt-1 w-full rounded-md border border-gray-300 focus:ring-2 focus:ring-cnsc-primary-color focus:border-cnsc-primary-color text-sm p-2 resize-y"
+              className="mt-2 resize-y"
               disabled={submitting}
             />
           </div>
         </div>
-        <div className="px-6 py-4 bg-gray-50 flex gap-3 justify-end">
-          <button
+        <DialogFooter className="flex gap-3">
+          <Button
             onClick={onClose}
             disabled={submitting}
-            className="px-4 py-2 rounded-md text-sm font-medium bg-gray-200 hover:bg-gray-300 text-gray-700 transition"
-          >Cancel</button>
-          <button
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button
             onClick={onConfirm}
             disabled={submitting}
-            className={`px-4 py-2 rounded-md text-sm font-semibold text-white shadow ${actionColor} disabled:opacity-50 flex items-center gap-2`}
+            className={`${actionColor} disabled:opacity-50`}
           >
-            {submitting && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>}
+            {submitting && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"/>}
             {actionLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

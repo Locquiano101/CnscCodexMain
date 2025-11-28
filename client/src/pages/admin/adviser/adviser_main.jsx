@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
-import { useOutletContext, NavLink, Routes, Route } from "react-router-dom";
+import { useOutletContext, NavLink, Routes, Route, useLocation } from "react-router-dom";
 import { DonePopUp, LogoutButton } from "../../../components/components";
 import {
   Home,
@@ -16,6 +16,13 @@ import {
   LogOut,
   Building2,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import cnscLogo from "../../../assets/cnsc-codex-2.svg";
+import backgroundImage from "../../../assets/cnsc-codex-2.svg";
 
 import { AdviserAccreditationNavigationPage } from "./accreditation/adviser-accreditation.main";
 import AdviserCustomRequirementViewer from "./accreditation/adviser-custom-requirement-viewer";
@@ -71,24 +78,19 @@ export function AdviserPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-col h-screen w-screen overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-center bg-cnsc-secondary-color h-20 shadow-lg">
-          <span className="font-bold text-xl text-cnsc-primary-color">
-            CNSC CODEX
-          </span>
+    <div className="flex flex-col h-screen w-screen overflow-hidden">
+      {/* Main content area */}
+      <div className="flex h-full overflow-auto">
+        {/* Sidebar */}
+        <div className="w-64 flex-shrink-0">
+          <AdviserNavigation user={user} orgData={orgData} />
         </div>
-
-        {/* Main content area */}
-        <div className="flex h-full overflow-auto">
-          {/* Sidebar */}
-          <div className="w-1/5 h-full flex flex-col bg-cnsc-primary-color">
-            <AdviserNavigation user={user} orgData={orgData} />
-          </div>
-
-          {/* Main content */}
-          <div className="flex-1 h-full overflow-y-auto">
+        {/* Main content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Topbar */}
+          <AdviserTopbar orgData={orgData} />
+          {/* Page Content */}
+          <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#F5F5F9' }}>
             {!orgData ? (
               <div className="flex justify-center items-center h-full">
                 <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-amber-600"></div>
@@ -111,24 +113,76 @@ export function AdviserPage() {
   );
 }
 
+function AdviserTopbar({ orgData }) {
+  const location = useLocation();
+  
+  // Map routes to page info
+  const getPageInfo = () => {
+    const path = location.pathname;
+    
+    if (path === "/adviser" || path === "/adviser/") {
+      return { title: "Dashboard", description: "Monitor and manage your organization" };
+    } else if (path.includes("/accreditation")) {
+      return { title: "Accreditation", description: "Review and approve accreditation requirements" };
+    } else if (path.includes("/accomplishment")) {
+      return { title: "Accomplishments", description: "Review organizational accomplishments" };
+    } else if (path.includes("/proposal")) {
+      return { title: "Proposals", description: "Review and approve activity proposals" };
+    }
+    
+    return { title: "CNSC Codex", description: "Adviser Portal" };
+  };
+
+  const { title, description } = getPageInfo();
+  const imageSrc = orgData?._id && orgData?.orgLogo
+    ? `${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`
+    : backgroundImage;
+
+  return (
+    <div className="h-18 border-b bg-background flex items-center justify-between px-6">
+      {/* Left: Page Title & Description */}
+      <div>
+        <h1 className="text-xl font-semibold">{title}</h1>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+
+      {/* Right: Org Picture & Name */}
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <p className="text-sm font-medium">{orgData?.orgName || "Organization"}</p>
+          <p className="text-xs text-muted-foreground">{orgData?.orgAcronym || ""}</p>
+        </div>
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <img
+            src={imageSrc}
+            alt="Organization Logo"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdviserNavigation({ orgData }) {
   // Handle case where orgData is null
   if (!orgData) {
     return (
-      <div className="h-full w-full flex-col">
-        <div className="text-white mt-2 mb-4 font-bold flex items-center space-x-4">
-          <div className="my-1 ml-3 w-15 aspect-square rounded-full bg-cnsc-secondary-color flex items-center justify-center text-2xl">
-            <div className="animate-pulse bg-gray-300 rounded-full w-12 h-12"></div>
+      <div className="h-full w-full flex flex-col bg-background border-r">
+        <div className="h-18 border-b flex items-center px-6 gap-3">
+          <div className="animate-pulse bg-gray-300 rounded w-10 h-10"></div>
+          <div className="flex flex-col gap-1">
+            <div className="animate-pulse bg-gray-300 h-5 w-24 rounded"></div>
+            <div className="animate-pulse bg-gray-300 h-3 w-16 rounded"></div>
           </div>
-          <div className="animate-pulse bg-gray-300 h-6 w-32 rounded"></div>
         </div>
-        <nav className="flex flex-col gap-2">
-          {Array(6)
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {Array(4)
             .fill(0)
             .map((_, index) => (
               <div
                 key={index}
-                className="animate-pulse bg-gray-300 h-12 mx-6 rounded-xl"
+                className="animate-pulse bg-gray-300 h-11 rounded-md"
               ></div>
             ))}
         </nav>
@@ -136,115 +190,67 @@ function AdviserNavigation({ orgData }) {
     );
   }
 
-  const imageSrc =
-    orgData._id && orgData.orgLogo
-      ? `${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`
-      : "";
-
   return (
-    <div className="h-full w-full flex flex-col">
-      {/* Header with Org Logo + Name */}
-      <div className="text-white mt-2 mb-4 font-bold flex items-center space-x-4 hover:cursor-pointer">
-        {/* Logo */}
-        <div
-          className="ml-3 w-24 aspect-square rounded-full bg-cnsc-secondary-color 
-              flex items-center justify-center cursor-pointer overflow-hidden 
-              group relative"
-        >
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt="Organization Logo"
-              className="w-full h-full object-cover rounded-full"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                e.currentTarget.parentNode.querySelector(
-                  ".fallback-icon"
-                ).style.display = "flex";
-              }}
-            />
-          ) : null}
-
-          {/* Fallback Icon */}
-          <div className="fallback-icon p-2 absolute inset-0 hidden items-center justify-center">
-            <Building2 className="w-10 h-10 text-white opacity-80" />
-          </div>
-
-          {/* If no imageSrc at all */}
-          {!imageSrc && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Building2 className="w-10 h-10 text-white opacity-80" />
-            </div>
-          )}
-        </div>
-
-        {/* Welcome message */}
+    <div className="h-full w-full flex flex-col bg-background border-r">
+      {/* Logo and Brand Header */}
+      <div className="h-18 border-b flex items-center px-6 gap-3">
+        <img src={cnscLogo} alt="CNSC Codex" className="w-10 h-10" />
         <div className="flex flex-col">
-          <span className="text-white/80 text-sm font-medium">Welcome!</span>
-          <h1 className="text-white font-extrabold text-lg tracking-wide drop-shadow-sm">
-            {orgData.orgName || "Organization"} Adviser
-          </h1>
+          <h1 className="font-bold text-lg leading-tight">CNSC Codex</h1>
+          <p className="text-xs text-muted-foreground">Adviser</p>
         </div>
       </div>
 
-      {/* Navigation + Logout */}
-      <div className="flex flex-col flex-1">
-        {/* Navigation */}
-        <nav className="flex flex-col gap-1 mx-2">
-          {[
-            {
-              key: "home",
-              icon: <Home className="mr-3 w-5 h-5" />,
-              label: "Dashboard",
-              path: "/adviser",
-            },
-            {
-              key: "accreditations",
-              icon: <FolderOpen className="mr-3 w-5 h-5" />,
-              label: "Accreditations",
-              path: "/adviser/accreditation",
-            },
-            {
-              key: "accomplishments",
-              icon: <File className="mr-3 w-5 h-5" />,
-              label: "Accomplishments",
-              path: "/adviser/accomplishment",
-            },
-            {
-              key: "proposals",
-              icon: <FileText className="mr-3 w-5 h-5" />,
-              label: "Proposals",
-              path: "/adviser/proposal",
-            },
-            // {
-            //   key: "post",
-            //   icon: <PenSquare className="mr-3 w-5 h-5" />,
-            //   label: "Post",
-            //   path: "/adviser/post",
-            // },
-          ].map((item) => (
-            <NavLink
-              key={item.key}
-              to={item.path}
-              end={item.key === "home"}
-              className={({ isActive }) =>
-                `flex items-center rounded-xl py-4 px-6 text-lg font-medium transition-all duration-300 ${
-                  isActive
-                    ? "bg-white text-cnsc-primary-color shadow-md"
-                    : "text-white hover:bg-amber-500/90 hover:pl-8"
-                }`
-              }
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {[
+          {
+            key: "home",
+            icon: <Home className="w-5 h-5" />,
+            label: "Dashboard",
+            path: "/adviser",
+          },
+          {
+            key: "accreditations",
+            icon: <FolderOpen className="w-5 h-5" />,
+            label: "Accreditations",
+            path: "/adviser/accreditation",
+          },
+          {
+            key: "accomplishments",
+            icon: <File className="w-5 h-5" />,
+            label: "Accomplishments",
+            path: "/adviser/accomplishment",
+          },
+          {
+            key: "proposals",
+            icon: <FileText className="w-5 h-5" />,
+            label: "Proposals",
+            path: "/adviser/proposal",
+          },
+        ].map((item) => (
+          <NavLink
+            key={item.key}
+            to={item.path}
+            end={item.key === "home"}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 h-11 px-3 rounded-md cursor-pointer transition-colors text-sm font-medium",
+                isActive
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : "text-foreground hover:bg-muted"
+              )
+            }
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
 
-        {/* Logout Button pinned at bottom */}
-        <div className="mt-auto mx-2 mb-4">
-          <LogoutButton />
-        </div>
+      {/* Logout Button */}
+      <div className="p-3 border-t">
+        <LogoutButton />
       </div>
     </div>
   );
@@ -281,7 +287,7 @@ function AdviserRoutes({ orgData, user }) {
     ));
 
   return (
-    <div className="flex flex-col w-full h-full bg-gray-200 overflow-hidden">
+    <div className="w-full h-full">
       <Routes>
         <Route
           index
@@ -458,32 +464,33 @@ function InitialSignInAdviser({ user, orgData, onFinish }) {
   const isFormValid =
     newPassword && confirmPassword && newPassword === confirmPassword;
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Change Password
-        </h2>
+    <Dialog open={true} onOpenChange={(open) => !open && onFinish()}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Change Password</DialogTitle>
+          <DialogDescription>
+            Please set a new password for your account.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="space-y-5">
+        <div className="space-y-5 py-4">
           {/* New Password Field */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              New Password
-            </label>
+            <Label htmlFor="new-password">New Password</Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
-              <input
+              <Input
+                id="new-password"
                 type={showNewPassword ? "text" : "password"}
                 placeholder="Enter new password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`pl-10 pr-12 ${
                   errors.password
                     ? "border-red-300 bg-red-50"
-                    : "border-gray-300"
+                    : ""
                 }`}
               />
               <button
@@ -540,22 +547,21 @@ function InitialSignInAdviser({ user, orgData, onFinish }) {
 
           {/* Confirm Password Field */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Confirm New Password
-            </label>
+            <Label htmlFor="confirm-password">Confirm New Password</Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
-              <input
+              <Input
+                id="confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`pl-10 pr-12 ${
                   errors.confirm
                     ? "border-red-300 bg-red-50"
-                    : "border-gray-300"
+                    : ""
                 }`}
               />
               <button
@@ -602,35 +608,34 @@ function InitialSignInAdviser({ user, orgData, onFinish }) {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3">
-          <button
-            className="px-6 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3">
+          <Button
+            variant="outline"
             onClick={onFinish}
             disabled={loading}
           >
             Cancel
-          </button>
-          <button
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              isFormValid && !loading
-                ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+          </Button>
+          <Button
             onClick={handlePasswordChange}
             disabled={!isFormValid || loading}
+            className={
+              isFormValid && !loading
+                ? "bg-blue-600 hover:bg-blue-700"
+                : ""
+            }
           >
             {loading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                 Updating...
-              </div>
+              </>
             ) : (
               "Update Password"
             )}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
 
       {/* Success/Error Popup */}
       {showPopup && (
@@ -645,6 +650,6 @@ function InitialSignInAdviser({ user, orgData, onFinish }) {
           }}
         />
       )}
-    </div>
+    </Dialog>
   );
 }

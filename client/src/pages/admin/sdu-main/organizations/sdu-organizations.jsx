@@ -63,11 +63,11 @@ export function SduMainOrganizationsComponent({ selectedOrg, onSelectOrg }) {
   };
 
   return (
-    <div className="p-8 bg-white flex flex-col h-full">
+    <div className="p-6 flex flex-col h-full" style={{ backgroundColor: '#F5F5F9' }}>
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Organizations</h1>
 
       {organizations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 border border-gray-200 rounded-2xl shadow-sm text-center flex-1">
+        <div className="flex flex-col items-center justify-center p-12 border border-gray-200 rounded-2xl bg-white shadow-sm text-center flex-1">
           <Building2 className="w-16 h-16 text-gray-300 mb-4" />
           <p className="text-gray-600 text-lg font-medium">
             No active organizations found.
@@ -77,9 +77,9 @@ export function SduMainOrganizationsComponent({ selectedOrg, onSelectOrg }) {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col border border-gray-200 rounded-2xl shadow-sm flex-1 overflow-hidden">
+        <div className="flex flex-col border border-gray-200 rounded-2xl bg-white shadow-sm flex-1 overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-12 gap-4 p-4 bg-gray-50 border-b text-sm font-semibold text-gray-700 uppercase flex-shrink-0">
+          <div className="grid grid-cols-12 gap-6 p-6 bg-gray-50 border-b text-sm font-semibold text-gray-700 uppercase flex-shrink-0">
             <div className="col-span-5">Organization</div>
             <div className="col-span-3">Classification</div>
             <div className="col-span-2">Status</div>
@@ -99,7 +99,7 @@ export function SduMainOrganizationsComponent({ selectedOrg, onSelectOrg }) {
                 <div
                   key={org._id}
                   onClick={() => onSelectOrg?.(org)}
-                  className={`grid grid-cols-12 gap-4 p-4 cursor-pointer transition hover:bg-amber-25 ${bgColor}`}
+                  className={`grid grid-cols-12 gap-6 p-6 cursor-pointer transition hover:bg-amber-25 ${bgColor}`}
                 >
                   {/* Organization Info */}
                   <div className="col-span-5 flex items-center gap-4">

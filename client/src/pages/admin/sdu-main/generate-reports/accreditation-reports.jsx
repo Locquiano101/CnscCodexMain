@@ -5,6 +5,11 @@ import { FilterPanel } from "../../../../components/filter-panel.jsx";
 import { SortableTable } from "../../../../components/sortable-table.jsx";
 import { exportAccreditationToPDF } from "../../../../utils/export-reports.js";
 import { FileDown } from "lucide-react";
+import { Button } from "../../../../components/ui/button.jsx";
+import { Card, CardContent } from "../../../../components/ui/card.jsx";
+import { Badge } from "../../../../components/ui/badge.jsx";
+import { Alert, AlertDescription, AlertTitle } from "../../../../components/ui/alert.jsx";
+import { AlertCircle } from "lucide-react";
 
 export function AccreditationReportsView() {
   const [data, setData] = useState([]);
@@ -207,8 +212,12 @@ export function AccreditationReportsView() {
       label: "President",
       render: (row) => {
         const president = row.PresidentProfile;
-        if (!president) return "-";
-        return president.name || "-";
+        // Handle null/undefined or unpopulated reference
+        if (!president || typeof president !== 'object') return "-";
+        // Handle populated president object
+        if (president.name) return president.name;
+        // Fallback to ID if name not available
+        return president._id ? `ID: ${president._id.toString().slice(-6)}` : "-";
       },
     },
     {
@@ -299,25 +308,25 @@ export function AccreditationReportsView() {
         const status = row.calculatedAccreditationStatus || "No Data";
         const points = row.accomplishmentData?.grandTotal || 0;
         
-        let colorClass = "bg-gray-100 text-gray-800";
+        let variant = "outline";
         
         if (points >= 90) {
-          colorClass = "bg-purple-100 text-purple-800"; // Outstanding and Fully Accredited
+          variant = "default"; // Outstanding and Fully Accredited - purple/primary
         } else if (points >= 70) {
-          colorClass = "bg-green-100 text-green-800"; // Eligible for Renewal
+          variant = "approved"; // Eligible for Renewal - green
         } else if (points >= 69) {
-          colorClass = "bg-yellow-100 text-yellow-800"; // Under Probation
+          variant = "pending"; // Under Probation - yellow
         } else if (points > 0) {
-          colorClass = "bg-red-100 text-red-800"; // Ineligible for Renewal
+          variant = "rejected"; // Ineligible for Renewal - red
         }
         
         return (
           <div className="flex flex-col items-center gap-1">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
+            <Badge variant={variant} className="text-xs">
               {status}
-            </span>
+            </Badge>
             {points > 0 && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 ({points.toFixed(1)} pts)
               </span>
             )}
@@ -338,26 +347,27 @@ export function AccreditationReportsView() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800 font-medium">Error loading data</p>
-        <p className="text-red-600 text-sm mt-1">{error}</p>
-      </div>
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error loading data</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header with Export Button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">Accreditation Report</h2>
-        <button
+        <h2 className="text-2xl font-bold tracking-tight">Accreditation Report</h2>
+        <Button
           onClick={() => exportAccreditationToPDF(sortedData, filters)}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={sortedData.length === 0}
+          className="gap-2"
         >
           <FileDown className="w-4 h-4" />
           Export PDF
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -374,31 +384,39 @@ export function AccreditationReportsView() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Total Organizations</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{data.length}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Filtered Results</p>
-          <p className="text-2xl font-bold text-blue-600 mt-1">
-            {sortedData.length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Outstanding & Fully Accredited</p>
-          <p className="text-2xl font-bold text-purple-600 mt-1">
-            {data.filter((d) => (d.accomplishmentData?.grandTotal || 0) >= 90).length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Eligible for Renewal</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">
-            {data.filter((d) => {
-              const pts = d.accomplishmentData?.grandTotal || 0;
-              return pts >= 70 && pts < 90;
-            }).length}
-          </p>
-        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Total Organizations</p>
+            <p className="text-3xl font-bold mt-2">{data.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Filtered Results</p>
+            <p className="text-3xl font-bold text-primary mt-2">
+              {sortedData.length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Outstanding & Fully Accredited</p>
+            <p className="text-3xl font-bold text-purple-600 mt-2">
+              {data.filter((d) => (d.accomplishmentData?.grandTotal || 0) >= 90).length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Eligible for Renewal</p>
+            <p className="text-3xl font-bold text-green-600 mt-2">
+              {data.filter((d) => {
+                const pts = d.accomplishmentData?.grandTotal || 0;
+                return pts >= 70 && pts < 90;
+              }).length}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Table */}

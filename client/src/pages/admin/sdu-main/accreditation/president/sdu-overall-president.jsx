@@ -166,8 +166,8 @@ export function SduMainOverallPresident({ onSelectOrg }) {
   }
 
   return (
-    <div className="h-full overflow-auto flex flex-col gap-4 bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold  text-center text-gray-900 mb-2">
+    <div className=" overflow-auto flex flex-col gap-4 bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">
         Student Development Unit President Overview
       </h1>
 

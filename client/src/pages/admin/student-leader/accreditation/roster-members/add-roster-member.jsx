@@ -1,9 +1,22 @@
 import React, { useState, useRef } from "react";
-import { Save, X } from "lucide-react";
+import { Save } from "lucide-react";
 import { ProportionCropTool } from "../../../../../components/image_uploader";
 import axios from "axios";
 import { API_ROUTER } from "../../../../../App";
 import { departments } from "../../../../../components/department_arrays";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
   const initialState = {
@@ -172,18 +185,15 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
   };
 
   return (
-    <div className="w-4xl max-h-[90vh] overflow-auto relative mx-auto p-6 rounded-xl bg-white">
-      <X
-        size={20}
-        className="text-red absolute top-4 right-4 cursor-pointer hover:text-red-700"
-        onClick={onClose}
-      />
+    <>
+      <DialogHeader className="px-6 py-6 border-b bg-white">
+        <DialogTitle className="text-2xl font-bold text-gray-900">
+          Add Roster Member
+        </DialogTitle>
+      </DialogHeader>
 
-      <h1 className="text-3xl text-center font-bold text-gray-900 mb-6">
-        Add Roster Member
-      </h1>
-
-      <div className="flex flex-col gap-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="flex flex-col gap-6">
         <ProportionCropTool
           title="Crop Your Image"
           cropRef={cropRef}
@@ -193,73 +203,76 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
         />
 
         {/* Member Information */}
-        <div className="bg-gray-50 p-6 rounded-lg border">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Full Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={rosterData.rosterMember.name}
-                onChange={(e) => updateMember("name", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Enter full name"
-                required
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name}</p>
-              )}
-            </div>
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle className="text-xl">Member Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Full Name */}
+              <div>
+                <Label htmlFor="name">
+                  Full Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={rosterData.rosterMember.name}
+                  onChange={(e) => updateMember("name", e.target.value)}
+                  className={errors.name ? "border-red-500" : ""}
+                  placeholder="Enter full name"
+                  required
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                )}
+              </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                value={rosterData.rosterMember.email}
-                onChange={(e) => updateMember("email", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Enter email"
-                required
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email}</p>
-              )}
-            </div>
+              {/* Email */}
+              <div>
+                <Label htmlFor="email">
+                  Email Address <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={rosterData.rosterMember.email}
+                  onChange={(e) => updateMember("email", e.target.value)}
+                  className={errors.email ? "border-red-500" : ""}
+                  placeholder="Enter email"
+                  required
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
+              </div>
 
-            {/* Student ID */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Student ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={rosterData.rosterMember.studentId}
-                onChange={handleStudentIdChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.studentId ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="00-0000"
-                required
-              />
-              {errors.studentId && (
-                <p className="text-red-500 text-sm">{errors.studentId}</p>
-              )}
-            </div>
+              {/* Student ID */}
+              <div>
+                <Label htmlFor="studentId">
+                  Student ID <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="studentId"
+                  type="text"
+                  value={rosterData.rosterMember.studentId}
+                  onChange={handleStudentIdChange}
+                  className={errors.studentId ? "border-red-500" : ""}
+                  placeholder="00-0000"
+                  required
+                />
+                {errors.studentId && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.studentId}
+                  </p>
+                )}
+              </div>
 
-            {/* Position */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Position <span className="text-red-500">*</span>
-              </label>
+              {/* Position */}
+              <div>
+                <Label>
+                  Position <span className="text-red-500">*</span>
+                </Label>
 
               <div className="flex items-center gap-6 mb-2">
                 {/* Member Radio */}
@@ -321,138 +334,153 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
 
             {/* Year Level */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="year">
                 Year Level <span className="text-red-500">*</span>
-              </label>
-              <select
+              </Label>
+              <Select
                 value={rosterData.rosterMember.year}
-                onChange={(e) => updateMember("year", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.year ? "border-red-500" : "border-gray-300"
-                }`}
+                onValueChange={(value) => updateMember("year", value)}
                 required
               >
-                <option value="">Select Year</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
-                <option value="Graduate">Graduate</option>
-              </select>
+                <SelectTrigger
+                  id="year"
+                  className={errors.year ? "border-red-500" : ""}
+                >
+                  <SelectValue placeholder="Select Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1st Year">1st Year</SelectItem>
+                  <SelectItem value="2nd Year">2nd Year</SelectItem>
+                  <SelectItem value="3rd Year">3rd Year</SelectItem>
+                  <SelectItem value="4th Year">4th Year</SelectItem>
+                  <SelectItem value="Graduate">Graduate</SelectItem>
+                </SelectContent>
+              </Select>
               {errors.year && (
-                <p className="text-red-500 text-sm">{errors.year}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.year}</p>
               )}
             </div>
 
             {/* Department */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="department">
                 Department <span className="text-red-500">*</span>
-              </label>
-              <select
+              </Label>
+              <Select
                 value={rosterData.rosterMember.department}
-                onChange={(e) => updateMember("department", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.department ? "border-red-500" : "border-gray-300"
-                }`}
+                onValueChange={(value) => updateMember("department", value)}
+                disabled
                 required
               >
-                <option value="">Select Department</option>
-                {Object.keys(departments).map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  id="department"
+                  className={`${errors.department ? "border-red-500" : ""} bg-gray-100`}
+                >
+                  <SelectValue placeholder="Select Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(departments).map((dept) => (
+                    <SelectItem key={dept} value={dept}>
+                      {dept}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.department && (
-                <p className="text-red-500 text-sm">{errors.department}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.department}</p>
               )}
             </div>
 
             {/* Course */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="course">
                 Course <span className="text-red-500">*</span>
-              </label>
-              <select
+              </Label>
+              <Select
                 value={rosterData.rosterMember.course}
-                onChange={(e) => updateMember("course", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.course ? "border-red-500" : "border-gray-300"
-                }`}
+                onValueChange={(value) => updateMember("course", value)}
+                disabled
                 required
               >
-                <option value="">Select Course</option>
-                {rosterData.rosterMember.department &&
-                  departments[rosterData.rosterMember.department]?.map(
-                    (course) => (
-                      <option key={course} value={course}>
-                        {course}
-                      </option>
-                    )
-                  )}
-              </select>
+                <SelectTrigger
+                  id="course"
+                  className={`${errors.course ? "border-red-500" : ""} bg-gray-100`}
+                >
+                  <SelectValue placeholder="Select Course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rosterData.rosterMember.department &&
+                    departments[rosterData.rosterMember.department]?.map(
+                      (course) => (
+                        <SelectItem key={course} value={course}>
+                          {course}
+                        </SelectItem>
+                      )
+                    )}
+                </SelectContent>
+              </Select>
               {errors.course && (
-                <p className="text-red-500 text-sm">{errors.course}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.course}</p>
               )}
             </div>
 
             {/* Birth Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="birthDate">
                 Birth Date <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
+                id="birthDate"
                 type="date"
                 value={rosterData.rosterMember.birthDate}
                 onChange={(e) => updateMember("birthDate", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.birthDate ? "border-red-500" : "border-gray-300"
-                }`}
+                className={errors.birthDate ? "border-red-500" : ""}
                 required
               />
               {errors.birthDate && (
-                <p className="text-red-500 text-sm">{errors.birthDate}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>
               )}
             </div>
 
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="status">
                 Status <span className="text-red-500">*</span>
-              </label>
-              <select
+              </Label>
+              <Select
                 value={rosterData.rosterMember.status || ""}
-                onChange={(e) => updateMember("status", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.status ? "border-red-500" : "border-gray-300"
-                }`}
+                onValueChange={(value) => updateMember("status", value)}
                 required
               >
-                <option value="" disabled>
-                  Select a status
-                </option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-
+                <SelectTrigger
+                  id="status"
+                  className={errors.status ? "border-red-500" : ""}
+                >
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
               {errors.status && (
-                <p className="text-red-500 text-sm">{errors.status}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.status}</p>
               )}
             </div>
 
             {/* Contact Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="contactNumber">
                 Contact Number <span className="text-red-500">*</span>
-              </label>
+              </Label>
               <div className="flex items-center">
                 <span className="px-3 py-2 border border-r-0 rounded-l-md bg-gray-100 text-gray-700 text-sm">
                   +63
                 </span>
-                <input
+                <Input
+                  id="contactNumber"
                   type="text"
                   value={
                     rosterData.rosterMember.contactNumber
@@ -463,16 +491,15 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
                       : ""
                   }
                   onChange={(e) => {
-                    let input = e.target.value.replace(/\D/g, ""); // remove non-numeric chars
+                    let input = e.target.value.replace(/\D/g, "");
 
-                    // only allow starting with 9 and up to 10 digits
                     if (/^9[0-9]{0,9}$/.test(input) || input === "") {
                       const formatted = input ? `+63 ${input}` : "";
                       updateMember("contactNumber", formatted);
                     }
                   }}
-                  className={`w-full px-3 py-2 border rounded-r-md ${
-                    errors.contactNumber ? "border-red-500" : "border-gray-300"
+                  className={`rounded-l-none ${
+                    errors.contactNumber ? "border-red-500" : ""
                   }`}
                   placeholder="9XXXXXXXXX"
                   required
@@ -480,51 +507,54 @@ export default function AddRosterForm({ onClose, orgData, onMemberAdded }) {
                 />
               </div>
               {errors.contactNumber && (
-                <p className="text-red-500 text-sm">{errors.contactNumber}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>
               )}
             </div>
 
             {/* Address */}
             <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor="address">
                 Address <span className="text-red-500">*</span>
-              </label>
-              <textarea
+              </Label>
+              <Textarea
+                id="address"
                 value={rosterData.rosterMember.address}
                 onChange={(e) => updateMember("address", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.address ? "border-red-500" : "border-gray-300"
-                }`}
+                className={errors.address ? "border-red-500" : ""}
                 placeholder="Enter address"
                 required
               />
               {errors.address && (
-                <p className="text-red-500 text-sm">{errors.address}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.address}</p>
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
         </div>
+      </div>
 
-        {/* Buttons */}
+      {/* Footer with Buttons */}
+      <div className="bg-gray-50 px-6 py-4 border-t">
         <div className="flex justify-end gap-4">
-          <button
+          <Button
             type="button"
             onClick={resetForm}
-            className="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            variant="outline"
           >
             Reset Form
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSubmit}
             disabled={isProcessing}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
           >
             <Save size={20} />
             {isProcessing ? "Processing..." : "Save Roster"}
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

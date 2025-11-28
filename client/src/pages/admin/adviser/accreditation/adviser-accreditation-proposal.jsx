@@ -19,6 +19,10 @@ import {
   Users,
 } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export function AdviserProposal({ orgData }) {
   const [proposals, setProposals] = useState([]);
@@ -215,7 +219,7 @@ export function AdviserProposal({ orgData }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+    <div className="min-h-screen p-6" style={{ backgroundColor: '#F5F5F9' }}>
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header */}
         <div className="mb-8">
@@ -387,36 +391,30 @@ export function AdviserProposal({ orgData }) {
         )}
 
         {/* Enhanced View Modal */}
-        {showViewModal && selectedProposal && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {selectedProposal && (
+          <Dialog open={showViewModal} onOpenChange={(open) => !open && setShowViewModal(false)}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-2xl font-bold mb-2">
-                      {selectedProposal.activityTitle}
-                    </h3>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`inline-flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white`}
-                      >
-                        {getStatusIcon(selectedProposal.overallStatus)}
-                        {selectedProposal.overallStatus}
-                      </span>
-                      <span className="text-blue-100 text-sm">
-                        {formatDate(selectedProposal.proposedDate)}
-                      </span>
-                    </div>
+                    {selectedProposal.activityTitle}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`inline-flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white`}
+                    >
+                      {getStatusIcon(selectedProposal.overallStatus)}
+                      {selectedProposal.overallStatus}
+                    </span>
+                    <span className="text-blue-100 text-sm">
+                      {formatDate(selectedProposal.proposedDate)}
+                    </span>
                   </div>
-                  <button
-                    onClick={() => setShowViewModal(false)}
-                    className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <X size={24} />
-                  </button>
                 </div>
               </div>
+            </div>
 
               {/* Modal Content */}
               <div className="p-6 space-y-6">
@@ -563,152 +561,144 @@ export function AdviserProposal({ orgData }) {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
+            </DialogContent>
+          </Dialog>
         )}
 
         {/* Revision Modal */}
-        {showRevisionModal && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-60 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-              <div className="bg-amber-500 p-4 text-white  rounded-t-2xl">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle size={24} />
-                    <h3 className="text-xl font-bold">Send Revision</h3>
-                  </div>
-                  <button
-                    onClick={() => setShowRevisionModal(false)}
-                    className="text-white hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-3">
-                    Revision Comments <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={revisionNotes}
-                    onChange={(e) => setRevisionNotes(e.target.value)}
-                    rows={5}
-                    placeholder="Please provide specific feedback and suggestions for improvement..."
-                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() =>
-                      submitUpdate({
-                        status: "Revision from the Adviser",
-                      })
-                    }
-                    className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-400 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:cursor-not-allowed"
-                  >
-                    Send Revision Request
-                  </button>
-                  <button
-                    onClick={() => setShowRevisionModal(false)}
-                    className="px-6 py-3 text-slate-600 border-2 border-slate-300 hover:border-slate-400 rounded-xl hover:bg-slate-50 transition-colors font-medium"
-                  >
-                    Cancel
-                  </button>
+        {selectedProposal && (
+          <Dialog open={showRevisionModal} onOpenChange={setShowRevisionModal}>
+            <DialogContent className="max-w-2xl">
+            <div className="bg-amber-500 p-4 text-white rounded-t-2xl -mt-6 -mx-6 mb-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={24} />
+                  <h3 className="text-xl font-bold">Send Revision</h3>
                 </div>
               </div>
             </div>
-          </div>
+
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="revision-notes" className="text-sm font-medium text-slate-700 mb-3">
+                  Revision Comments <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="revision-notes"
+                  value={revisionNotes}
+                  onChange={(e) => setRevisionNotes(e.target.value)}
+                  rows={5}
+                  placeholder="Please provide specific feedback and suggestions for improvement..."
+                  className="resize-none"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="gap-3 pt-4">
+              <Button
+                onClick={() => setShowRevisionModal(false)}
+                variant="outline"
+                className="border-2"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() =>
+                  submitUpdate({
+                    status: "Revision from the Adviser",
+                  })
+                }
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+              >
+                Send Revision Request
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         )}
 
         {/* Approval Modal */}
-        {showApprovalModal && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-60 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-              <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white p-6 rounded-t-2xl">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle size={24} />
-                    <h3 className="text-xl font-bold">Approve Proposal</h3>
-                  </div>
-                  <button
-                    onClick={() => setShowApprovalModal(false)}
-                    className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-6">
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle size={20} className="text-green-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-green-900 mb-2">
-                        Confirm Proposal Approval
-                      </h4>
-                      <p className="text-green-700 text-sm leading-relaxed">
-                        You are about to approve "
-                        {selectedProposal?.activityTitle}". This action will
-                        change the proposal status to "Approved" and notify all
-                        the "{orgData.orgName}".
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <h5 className="font-medium text-slate-800 mb-3">
-                    Proposal Summary:
-                  </h5>
-                  <div className="space-y-2 text-sm text-slate-600">
-                    <div className="flex justify-between">
-                      <span>Budget:</span>
-                      <span className="font-medium">
-                        {formatCurrency(
-                          selectedProposal?.budgetaryRequirements
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Venue:</span>
-                      <span className="font-medium">
-                        {selectedProposal?.venue}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Proposed Date:</span>
-                      <span className="font-medium">
-                        {formatDate(selectedProposal?.proposedDate)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() =>
-                      submitUpdate({ status: "Approved by the Adviser" })
-                    }
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle size={18} />
-                    Confirm Approval
-                  </button>
-                  <button
-                    onClick={() => setShowApprovalModal(false)}
-                    className="px-6 py-3 text-slate-600 border-2 border-slate-300 hover:border-slate-400 rounded-xl hover:bg-slate-50 transition-colors font-medium"
-                  >
-                    Cancel
-                  </button>
+        {selectedProposal && (
+          <Dialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
+            <DialogContent className="max-w-2xl">
+              <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white p-6 rounded-t-2xl -mt-6 -mx-6 mb-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <CheckCircle size={24} />
+                  <h3 className="text-xl font-bold">Approve Proposal</h3>
                 </div>
               </div>
             </div>
-          </div>
+
+            <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle size={20} className="text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">
+                      Confirm Proposal Approval
+                    </h4>
+                    <p className="text-green-700 text-sm leading-relaxed">
+                      You are about to approve "
+                      {selectedProposal.activityTitle}". This action will
+                      change the proposal status to "Approved" and notify all
+                      the "{orgData.orgName}".
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 rounded-xl p-4">
+                <h5 className="font-medium text-slate-800 mb-3">
+                  Proposal Summary:
+                </h5>
+                <div className="space-y-2 text-sm text-slate-600">
+                  <div className="flex justify-between">
+                    <span>Budget:</span>
+                    <span className="font-medium">
+                      {formatCurrency(
+                        selectedProposal.budgetaryRequirements
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Venue:</span>
+                    <span className="font-medium">
+                      {selectedProposal.venue}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Proposed Date:</span>
+                    <span className="font-medium">
+                      {formatDate(selectedProposal.proposedDate)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-3 pt-4">
+              <Button
+                onClick={() => setShowApprovalModal(false)}
+                variant="outline"
+                className="border-2"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() =>
+                  submitUpdate({ status: "Approved by the Adviser" })
+                }
+                className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600"
+              >
+                <CheckCircle size={18} className="mr-2" />
+                Confirm Approval
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         )}
+
         {popup.open && (
           <DonePopUp
             type={popup.type}
@@ -717,6 +707,7 @@ export function AdviserProposal({ orgData }) {
           />
         )}
       </div>
+
       <AlertModal
         open={alertModal}
         title="Create First Proposal"
@@ -732,46 +723,32 @@ export function AdviserProposal({ orgData }) {
 }
 
 function AlertModal({ open, title, message, onClose, onConfirm }) {
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white flex justify-between items-center">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white rounded-t-2xl -mt-6 -mx-6 mb-4">
           <h3 className="text-lg font-semibold">{title || "Alert"}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-          >
-            <X size={20} />
-          </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6">
-          <p className="text-slate-700">{message}</p>
-        </div>
+        <DialogDescription className="text-slate-700">
+          {message}
+        </DialogDescription>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 px-6 pb-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-slate-600 border-2 border-slate-300 hover:border-slate-400 rounded-xl hover:bg-slate-50 transition-colors font-medium"
-          >
+        <DialogFooter className="gap-3">
+          <Button onClick={onClose} variant="outline" className="border-2">
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
               if (onConfirm) onConfirm();
               onClose();
             }}
-            className="px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium"
+            className="bg-amber-500 hover:bg-amber-600"
           >
             Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,6 +1,10 @@
 import { DOCU_API_ROUTER } from "../../../../App";
 import { useState } from "react";
 import { UpdateStatusProposal } from "../../../../components/update-status-proposal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export function ShowAdviserDetailedProposal({
   proposal,
@@ -14,25 +18,14 @@ export function ShowAdviserDetailedProposal({
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Proposal Details
-            </h2>
-            <p className="text-gray-600 text-sm mt-1">
-              Comprehensive proposal information and documents
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl p-2 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl h-[90vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle className="text-2xl">Proposal Details</DialogTitle>
+          <DialogDescription>
+            Comprehensive proposal information and documents
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Content: Split View */}
         <div className="flex flex-1 overflow-hidden">
@@ -315,16 +308,16 @@ export function ShowAdviserDetailedProposal({
             </button>
           </div>
         </div>
+      </DialogContent>
 
-        {/* Modal Component */}
-        <UpdateStatusProposal
-          statusModal={statusModal}
-          setStatusModal={setStatusModal}
-          orgData={orgData}
-          proposal={proposal}
-          user={user}
-        />
-      </div>
-    </div>
+      {/* Modal Component */}
+      <UpdateStatusProposal
+        statusModal={statusModal}
+        setStatusModal={setStatusModal}
+        orgData={orgData}
+        proposal={proposal}
+        user={user}
+      />
+    </Dialog>
   );
 }

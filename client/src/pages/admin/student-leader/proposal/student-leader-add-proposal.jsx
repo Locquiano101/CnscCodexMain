@@ -1,15 +1,35 @@
 import axios from "axios";
 import { API_ROUTER } from "../../../../App";
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-export function AddProposal({ proposals = [], onClose }) {
+export function AddProposal({ proposals = [], onClose, open = true }) {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPopup, setShowPopup] = useState(null);
-  const [proposedDate, setProposedDate] = useState(""); // New state for proposed date
+  const [proposedDate, setProposedDate] = useState("");
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -22,8 +42,8 @@ export function AddProposal({ proposals = [], onClose }) {
   };
 
   // Handle activity selection and set initial proposed date
-  const handleActivitySelection = (e) => {
-    const activity = proposals.find((a) => a._id === e.target.value);
+  const handleActivitySelection = (activityId) => {
+    const activity = proposals.find((a) => a._id === activityId);
     setSelectedActivity(activity || null);
 
     // Set the initial proposed date from the selected activity
@@ -85,53 +105,47 @@ export function AddProposal({ proposals = [], onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-3">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-blue-50">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             <span className="text-blue-600">📄</span> Add New Proposal
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-full transition"
-          >
-            ✕
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogDescription>
+            Select an approved activity and upload the proposal document
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-gray-50">
+        <div className="space-y-6 py-4">
           {/* Select Activity */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Activity
-            </label>
-            <select
+          <div className="space-y-2">
+            <Label htmlFor="activity-select">Select Activity</Label>
+            <Select
               value={selectedActivity?._id || ""}
-              onChange={handleActivitySelection}
-              className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              onValueChange={handleActivitySelection}
             >
-              <option value="">Choose an approved activity...</option>
-              {proposals.map((activity) => (
-                <option key={activity._id} value={activity._id}>
-                  {activity.activityTitle || activity.orgName}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="activity-select">
+                <SelectValue placeholder="Choose an approved activity..." />
+              </SelectTrigger>
+              <SelectContent>
+                {proposals.map((activity) => (
+                  <SelectItem key={activity._id} value={activity._id}>
+                    {activity.activityTitle || activity.orgName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Proposed Date */}
           {selectedActivity && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Proposed Date
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="proposed-date">Proposed Date</Label>
+              <Input
+                id="proposed-date"
                 type="date"
                 value={proposedDate}
                 onChange={(e) => setProposedDate(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
                 required
               />
             </div>
@@ -139,34 +153,33 @@ export function AddProposal({ proposals = [], onClose }) {
 
           {/* Activity & Upload Section */}
           {selectedActivity && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left - Activity Info */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">
-                  Activity Details
-                </h3>
-
-                <div className="space-y-3 text-sm text-gray-700">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Activity Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
                   {selectedActivity?.activityTitle && (
                     <div>
-                      <p className="font-medium text-gray-600">Title</p>
-                      <p className="mt-0.5">{selectedActivity.activityTitle}</p>
+                      <p className="font-medium text-muted-foreground">Title</p>
+                      <p className="mt-1">{selectedActivity.activityTitle}</p>
                     </div>
                   )}
 
                   {selectedActivity?.briefDetails && (
                     <div>
-                      <p className="font-medium text-gray-600">Brief Details</p>
-                      <p className="mt-0.5">{selectedActivity.briefDetails}</p>
+                      <p className="font-medium text-muted-foreground">Brief Details</p>
+                      <p className="mt-1">{selectedActivity.briefDetails}</p>
                     </div>
                   )}
 
                   {selectedActivity?.AlignedObjective && (
                     <div>
-                      <p className="font-medium text-gray-600">
+                      <p className="font-medium text-muted-foreground">
                         Aligned Objectives
                       </p>
-                      <p className="mt-0.5">
+                      <p className="mt-1">
                         {selectedActivity.AlignedObjective}
                       </p>
                     </div>
@@ -174,8 +187,8 @@ export function AddProposal({ proposals = [], onClose }) {
 
                   {proposedDate && (
                     <div>
-                      <p className="font-medium text-gray-600">Proposed Date</p>
-                      <p className="text-blue-700 mt-0.5">
+                      <p className="font-medium text-muted-foreground">Proposed Date</p>
+                      <p className="text-blue-700 mt-1">
                         {new Date(proposedDate).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "short",
@@ -185,146 +198,141 @@ export function AddProposal({ proposals = [], onClose }) {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-4">
                     {selectedActivity?.venue && (
                       <div>
-                        <p className="font-medium text-gray-600">Venue</p>
-                        <p className="mt-0.5">{selectedActivity.venue}</p>
+                        <p className="font-medium text-muted-foreground">Venue</p>
+                        <p className="mt-1">{selectedActivity.venue}</p>
                       </div>
                     )}
 
                     {selectedActivity?.date && (
                       <div>
-                        <p className="font-medium text-gray-600">Date</p>
-                        <p className="mt-0.5">{selectedActivity.date}</p>
+                        <p className="font-medium text-muted-foreground">Date</p>
+                        <p className="mt-1">{selectedActivity.date}</p>
                       </div>
                     )}
                   </div>
 
                   {selectedActivity?.budget && (
                     <div>
-                      <p className="font-medium text-gray-600">Budget</p>
-                      <p className="mt-0.5 font-semibold text-green-700">
+                      <p className="font-medium text-muted-foreground">Budget</p>
+                      <p className="mt-1 font-semibold text-green-700">
                         ₱{selectedActivity.budget.toLocaleString()}
                       </p>
                     </div>
                   )}
 
                   <div>
-                    <p className="font-medium text-gray-600">Status</p>
-                    <span
-                      className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <p className="font-medium text-muted-foreground">Status</p>
+                    <Badge
+                      className="mt-1"
+                      variant={
                         selectedActivity?.overallStatus === "Approved"
-                          ? "bg-green-100 text-green-800"
+                          ? "approved"
                           : selectedActivity?.overallStatus === "Pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : selectedActivity?.overallStatus ===
-                            "Approved For Conduct"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
+                          ? "pending"
+                          : selectedActivity?.overallStatus === "Approved For Conduct"
+                          ? "default"
+                          : "secondary"
+                      }
                     >
                       {selectedActivity?.overallStatus}
-                    </span>
+                    </Badge>
                   </div>
 
                   {selectedActivity?.alignedSDG?.length > 0 && (
                     <div>
-                      <p className="font-medium text-gray-600">Aligned SDG</p>
+                      <p className="font-medium text-muted-foreground">Aligned SDG</p>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {selectedActivity.alignedSDG.map((sdg, index) => (
-                          <span
-                            key={index}
-                            className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium"
-                          >
+                          <Badge key={index} variant="secondary" className="text-xs">
                             SDG {sdg}
-                          </span>
+                          </Badge>
                         ))}
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Right - File Upload */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">
-                  Document Upload
-                </h3>
-
-                {!uploadedFile ? (
-                  <label className="flex flex-col items-center justify-center w-full h-52 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
-                    <Upload className="w-10 h-10 text-blue-400 mb-2" />
-                    <p className="text-gray-700 text-sm font-medium">
-                      Click to upload or drag & drop
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PDF files only (MAX. 10MB)
-                    </p>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,application/pdf"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">📄</div>
-                        <div>
-                          <h4 className="font-medium text-gray-800 text-sm">
-                            {uploadedFile.name}
-                          </h4>
-                          <p className="text-xs text-gray-600">
-                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={handleRemoveFile}
-                        className="text-red-600 hover:text-red-700 text-xs font-medium px-2 py-0.5 hover:bg-red-50 rounded"
-                      >
-                        Remove
-                      </button>
-                    </div>
-
-                    <div className="border rounded-lg overflow-hidden h-[300px]">
-                      <iframe
-                        src={pdfUrl}
-                        className="w-full h-full"
-                        title="PDF Preview"
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Document Upload</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!uploadedFile ? (
+                    <Label
+                      htmlFor="file-upload"
+                      className="flex flex-col items-center justify-center w-full h-52 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition"
+                    >
+                      <Upload className="w-10 h-10 text-blue-500 mb-2" />
+                      <p className="text-sm font-medium">
+                        Click to upload or drag & drop
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PDF files only (MAX. 10MB)
+                      </p>
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,application/pdf"
+                        onChange={handleFileUpload}
                       />
+                    </Label>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">📄</div>
+                          <div>
+                            <h4 className="font-medium text-sm">
+                              {uploadedFile.name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveFile}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+
+                      <div className="border rounded-lg overflow-hidden h-[300px]">
+                        <iframe
+                          src={pdfUrl}
+                          className="w-full h-full"
+                          title="PDF Preview"
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t bg-white flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 border border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium transition"
-          >
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSubmit}
             disabled={!selectedActivity || !uploadedFile || !proposedDate}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-              selectedActivity && uploadedFile && proposedDate
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
           >
             Submit Proposal
-          </button>
-        </div>
-      </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
 
       {showPopup && (
         <DonePopUp
@@ -342,6 +350,6 @@ export function AddProposal({ proposals = [], onClose }) {
           }}
         />
       )}
-    </div>
+    </Dialog>
   );
 }

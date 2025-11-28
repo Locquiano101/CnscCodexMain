@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { DOCU_API_ROUTER } from "../../../../App";
 import { UpdateStatusProposal } from "../../../../components/update-status-proposal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
   const [statusModal, setStatusModal] = useState(null); // ✅ unique name
@@ -8,28 +15,20 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col p-0">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Proposal Details
-            </h2>
-            <p className="text-gray-600 text-sm mt-1">
-              Comprehensive proposal information and documents
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl p-2 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+        <DialogHeader className="px-6 py-6 border-b bg-white">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            Proposal Details
+          </DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Comprehensive proposal information and documents
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Content: Split View */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left: Details Panel */}
           <div className="w-2/5 border-r border-gray-200 overflow-y-auto bg-gray-50">
             <div className="p-6 space-y-6">
@@ -226,7 +225,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
                         onClick={() => setSelectedDocIndex(index)}
                         className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${
                           selectedDocIndex === index
-                            ? "bg-blue-600 text-white"
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
                             : "text-gray-700 hover:bg-gray-100 border border-gray-200 bg-white"
                         }`}
                       >
@@ -261,7 +260,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4 bg-white flex justify-between items-center">
+        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-between items-center">
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span>
               Created:{" "}
@@ -275,10 +274,10 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
             )}
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md"
+              className="px-4 py-2 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors"
             >
               Close
             </button>
@@ -288,7 +287,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
               onClick={() =>
                 setStatusModal({ type: "alert", status: "Revision from Dean" })
               }
-              className="px-4 py-2 text-white bg-amber-700 hover:bg-amber-800 rounded-md"
+              className="px-4 py-2 text-white bg-amber-600 hover:bg-amber-700 rounded-md transition-colors"
             >
               Send Revision
             </button>
@@ -298,7 +297,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
               onClick={() =>
                 setStatusModal({ type: "approval", status: "Conduct Approved" })
               }
-              className="px-4 py-2 text-white bg-green-700 hover:bg-green-800 rounded-md"
+              className="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
             >
               Approve
             </button>
@@ -313,7 +312,7 @@ export function ShowDeanDetailedProposal({ proposal, orgData, user, onClose }) {
           proposal={proposal}
           user={user}
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

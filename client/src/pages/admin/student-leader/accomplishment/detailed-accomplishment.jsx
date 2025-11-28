@@ -11,6 +11,17 @@ import { useEffect, useState } from "react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import axios from "axios";
 import DocumentUploader from "../../../../components/document_uploader";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function StudentAccomplishmentDetailed({
   getCategoryIcon,
@@ -94,32 +105,33 @@ export function StudentAccomplishmentDetailed({
   const uploadedOptionalDocs = totalOptionalDocs - missingOptionalDocs.length;
 
   return (
-    <div className="flex flex-col h-full bg-white shadow-sm border border-gray-200 overflow-hidden">
-      {loading ? (
-        // 🔄 Loading State
-        <div className="h-full flex flex-col items-center justify-center text-center p-6">
-          <FileTextIcon className="h-12 w-full text-gray-500 mb-4" />
-          <p className="text-gray-500">Select Accomplishments</p>
-        </div>
-      ) : selectedAccomplishment ? (
-        <div className="flex flex-col h-full w-full p-4 overflow-auto">
-          <div className="flex justify-between items-center mb-4">
-            {/* Category Badge */}
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium  ${getCategoryColor(
-                selectedAccomplishment.category
-              )}`}
-            >
-              {getCategoryIcon(selectedAccomplishment.category)}
-              {selectedAccomplishment.category}
-            </div>
-            <div className="flex items-center gap-2 p-3 bg-yellow-100  rounded-full ">
-              <Award className="w-5 h-5 text-yellow-600" />
-              <span className="font-semibold text-yellow-800">
-                {selectedAccomplishment.awardedPoints} Points Awarded
-              </span>
-            </div>
+    <Card className="flex flex-col h-full bg-white overflow-hidden">
+      <CardContent className="p-0 h-full">
+        {loading ? (
+          // 🔄 Loading State
+          <div className="h-full flex flex-col items-center justify-center text-center p-6">
+            <FileTextIcon className="h-12 w-full text-gray-500 mb-4" />
+            <p className="text-gray-500">Select Accomplishments</p>
           </div>
+        ) : selectedAccomplishment ? (
+          <div className="flex flex-col h-full w-full p-4 overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              {/* Category Badge */}
+              <Badge
+                className={`inline-flex items-center gap-2 ${getCategoryColor(
+                  selectedAccomplishment.category
+                )}`}
+              >
+                {getCategoryIcon(selectedAccomplishment.category)}
+                {selectedAccomplishment.category}
+              </Badge>
+              <div className="flex items-center gap-2 p-3 bg-yellow-100 rounded-full">
+                <Award className="w-5 h-5 text-yellow-600" />
+                <span className="font-semibold text-yellow-800">
+                  {selectedAccomplishment.awardedPoints} Points Awarded
+                </span>
+              </div>
+            </div>
           {/* Title */}
           <h2 className="text-xl font text-gray-900  leading-tight">
             <span className=" font-black">Title:</span>
@@ -322,7 +334,8 @@ export function StudentAccomplishmentDetailed({
           selectedAccomplishment={selectedAccomplishment}
         />
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -330,6 +343,7 @@ function UpdateAccomplishmentDocument({
   selectedDoc,
   selectedAccomplishment,
   setUpdateAccomplishmentDocumentPopUp,
+  open = true,
 }) {
   if (!selectedDoc) return null;
   const [file, setFile] = useState(null);
@@ -378,18 +392,14 @@ function UpdateAccomplishmentDocument({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-11/12 md:w-4/5 lg:w-2/3 h-[90vh] p-6 relative flex flex-col">
-        {/* Close Button */}
-        <button
-          onClick={() => setUpdateAccomplishmentDocumentPopUp(false)}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-          aria-label="Close"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        <h2 className="text-xl font-bold mb-4">Update Document</h2>
+    <Dialog open={open} onOpenChange={() => setUpdateAccomplishmentDocumentPopUp(false)}>
+      <DialogContent className="max-w-[90vw] h-[90vh]">
+        <DialogHeader>
+          <DialogTitle>Update Document</DialogTitle>
+          <DialogDescription>
+            Replace or update the document for {selectedDoc.label}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Document Details */}
         <div className="bg-gray-50 rounded-lg p-4 mb-4">
@@ -434,12 +444,12 @@ function UpdateAccomplishmentDocument({
               className="mb-4"
             />
 
-            <button
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            <Button
+              className="w-full"
               onClick={handleReplace}
             >
               Replace File
-            </button>
+            </Button>
             {/* Document Logs */}
             {/* Document Logs */}
             {selectedDoc.logs && selectedDoc.logs.length > 0 && (
@@ -468,8 +478,8 @@ function UpdateAccomplishmentDocument({
             />
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -520,17 +530,14 @@ function AddNewAccomplishmentDocument({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-1/4 p-6 relative">
-        {/* Close Button */}
-        <button
-          onClick={() => setAddNewDocumentPopUp(false)}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <h2 className="text-lg font-bold mb-4">{selectedDoc}</h2>
+    <Dialog open={addNewDocumentPopUp} onOpenChange={setAddNewDocumentPopUp}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{selectedDoc}</DialogTitle>
+          <DialogDescription>
+            Upload a new document for this accomplishment
+          </DialogDescription>
+        </DialogHeader>
 
         {/* ✅ Replaced file input with DocumentUploader */}
         <DocumentUploader
@@ -545,14 +552,15 @@ function AddNewAccomplishmentDocument({
           className="mb-4"
         />
 
-        <button
-          type="submit"
-          onClick={() => SubmitFile()}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Upload File
-        </button>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setAddNewDocumentPopUp(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" onClick={() => SubmitFile()}>
+            Upload File
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,5 +1,16 @@
 import React from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
 /**
  * SortableTable Component
@@ -37,92 +48,88 @@ export function SortableTable({
 
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+      return <ArrowUpDown className="w-4 h-4 text-muted-foreground" />;
     }
 
     return sortConfig.direction === "asc" ? (
-      <ArrowUp className="w-4 h-4 text-blue-600" />
+      <ArrowUp className="w-4 h-4 text-primary" />
     ) : (
-      <ArrowDown className="w-4 h-4 text-blue-600" />
+      <ArrowDown className="w-4 h-4 text-primary" />
     );
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-        <div className="p-8 text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-gray-600">Loading data...</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-8 text-center">
+          <Spinner className="mx-auto h-8 w-8 text-primary" />
+          <p className="mt-2 text-muted-foreground">Loading data...</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow border border-gray-200 overflow-hidden ${className}`}>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
+    <Card className={className}>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {columns.map((column) => (
-                <th
+                <TableHead
                   key={column.key}
                   onClick={() => column.sortable !== false && handleSort(column.key)}
-                  className={`px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider ${
-                    column.sortable !== false
-                      ? "cursor-pointer hover:bg-gray-100 select-none"
-                      : ""
-                  } ${column.headerClassName || ""}`}
+                  className={cn(
+                    column.sortable !== false && "cursor-pointer hover:bg-accent select-none",
+                    column.headerClassName
+                  )}
                 >
                   <div className="flex items-center gap-2">
-                    <span>{column.label}</span>
+                    <span className="uppercase tracking-wider">{column.label}</span>
                     {column.sortable !== false && getSortIcon(column.key)}
                   </div>
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {data.length === 0 ? (
-              <tr>
-                <td
+              <TableRow>
+                <TableCell
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-gray-500"
+                  className="text-center text-muted-foreground py-8"
                 >
                   {emptyMessage}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               data.map((row, rowIndex) => (
-                <tr
-                  key={row._id || row.id || rowIndex}
-                  className="hover:bg-gray-50 transition-colors"
-                >
+                <TableRow key={row._id || row.id || rowIndex}>
                   {columns.map((column) => (
-                    <td
+                    <TableCell
                       key={`${rowIndex}-${column.key}`}
-                      className={`px-4 py-3 text-sm ${column.className || ""}`}
+                      className={column.className}
                     >
                       {column.render
                         ? column.render(row, rowIndex)
                         : row[column.key] || "-"}
-                    </td>
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </CardContent>
 
       {/* Footer with row count */}
       {data.length > 0 && (
-        <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-          <p className="text-sm text-gray-700">
+        <CardFooter className="bg-muted/50 px-4 py-3 border-t">
+          <p className="text-sm text-foreground">
             Showing <span className="font-medium">{data.length}</span> {data.length === 1 ? "result" : "results"}
           </p>
-        </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 }

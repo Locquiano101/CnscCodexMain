@@ -19,6 +19,8 @@ import { SduCoordinatorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main"
 import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
 import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
 export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
@@ -188,46 +190,25 @@ const ProtectedRoute = ({ allowedRoles }) => {
 };
 
 const SessionExpiredPopup = ({ isOpen, onClose, onRedirect }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
           <div className="flex items-center space-x-3">
             <AlertTriangle className="w-6 h-6 text-red-500" />
-            <h3 className="text-lg font-semibold text-gray-900">
-              Session Expired
-            </h3>
+            <DialogTitle>Session Expired</DialogTitle>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors rounded-full p-1 hover:bg-gray-100"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6">
-          <p className="text-gray-600 mb-6">
-            Your session has expired for security reasons. Please log in again
-            to continue.
-          </p>
-
-          {/* Actions */}
-          <div className="flex space-x-3">
-            <button
-              onClick={onRedirect}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign In Again</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        </DialogHeader>
+        <DialogDescription className="text-gray-600">
+          Your session has expired for security reasons. Please log in again to continue.
+        </DialogDescription>
+        <DialogFooter>
+          <Button onClick={onRedirect} className="w-full flex items-center justify-center space-x-2">
+            <LogOut className="w-4 h-4" />
+            <span>Sign In Again</span>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

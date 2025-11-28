@@ -5,7 +5,28 @@ import { Upload, FileText, X } from "lucide-react";
 import CurrencyInput from "../../../../components/currency-input";
 import { Banknote } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
-export function EditProposal({ proposal, onClose, onUpdated }) {
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+export function EditProposal({ proposal, onClose, onUpdated, open = true }) {
   console.log(proposal);
   // Pre-fill values with consistent field names
   const [formData, setFormData] = useState({
@@ -225,108 +246,88 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800">Edit Proposal</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-bold w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Edit Proposal</DialogTitle>
+          <DialogDescription>
+            Update the proposal details below
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="py-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Form Fields */}
             <div className="space-y-6">
               {/* Activity Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Activity Title *
-                </label>
-                <input
-                  type="text"
+              <div className="space-y-2">
+                <Label htmlFor="activityTitle">
+                  Activity Title <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="activityTitle"
                   name="activityTitle"
                   value={formData.activityTitle}
                   onChange={handleInputChange}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.activityTitle ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={errors.activityTitle ? "border-red-500" : ""}
                   placeholder="Enter activity title"
                 />
                 {errors.activityTitle && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.activityTitle}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.activityTitle}</p>
                 )}
               </div>
 
               {/* Brief Details */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Brief Details *
-                </label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="briefDetails">
+                  Brief Details <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="briefDetails"
                   name="briefDetails"
                   value={formData.briefDetails}
                   onChange={handleInputChange}
                   rows={4}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.briefDetails ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={errors.briefDetails ? "border-red-500" : ""}
                   placeholder="Provide brief details about the activity"
                 />
                 {errors.briefDetails && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.briefDetails}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.briefDetails}</p>
                 )}
               </div>
 
               {/* Aligned Objective */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aligned Objective *
-                </label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="alignedObjective">
+                  Aligned Objective <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="alignedObjective"
                   name="alignedObjective"
                   value={formData.alignedObjective}
                   onChange={handleInputChange}
                   rows={3}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.alignedObjective
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
+                  className={errors.alignedObjective ? "border-red-500" : ""}
                   placeholder="What objectives does this activity align with?"
                 />
                 {errors.alignedObjective && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.alignedObjective}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.alignedObjective}</p>
                 )}
               </div>
 
               {/* Venue and Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Venue *
-                  </label>
-                  <select
-                    name="venue"
+                <div className="space-y-2">
+                  <Label htmlFor="venue">
+                    Venue <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
                     value={formData.isCustomVenue ? "Other" : formData.venue}
-                    onChange={(e) => {
-                      const value = e.target.value;
+                    onValueChange={(value) => {
                       if (value === "Other") {
                         setFormData((prev) => ({
                           ...prev,
                           isCustomVenue: true,
-                          // Keep any existing otherVenue or default to previous venue
                           otherVenue: prev.otherVenue || prev.venue || "",
                           venue: "",
                         }));
@@ -340,55 +341,65 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
                       }
                       if (errors.venue) setErrors((p) => ({ ...p, venue: "" }));
                     }}
-                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.venue ? "border-red-500" : "border-gray-300"
-                    }`}
                     disabled={roomsLoading}
                   >
-                    <option value="">{roomsLoading ? "Loading rooms…" : "-- Select Venue --"}</option>
-                    {roomOptions.map((opt) => (
-                      <option key={opt.id} value={opt.label}>
-                        {opt.label}
-                        {opt.campus ? ` — ${opt.campus}` : ""}
-                      </option>
-                    ))}
-                    <option value="Other">Other</option>
-                  </select>
+                    <SelectTrigger
+                      id="venue"
+                      className={errors.venue ? "border-red-500" : ""}
+                    >
+                      <SelectValue
+                        placeholder={
+                          roomsLoading ? "Loading rooms…" : "-- Select Venue --"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roomOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.label}>
+                          {opt.label}
+                          {opt.campus ? ` — ${opt.campus}` : ""}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   {formData.isCustomVenue && (
-                    <input
-                      type="text"
+                    <Input
                       name="otherVenue"
                       value={formData.otherVenue}
                       onChange={handleInputChange}
                       placeholder="Enter other venue"
-                      className="mt-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                      className="mt-2"
                     />
                   )}
 
                   {roomsError && (
-                    <p className="text-amber-600 text-xs mt-1">{roomsError} — showing fallback options if any.</p>
+                    <Alert variant="warning" className="mt-2">
+                      <AlertDescription className="text-xs">
+                        {roomsError} — showing fallback options if any.
+                      </AlertDescription>
+                    </Alert>
                   )}
                   {errors.venue && (
-                    <p className="text-red-500 text-sm mt-1">{errors.venue}</p>
+                    <p className="text-red-500 text-sm">{errors.venue}</p>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date *
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="date">
+                    Date <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="date"
                     type="date"
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.date ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={errors.date ? "border-red-500" : ""}
                   />
                   {errors.date && (
-                    <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+                    <p className="text-red-500 text-sm">{errors.date}</p>
                   )}
                 </div>
               </div>
@@ -413,66 +424,45 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
             {/* Right Side - SDG Selection and File Upload */}
             <div className="space-y-6">
               {/* Aligned SDG */}
-              <div className="md:col-span-2 text-black">
-                <label className="block text-sm font-medium text-black mb-2">
-                  Aligned SDG *
-                </label>
-                <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-sm font-medium">
+                  Aligned SDG <span className="text-red-500">*</span>
+                </Label>
+                <div className="flex flex-wrap gap-2 mt-2">
                   {[
                     { value: "SDG 1", label: "SDG 1: No Poverty" },
                     { value: "SDG 2", label: "SDG 2: Zero Hunger" },
-                    {
-                      value: "SDG 3",
-                      label: "SDG 3: Good Health and Well-being",
-                    },
+                    { value: "SDG 3", label: "SDG 3: Good Health and Well-being" },
                     { value: "SDG 4", label: "SDG 4: Quality Education" },
                     { value: "SDG 5", label: "SDG 5: Gender Equality" },
-                    {
-                      value: "SDG 6",
-                      label: "SDG 6: Clean Water and Sanitation",
-                    },
-                    {
-                      value: "SDG 7",
-                      label: "SDG 7: Affordable and Clean Energy",
-                    },
-                    {
-                      value: "SDG 8",
-                      label: "SDG 8: Decent Work and Economic Growth",
-                    },
-                    {
-                      value: "SDG 9",
-                      label: "SDG 9: Industry, Innovation and Infrastructure",
-                    },
+                    { value: "SDG 6", label: "SDG 6: Clean Water and Sanitation" },
+                    { value: "SDG 7", label: "SDG 7: Affordable and Clean Energy" },
+                    { value: "SDG 8", label: "SDG 8: Decent Work and Economic Growth" },
+                    { value: "SDG 9", label: "SDG 9: Industry, Innovation and Infrastructure" },
                     { value: "SDG 10", label: "SDG 10: Reduced Inequalities" },
-                    {
-                      value: "SDG 11",
-                      label: "SDG 11: Sustainable Cities and Communities",
-                    },
-                    {
-                      value: "SDG 12",
-                      label: "SDG 12: Responsible Consumption and Production",
-                    },
+                    { value: "SDG 11", label: "SDG 11: Sustainable Cities and Communities" },
+                    { value: "SDG 12", label: "SDG 12: Responsible Consumption and Production" },
                     { value: "SDG 13", label: "SDG 13: Climate Action" },
                     { value: "SDG 14", label: "SDG 14: Life Below Water" },
                     { value: "SDG 15", label: "SDG 15: Life on Land" },
-                    {
-                      value: "SDG 16",
-                      label: "SDG 16: Peace, Justice and Strong Institutions",
-                    },
-                    {
-                      value: "SDG 17",
-                      label: "SDG 17: Partnerships for the Goals",
-                    },
+                    { value: "SDG 16", label: "SDG 16: Peace, Justice and Strong Institutions" },
+                    { value: "SDG 17", label: "SDG 17: Partnerships for the Goals" },
                   ].map((sdg) => (
-                    <div key={sdg.value} className="bg-gray-200 rounded-full">
-                      <label className="flex items-center space-x-1 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.alignedSDG.includes(sdg.value)}
-                          onChange={() => handleSDGChange(sdg.value)}
-                          className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer"
-                        />
-                        <span className="text-sm">{sdg.label}</span>
+                    <div
+                      key={sdg.value}
+                      className="flex items-center space-x-1 bg-muted/30 rounded-full p-2 hover:bg-muted/50 cursor-pointer"
+                      onClick={() => handleSDGChange(sdg.value)}
+                    >
+                      <Checkbox
+                        id={`edit-${sdg.value}`}
+                        checked={formData.alignedSDG.includes(sdg.value)}
+                        onCheckedChange={() => handleSDGChange(sdg.value)}
+                      />
+                      <label
+                        htmlFor={`edit-${sdg.value}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {sdg.label}
                       </label>
                     </div>
                   ))}
@@ -480,16 +470,16 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
               </div>
 
               {/* File Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Proposal Document *
-                </label>
+              <div className="space-y-3">
+                <Label>
+                  Proposal Document <span className="text-red-500">*</span>
+                </Label>
 
                 {/* Show existing document info if available */}
                 {existingPdfUrl &&
                   !uploadedFile &&
                   proposal.document?.length > 0 && (
-                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       {proposal.document.map((doc, index) => (
                         <div
                           key={index}
@@ -500,7 +490,7 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
                             <span>{doc.fileName}</span>
                           </div>
                           <a
-                            href={doc.fileUrl} // 👈 make sure backend provides this per file
+                            href={doc.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
@@ -513,56 +503,55 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
                   )}
 
                 {!uploadedFile ? (
-                  <div className="flex items-center justify-center w-full">
-                    <label
-                      className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer bg-white hover:bg-gray-100 transition-colors ${
-                        errors.file ? "border-red-500" : "border-gray-300"
-                      }`}
-                    >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Upload className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-700">
-                          <span className="font-semibold">Click to upload</span>{" "}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          PDF files only (MAX. 10MB)
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,application/pdf"
-                        onChange={handleFileUpload}
-                      />
-                    </label>
-                  </div>
+                  <Label
+                    htmlFor="file-upload-edit"
+                    className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors ${
+                      errors.file ? "border-red-500" : ""
+                    }`}
+                  >
+                    <Upload className="w-10 h-10 mb-3 text-muted-foreground" />
+                    <p className="mb-2 text-sm">
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      PDF files only (MAX. 10MB)
+                    </p>
+                    <Input
+                      id="file-upload-edit"
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,application/pdf"
+                      onChange={handleFileUpload}
+                    />
+                  </Label>
                 ) : (
-                  <div className="bg-white rounded-lg border-2 border-green-200 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="text-2xl">📄</div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-semibold text-gray-800 truncate">
-                            {uploadedFile.name}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
+                  <div className="space-y-3">
+                    <div className="bg-green-50 rounded-lg border-2 border-green-200 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="text-2xl">📄</div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-sm truncate">
+                              {uploadedFile.name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveFile}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          Remove
+                        </Button>
                       </div>
-                      <button
-                        onClick={handleRemoveFile}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 hover:bg-red-50 rounded transition-colors"
-                      >
-                        Remove
-                      </button>
                     </div>
                     {/* PDF Preview */}
-                    <div
-                      className="bg-white rounded-lg border overflow-hidden"
-                      style={{ height: "500px" }}
-                    >
+                    <div className="bg-white rounded-lg border overflow-hidden h-[500px]">
                       <iframe
                         src={pdfUrl}
                         className="w-full h-full"
@@ -574,32 +563,20 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
                 )}
 
                 {errors.file && (
-                  <p className="text-red-500 text-sm mt-1">{errors.file}</p>
+                  <p className="text-red-500 text-sm">{errors.file}</p>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer - Action Buttons */}
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
-          <div className="flex gap-4 justify-end">
-            <button
-              onClick={onClose}
-              className="px-8 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={handleSubmit}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Update Proposal
-            </button>
-          </div>
-        </div>
-      </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit}>Update Proposal</Button>
+        </DialogFooter>
+      </DialogContent>
 
       {showPopup && (
         <DonePopUp
@@ -615,6 +592,6 @@ export function EditProposal({ proposal, onClose, onUpdated }) {
           }}
         />
       )}
-    </div>
+    </Dialog>
   );
 }

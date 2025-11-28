@@ -4,6 +4,13 @@ import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 
 import { X, CheckCircle, ChevronDown, Search, Banknote } from "lucide-react";
 import CurrencyInput from "../../../../../components/currency-input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function AddProposedActionPlan({
   orgData,
@@ -134,29 +141,24 @@ export function AddProposedActionPlan({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Activity Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Activity Title *
-          </label>
-          <input
+          <Label htmlFor="activityTitle">Activity Title *</Label>
+          <Input
+            id="activityTitle"
             type="text"
             name="activityTitle"
             value={formData.activityTitle}
             onChange={handleInputChange}
             required
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             placeholder="Enter activity title"
+            className="mt-2"
           />
         </div>
         {/* Venue */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Venue *
-          </label>
-          <select
-            name="venue"
+          <Label htmlFor="venue">Venue *</Label>
+          <Select
             value={formData.venue === "other" ? "other" : formData.venue || ""}
-            onChange={(e) => {
-              const { value } = e.target;
+            onValueChange={(value) => {
               if (value === "other") {
                 setFormData({
                   ...formData,
@@ -173,22 +175,25 @@ export function AddProposedActionPlan({
               }
             }}
             required
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
           >
-            <option value="">Select a venue</option>
-            <option value="Covered Court">Covered Court</option>
-            <option value="Student Activity Center">
-              Student Activity Center
-            </option>
-            <option value="Pavilion">Pavilion</option>
-            <option value="Student Park">Student Park</option>
-            <option value="Cafeteria">Cafeteria</option>
-            <option value="other">Other</option>
-          </select>
+            <SelectTrigger className="mt-2">
+              <SelectValue placeholder="Select a venue" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Covered Court">Covered Court</SelectItem>
+              <SelectItem value="Student Activity Center">
+                Student Activity Center
+              </SelectItem>
+              <SelectItem value="Pavilion">Pavilion</SelectItem>
+              <SelectItem value="Student Park">Student Park</SelectItem>
+              <SelectItem value="Cafeteria">Cafeteria</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Show custom venue field when 'Other' is selected */}
           {formData.isCustomVenue && (
-            <input
+            <Input
               type="text"
               name="customVenue"
               value={formData.customVenue || ""}
@@ -200,7 +205,7 @@ export function AddProposedActionPlan({
                 })
               }
               placeholder="Enter other venue"
-              className="mt-2 w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="mt-2"
             />
           )}
         </div>
@@ -208,16 +213,15 @@ export function AddProposedActionPlan({
         <div className="col-span-2 flex gap-4 justify-between">
           {/* Proposed Date */}
           <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Proposed Month *
-            </label>
-            <input
+            <Label htmlFor="proposedDate">Proposed Month *</Label>
+            <Input
+              id="proposedDate"
               type="month"
               name="proposedDate"
               value={formData.proposedDate}
               onChange={handleInputChange}
               required
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="mt-2"
             />
           </div>
 
@@ -249,22 +253,20 @@ export function AddProposedActionPlan({
 
           {/* Internal / External */}
           <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Proposal Category *
-            </label>
-            <div className="w-full p-3.5 border flex justify-evenly items-center border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <label className="flex items-center gap-2">
+            <Label htmlFor="proposalCategory">Proposal Category *</Label>
+            <div className="mt-2 p-3.5 border flex justify-evenly items-center border-gray-300 rounded-md">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="proposalCategory"
                   value="internal"
                   checked={formData.proposalCategory === "internal"}
                   onChange={handleInputChange}
-                  className="h-4 w-4 text--amber500 border-gray-300"
+                  className="h-4 w-4 text-amber-500 border-gray-300"
                 />
                 <span className="text-sm text-gray-700">Internal</span>
               </label>
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="proposalCategory"
@@ -278,32 +280,32 @@ export function AddProposedActionPlan({
             </div>
           </div>
         </div>
-        {/* Cooperating Entities */}
+        {/* Brief Details */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Brief Details *
-          </label>
-          <textarea
+          <Label htmlFor="briefDetails">Brief Details *</Label>
+          <Textarea
+            id="briefDetails"
             name="briefDetails"
             value={formData.briefDetails}
             onChange={handleInputChange}
             required
-            className="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            rows={5}
             placeholder="Short details about the program"
+            className="mt-2"
           />
         </div>
-        {/* Cooperating Entities */}
+        {/* Aligned Org Objectives */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Aligned Org Objectives*
-          </label>
-          <textarea
+          <Label htmlFor="AlignedObjective">Aligned Org Objectives *</Label>
+          <Textarea
+            id="AlignedObjective"
             name="AlignedObjective"
             value={formData.AlignedObjective}
             onChange={handleInputChange}
             required
-            className="w-full h-20 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            rows={3}
             placeholder="Details for Aligned Objective"
+            className="mt-2"
           />
         </div>
         <div className="md:col-span-2">
@@ -360,11 +362,10 @@ export function AddProposedActionPlan({
           }`}
               >
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.alignedSDG.includes(sdg.value)}
-                    onChange={() => handleSDGChange(sdg.value)}
-                    className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 checked:border-amber-500 cursor-pointer"
+                    onCheckedChange={() => handleSDGChange(sdg.value)}
+                    className="h-5 w-5 rounded-full border-gray-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
                   />
                   <span className="font-semibold text-sm">{sdg.value}</span>
                 </div>
@@ -436,17 +437,13 @@ export function AddProposedActionPlan({
   );
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full flex flex-col max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="flex justify-between px-4 p-6 border-b">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Add New Proposed Action Plan
-            </h2>
-          </div>
-
-          <X size={24} onClick={onClose} className="cursor-pointer" />
-        </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            Add New Proposed Action Plan
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Progress Bar */}
         <div className="flex py-4 items-center justify-evenly gap-4 border-b border-gray-300">
@@ -482,86 +479,80 @@ export function AddProposedActionPlan({
         </div>
 
         {/* Navigation Buttons */}
-        <div className="p-6 border-t bg-gray-50">
-          <div className="flex justify-between">
+        <DialogFooter className="px-6 py-4 border-t bg-gray-50">
+          <div className="flex justify-between w-full">
             <div>
               {currentStep > 1 && (
-                <button
+                <Button
                   onClick={prevStep}
-                  className="py-2 px-4 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition duration-200"
+                  variant="outline"
                 >
                   Previous
-                </button>
+                </Button>
               )}
             </div>
 
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={onClose}
-                className="py-2 px-4 border border-gray-200 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition duration-200"
+                variant="outline"
               >
                 Cancel
-              </button>
+              </Button>
 
               {currentStep < 2 ? (
-                <button
+                <Button
                   onClick={nextStep}
                   disabled={currentStep === 1 && !isStep1Valid()}
-                  className={`py-2 px-4 rounded-md font-medium text-white transition duration-200 ${
-                    currentStep === 1 && !isStep1Valid()
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-amber-600 hover:bg-amber-700"
-                  }`}
+                  className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400"
                 >
                   Next
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className={`py-2 px-4 rounded-md font-medium text-white transition duration-200 ${
-                    isSubmitting
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-amber-600 hover:bg-amber-700"
-                  }`}
+                  className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Proposal"}
-                </button>
+                </Button>
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </DialogFooter>
+      </DialogContent>
 
       {/* Upload Status Popup */}
       {showPopUp && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60">
-          <div className="bg-white rounded-lg shadow-xl p-8 flex flex-col items-center justify-center max-w-sm w-full mx-4">
-            {!uploadSuccess ? (
-              <>
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
-                <p className="text-lg font-medium text-gray-800">
-                  Submitting...
-                </p>
-                <p className="text-sm text-gray-600 text-center mt-2">
-                  Please wait while we process your proposal
-                </p>
-              </>
-            ) : (
-              <>
-                <CheckCircle size={48} className="text-green-500 mb-4" />
-                <p className="text-lg font-medium text-gray-800">
-                  Submission Complete!
-                </p>
-                <p className="text-sm text-gray-600 text-center mt-2">
-                  Your proposal has been successfully submitted
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+        <Dialog open={showPopUp} onOpenChange={() => {}}>
+          <DialogContent className="max-w-sm">
+            <div className="flex flex-col items-center justify-center p-4">
+              {!uploadSuccess ? (
+                <>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
+                  <p className="text-lg font-medium text-gray-800">
+                    Submitting...
+                  </p>
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Please wait while we process your proposal
+                  </p>
+                </>
+              ) : (
+                <>
+                  <CheckCircle size={48} className="text-green-500 mb-4" />
+                  <p className="text-lg font-medium text-gray-800">
+                    Submission Complete!
+                  </p>
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Your proposal has been successfully submitted
+                  </p>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </Dialog>
   );
 }
 

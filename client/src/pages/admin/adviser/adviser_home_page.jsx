@@ -20,7 +20,7 @@ export default function AdviserHomePage({ orgData, accreditationData, user }) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-gray-100 min-h-screen space-y-4 overflow-auto">
+    <div className="min-h-screen space-y-6 p-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header */}
       <header className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
@@ -33,7 +33,7 @@ export default function AdviserHomePage({ orgData, accreditationData, user }) {
       </header>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Accreditation Status */}
         <div
           onClick={() => navigate("./accreditation")}

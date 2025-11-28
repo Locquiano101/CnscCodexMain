@@ -27,6 +27,12 @@ import {
   Building,
 } from "lucide-react";
 import { LogoutButton } from "../../../components/components";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert } from "@/components/ui/alert";
+import cnscLogo from "../../../assets/cnsc-codex-2.svg";
 
 export function SduMainNavigation() {
   const [activeKey, setActiveKey] = useState("home");
@@ -298,80 +304,82 @@ export function SduMainNavigation() {
     activeKey === "accreditations" || isAnySubAccreditationActive;
 
   return (
-    <div className="flex flex-col h-screen w-full">
-      {/* Top header with welcome text */}
-      <div className="h-16 bg-cnsc-secondary-color flex items-center justify-center shadow-md transition-all duration-300">
-        <h1 className="text-white text-xl font-bold tracking-wide transform transition-transform duration-300 hover:scale-105">
-          Welcome SDU Admin
-        </h1>
+    <div className="flex flex-col h-screen w-full bg-background border-r">
+      {/* Logo and Brand Header */}
+      <div className="h-18 border-b flex items-center px-6 gap-3">
+        <img src={cnscLogo} alt="CNSC Codex" className="w-10 h-10" />
+        <div className="flex flex-col">
+          <h1 className="font-bold text-lg leading-tight">CNSC Codex</h1>
+          <p className="text-xs text-muted-foreground">SDU Administration</p>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col flex-grow overflow-auto">
+      <nav className="flex flex-col flex-grow overflow-auto px-3 py-4">
         {navigationItems.map((item) => (
-          <div key={item.key} className="relative">
+          <div key={item.key} className="relative mb-1">
             <button
               onClick={() => {
                 setActiveKey(item.key);
                 navigate(item.path);
               }}
-              className={`flex items-center py-4 px-6 gap-4 text-base font-medium transition-all duration-500 ease-out w-full relative group ${
+              className={cn(
+                "w-full justify-start gap-3 h-11 px-3 text-sm font-medium transition-all rounded-lg cursor-pointer flex items-center",
                 activeKey === item.key ||
-                (item.key === "proposals" && isAnySubProposalActive)
-                  ? "bg-white text-cnsc-primary-color shadow-lg transform "
-                  : "text-white hover:bg-amber-500/90 hover:shadow-md hover:transform hover:translate-x-2"
-              }`}
+                (item.key === "proposals" && isAnySubProposalActive) ||
+                (item.key === "accreditations" && isAnySubAccreditationActive)
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : "text-foreground hover:bg-muted"
+              )}
             >
-              <span
-                className={` w-5 h-5 flex items-center transition-all duration-300 group-hover:scale-110 ${
-                  activeKey === item.key ? "transform scale-110" : ""
-                }`}
-              >
+              <span className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                 {item.icon}
               </span>
-              <span className="tracking-wide transition-all duration-300">
-                {item.label}
-              </span>
+              <span className="flex-1 text-left truncate">{item.label}</span>
 
-              {/* Chevron icons for dropdowns with smooth rotation */}
+              {/* Chevron icons for dropdowns */}
               {item.key === "accreditations" && (
-                <span className="ml-auto transition-transform duration-700 ease-out">
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-700 ${
-                      shouldShowSubAccreditations ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
-                </span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 transition-transform duration-200 flex-shrink-0",
+                    shouldShowSubAccreditations ? "rotate-0" : "-rotate-90"
+                  )}
+                />
               )}
 
               {item.key === "proposals" && (
-                <span className="ml-auto transition-transform duration-700 ease-out">
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-700 ${
-                      shouldShowSubProposals ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
-                </span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 transition-transform duration-200 flex-shrink-0",
+                    shouldShowSubProposals ? "rotate-0" : "-rotate-90"
+                  )}
+                />
               )}
             </button>
 
             {/* Sub-navigation with smooth slide animation */}
             <div
-              className={`overflow-hidden transition-all  duration-700 ease-out ${
+              className={cn(
+                "overflow-hidden transition-all duration-300 ease-in-out",
                 item.key === "accreditations" && shouldShowSubAccreditations
-                  ? "max-h-96 h-autoopacity-100"
+                  ? "max-h-[600px] opacity-100 mb-2"
                   : item.key === "accreditations"
                   ? "max-h-0 opacity-0"
                   : ""
-              }`}
+              )}
             >
               {item.key === "accreditations" && (
-                <div className="border-l-4 border-amber-500 ml-4">
+                <div className="space-y-1 pt-2 pl-3">
                   {requirementsError && (
-                    <div className="text-xs text-red-600 px-4 py-2">Failed to load requirements: {requirementsError}</div>
+                    <Alert variant="destructive" className="text-xs py-2 mx-3">
+                      <AlertDescription>Failed to load requirements</AlertDescription>
+                    </Alert>
                   )}
                   {requirementsLoading && (
-                    <div className="text-xs text-gray-500 px-4 py-2">Loading requirements...</div>
+                    <div className="space-y-2 py-2 px-3">
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-3/4" />
+                    </div>
                   )}
                   {subAccreditationItems.map((subItem) => (
                     <button
@@ -380,20 +388,17 @@ export function SduMainNavigation() {
                         setActiveKey(subItem.key);
                         navigate(subItem.path);
                       }}
-                      className={`flex items-center py-3 px-6  text-sm font-medium w-full relative group duration-500 transition-all  ease-out ${
+                      className={cn(
+                        "w-full justify-start h-10 pl-11 pr-3 text-xs font-medium rounded-lg transition-all cursor-pointer flex items-center",
                         activeKey === subItem.key
-                          ? "bg-amber-500/80 text-white "
-                          : "text-white  hover:bg-white hover:text-cnsc-primary-color"
-                      }`}
+                          ? "bg-primary/10 text-primary hover:bg-primary/15"
+                          : "text-muted-foreground hover:bg-muted"
+                      )}
                     >
-                      <span
-                        className={`mr-3 w-4 h-4 transition-all duration-300 group-hover:scale-110 ${
-                          activeKey === subItem.key ? "scale-110" : ""
-                        }`}
-                      >
+                      <span className="mr-2 w-4 h-4 flex items-center justify-center flex-shrink-0">
                         {subItem.icon}
                       </span>
-                      <span className="tracking-wide">{subItem.label}</span>
+                      <span className="truncate text-left flex-1">{subItem.label}</span>
                     </button>
                   ))}
                 </div>
@@ -401,16 +406,17 @@ export function SduMainNavigation() {
             </div>
 
             <div
-              className={`overflow-hidden transition-all duration-700 ease-out ${
+              className={cn(
+                "overflow-hidden transition-all duration-300 ease-in-out",
                 item.key === "proposals" && shouldShowSubProposals
-                  ? "max-h-96 opacity-100"
+                  ? "max-h-[600px] opacity-100 mb-2"
                   : item.key === "proposals"
                   ? "max-h-0 opacity-0"
                   : ""
-              }`}
+              )}
             >
               {item.key === "proposals" && (
-                <div className="border-l-4 border-amber-500 ml-4">
+                <div className="space-y-1 pt-2 pl-3">
                   {subProposalItems.map((subItem) => (
                     <button
                       key={subItem.key}
@@ -418,20 +424,17 @@ export function SduMainNavigation() {
                         setActiveKey(subItem.key);
                         navigate(subItem.path);
                       }}
-                      className={`flex items-center py-3 px-6  text-sm font-medium w-full relative group duration-500 transition-all  ease-out ${
+                      className={cn(
+                        "w-full justify-start h-10 pl-11 pr-3 text-xs font-medium rounded-lg transition-all cursor-pointer flex items-center",
                         activeKey === subItem.key
-                          ? "bg-amber-500/80 text-white "
-                          : "text-white  hover:bg-white hover:text-cnsc-primary-color"
-                      }`}
+                          ? "bg-primary/10 text-primary hover:bg-primary/15"
+                          : "text-muted-foreground hover:bg-muted"
+                      )}
                     >
-                      <span
-                        className={`mr-3 w-4 h-4 transition-all duration-300 group-hover:scale-110 ${
-                          activeKey === subItem.key ? "scale-110" : ""
-                        }`}
-                      >
+                      <span className="mr-2 w-4 h-4 flex items-center justify-center flex-shrink-0">
                         {subItem.icon}
                       </span>
-                      <span className="tracking-wide">{subItem.label}</span>
+                      <span className="truncate text-left flex-1">{subItem.label}</span>
                     </button>
                   ))}
                 </div>
@@ -441,8 +444,8 @@ export function SduMainNavigation() {
         ))}
       </nav>
 
-      {/* Logout at bottom */}
-      <div className="p-4 bg-cnsc-secondary-color transition-all duration-300">
+      {/* Bottom Section - Logout */}
+      <div className="border-t p-3">
         <LogoutButton />
       </div>
     </div>

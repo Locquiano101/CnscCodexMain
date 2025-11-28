@@ -20,6 +20,9 @@ import {
 } from "recharts";
 
 import { ShowAdviserDetailedProposal } from "./adviser-detailed-proposal";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 
 export function AdviserProposalConduct({ orgData, user }) {
   const [proposalsConduct, setProposalsConduct] = useState([]);
@@ -117,18 +120,19 @@ export function AdviserProposalConduct({ orgData, user }) {
   const monthlyStats = getMonthlyStats();
 
   return (
-    <div className="flex flex-col h-full w-full overflow-auto bg-gray-200">
+    <div className="flex flex-col h-full w-full overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Enhanced Header with maroon gradient */}
-      <h1 className="text-2xl p-4 font-bold drop-shadow-lg">
+      <h1 className="text-2xl font-bold drop-shadow-lg mb-6">
         Student Leader Proposals
       </h1>
 
       {/* Charts Section */}
       {proposalsConduct.length > 0 && (
-        <div className="px-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Status Distribution Pie Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
+            <Card className="bg-white">
+              <CardContent className="p-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
                 Status Distribution
               </h3>
@@ -166,10 +170,12 @@ export function AdviserProposalConduct({ orgData, user }) {
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Budget Overview Bar Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
+            <Card className="bg-white">
+              <CardContent className="p-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
                 Budget Overview
               </h3>
@@ -189,10 +195,12 @@ export function AdviserProposalConduct({ orgData, user }) {
                   <Bar dataKey="value" fill="#3B82F6" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Monthly Activity Area Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
+            <Card className="bg-white">
+              <CardContent className="p-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
                 Monthly Activity
               </h3>
@@ -217,14 +225,16 @@ export function AdviserProposalConduct({ orgData, user }) {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
 
       {/* Enhanced Table Container */}
-      <div className="flex-1 flex flex-col px-4">
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="flex-1 flex flex-col">
+        <Card className="bg-white overflow-hidden">
+          <CardContent className="p-0">
           {/* Table Header */}
           <div className="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200/70">
             <h3 className="text-lg font-semibold text-gray-800">Proposals</h3>
@@ -361,7 +371,8 @@ export function AdviserProposalConduct({ orgData, user }) {
               </tbody>
             </table>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {selectedProposal && (

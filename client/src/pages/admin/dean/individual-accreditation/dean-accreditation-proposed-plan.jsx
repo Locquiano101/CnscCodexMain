@@ -267,13 +267,13 @@ export function DeanProposedPlan({ selectedOrg }) {
   };
 
   return (
-    <div className="bg-gray-200 flex flex-col p-4 h-full w-full">
+    <div className="h-full overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Loading State */}
       {loading && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
+        <div className="bg-white rounded-lg shadow-sm p-12">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-            <span className="ml-4 text-slate-600 font-medium">
+            <span className="ml-4 text-gray-600 font-medium">
               Loading proposals...
             </span>
           </div>
@@ -282,7 +282,7 @@ export function DeanProposedPlan({ selectedOrg }) {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-8">
           <div className="text-center">
             <XCircle size={48} className="mx-auto text-red-400 mb-4" />
             <p className="text-red-600 font-medium">{error}</p>
@@ -292,197 +292,181 @@ export function DeanProposedPlan({ selectedOrg }) {
 
       {/* Empty State */}
       {!loading && !error && proposals.length === 0 && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
+        <div className="bg-white rounded-lg shadow-sm border p-12">
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-slate-800 mb-3">
+            <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
               No Proposals Found
             </h3>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto">
-              There are currently no proposed action plans for this
-              organization.
+            <p className="text-gray-600 max-w-md mx-auto">
+              There are currently no proposed action plans for this organization.
             </p>
           </div>
         </div>
       )}
 
-      {/* Enhanced Table */}
+      {/* Content */}
       {!loading && !error && proposals.length > 0 && (
-        <div className=" backdrop-blur-sm rounded-2xl shadow-xl border-white/20 overflow-hidden flex flex-col h-full">
-          <div className="bg-gray-50 p-4 ">
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">
-              Proposals Analysis
-            </h3>
-            <div className="flex gap-4 ">
-              <div className="flex flex-col gap-2 ">
-                {/* Total Proposals */}
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                  <h4 className="text-sm font-medium text-blue-800">
-                    Total Proposals
-                  </h4>
-                  <p className="text-3xl font-bold text-blue-900">
-                    {proposals.length}
+        <div className="flex flex-col gap-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Total Proposals */}
+            <div className="bg-white rounded-lg shadow-sm p-6 border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Proposals</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">{proposals.length}</p>
+                </div>
+                <Target className="w-10 h-10 text-blue-500" />
+              </div>
+            </div>
+
+            {/* Estimated Budget */}
+            <div className="bg-white rounded-lg shadow-sm p-6 border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Estimated Budget</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">
+                    {formatCurrency(
+                      proposals.reduce((sum, p) => sum + (p.budgetaryRequirements || 0), 0) / (proposals.length || 1)
+                    )}
                   </p>
                 </div>
+                <DollarSign className="w-10 h-10 text-green-500" />
+              </div>
+            </div>
 
-                {/* Average Budget */}
-                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-                  <h4 className="text-sm font-medium text-green-800">
-                    Estimated Budget
-                  </h4>
-                  <p className="text-3xl font-bold text-green-900">
-                    {proposals.length > 0
-                      ? "$" +
-                        Math.round(
-                          proposals.reduce(
-                            (sum, p) => sum + (p.budgetaryRequirements || 0),
-                            0
-                          ) / proposals.length
-                        )
-                      : "$0"}
-                  </p>
-                </div>
-
-                {/* Next Upcoming Proposal */}
-                <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
-                  <h4 className="text-sm font-medium text-purple-800">
-                    Next Proposal
-                  </h4>
+            {/* Next Proposal */}
+            <div className="bg-white rounded-lg shadow-sm p-6 border">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-8 h-8 text-purple-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Next Proposal</p>
                   {proposals.length > 0 ? (
-                    (() => {
-                      const nextProposal = [...proposals]
-                        .filter((p) => new Date(p.proposedDate) >= new Date())
-                        .sort(
-                          (a, b) =>
-                            new Date(a.proposedDate) - new Date(b.proposedDate)
-                        )[0];
-                      return nextProposal ? (
-                        <p className="font-semibold text-purple-900">
-                          {nextProposal.activityTitle} -{" "}
-                          {new Date(
-                            nextProposal.proposedDate
-                          ).toLocaleDateString()}
-                        </p>
-                      ) : (
-                        <p className="font-semibold text-purple-900">
-                          No upcoming proposals
-                        </p>
-                      );
-                    })()
+                    <>
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {proposals[0]?.activityTitle || "N/A"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(proposals[0]?.proposedDate)}
+                      </p>
+                    </>
                   ) : (
-                    <p className="font-semibold text-purple-900">
-                      No proposals yet
-                    </p>
+                    <p className="text-sm text-gray-500">No upcoming proposals</p>
                   )}
                 </div>
-              </div>
-
-              {/* SDG Frequency */}
-              <div className="flex-1 h-full bg-white p-6 rounded-2xl shadow-xl">
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                  Proposals SDG Analysis
-                </h3>
-
-                {/* Count SDGs */}
-                {(() => {
-                  const sdgCounts = proposals
-                    .flatMap((p) => p.alignedSDG || [])
-                    .reduce((acc, sdg) => {
-                      acc[sdg] = (acc[sdg] || 0) + 1;
-                      return acc;
-                    }, {});
-                  const maxCount = Math.max(...Object.values(sdgCounts), 1);
-
-                  return (
-                    <div className="space-y-3">
-                      {Object.entries(sdgCounts)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([sdg, count]) => (
-                          <div key={sdg} className="flex items-center gap-4">
-                            <span className="w-24 text-sm font-medium text-slate-700">
-                              {sdg}
-                            </span>
-                            <div className="flex-1 h-4 bg-slate-200 rounded-full overflow-hidden">
-                              <div
-                                className="h-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-                                style={{
-                                  width: `${(count / maxCount) * 100}%`,
-                                }}
-                              ></div>
-                            </div>
-                            <span className="w-8 text-sm font-medium text-slate-700 text-right">
-                              {count}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  );
-                })()}
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto h-full ">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
-                <tr>
-                  <th className="px-8 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <Target size={14} />
-                      Activity Details
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle size={14} />
-                      Status
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={14} />
-                      Date
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={14} />
-                      Venue
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-2">
-                      <DollarSign size={14} />
-                      Budget
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-100">
+          {/* SDG Analysis */}
+          <div className="bg-white rounded-lg shadow-sm p-6 border">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Proposals SDG Analysis</h3>
+            {(() => {
+              const sdgCounts = proposals
+                .flatMap((p) => p.alignedSDG || [])
+                .reduce((acc, sdg) => {
+                  acc[sdg] = (acc[sdg] || 0) + 1;
+                  return acc;
+                }, {});
+              const maxCount = Math.max(...Object.values(sdgCounts), 1);
+
+              return Object.keys(sdgCounts).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(sdgCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([sdg, count]) => (
+                      <div key={sdg} className="flex items-center gap-4">
+                        <span className="w-24 text-sm font-medium text-gray-700">
+                          {sdg}
+                        </span>
+                        <div className="flex-1 h-6 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-6 bg-blue-500 rounded-full transition-all"
+                            style={{
+                              width: `${(count / maxCount) * 100}%`,
+                            }}
+                          ></div>
+                        </div>
+                        <span className="w-12 text-sm font-medium text-gray-700 text-right">
+                          {count}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No SDG data available</p>
+              );
+            })()}
+          </div>
+
+          {/* Proposals Table */}
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <Target size={14} />
+                        Activity Details
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle size={14} />
+                        Status
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} />
+                        Date
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <MapPin size={14} />
+                        Venue
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <DollarSign size={14} />
+                        Budget
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
                 {proposals.map((proposal, index) => (
                   <tr
                     key={proposal._id}
-                    className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 cursor-pointer transition-all duration-200 group"
+                    className="hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleView(proposal);
                     }}
                   >
-                    <td className="px-8 py-6">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg p-2 group-hover:from-blue-200 group-hover:to-indigo-200 transition-colors">
-                          <FileText size={20} className="text-blue-600" />
+                    <td className="px-6 py-4">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-50 rounded-lg p-2">
+                          <FileText size={18} className="text-blue-600" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-slate-900 mb-1">
+                          <div className="text-sm font-semibold text-gray-900 mb-1">
                             {proposal.activityTitle}
                           </div>
-                          <div className="text-sm text-slate-500 line-clamp-2 max-w-xs">
+                          <div className="text-sm text-gray-600 line-clamp-2">
                             {proposal.briefDetails}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-6">
+                    <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border ${getStatusColor(
                           proposal.overallStatus
@@ -492,19 +476,19 @@ export function DeanProposedPlan({ selectedOrg }) {
                         {proposal.overallStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-6">
-                      <div className="text-sm font-medium text-slate-900">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
                         {formatDate(proposal.proposedDate)}
                       </div>
                     </td>
-                    <td className="px-6 py-6">
-                      <div className="flex items-center gap-2 text-sm text-slate-700">
-                        <MapPin size={14} className="text-slate-400" />
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <MapPin size={14} className="text-gray-400" />
                         {proposal.venue}
                       </div>
                     </td>
-                    <td className="px-6 py-6">
-                      <div className="text-sm font-semibold text-slate-900">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-semibold text-gray-900">
                         {formatCurrency(proposal.budgetaryRequirements)}
                       </div>
                     </td>
@@ -513,6 +497,7 @@ export function DeanProposedPlan({ selectedOrg }) {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       )}
 

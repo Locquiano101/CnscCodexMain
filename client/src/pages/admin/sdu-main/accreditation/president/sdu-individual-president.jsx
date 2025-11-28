@@ -138,7 +138,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
   } = presidentData;
 
   return (
-    <div className="p-6 bg-white m-4 mt-0 rounded-xl shadow-xl">
+    <div className="p-6 bg-white m-6 rounded-xl shadow-xl">
       <div className="border-b pb-4 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">
           Organization President
@@ -302,7 +302,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
               <thead>
                 <tr className="bg-gray-100 text-left">
                   <th className="px-4 py-2 border">Subject</th>
-                  <th className="px-4 py-2 border">Place</th>
+                  <th className="px-4 py-2 border">Place/Room</th>
                   <th className="px-4 py-2 border">Time Start</th>
                   <th className="px-4 py-2 border">Time End</th>
                   <th className="px-4 py-2 border">Day</th>

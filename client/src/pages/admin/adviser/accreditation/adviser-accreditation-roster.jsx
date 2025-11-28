@@ -5,6 +5,8 @@ import { Search } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 import { EmailModal } from "../../../../components/accreditation-email";
 import { RosterMemberCard } from "../../../../components/roster-card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function AdviserRosterData({ orgData, user }) {
   const [alertModal, setAlertModal] = useState(false);
@@ -131,7 +133,7 @@ export function AdviserRosterData({ orgData, user }) {
   ];
 
   return (
-    <div className="flex flex-col p-6 bg-gray-50 min-h-screen">
+    <div className="flex flex-col p-6 min-h-screen" style={{ backgroundColor: '#F5F5F9' }}>
       {/* ---------------- Header ---------------- */}
       <div className="bg-white shadow-md border border-gray-200 rounded-xl p-5 mb-4">
         <div className="flex flex-wrap justify-between items-center gap-3">
@@ -198,7 +200,7 @@ export function AdviserRosterData({ orgData, user }) {
       </div>
 
       {/* ---------------- Content ---------------- */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto" style="background-color: rgb(245, 245, 249);">
         {!rosterData || filteredRoster.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-300 rounded-xl bg-white p-8">
             <p className="text-gray-500 mb-2">
@@ -290,89 +292,75 @@ export function AdviserRosterData({ orgData, user }) {
         }
       />
 
-      {approvalModal && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
-            <button
-              onClick={() => setApprovalModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-              disabled={approvalLoading}
-            >
-              ✕
-            </button>
-
-            <h1 className="text-lg font-semibold mb-4">
-              Approval: Roster of Organization
-            </h1>
-
-            <p className="text-gray-700 mb-6">
+      <Dialog open={approvalModal} onOpenChange={setApprovalModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approval: Roster of Organization</DialogTitle>
+            <DialogDescription>
               By approving this roster, you confirm that you have reviewed the
               information provided and consent to its approval. Would you like
               to proceed?
-            </p>
+            </DialogDescription>
+          </DialogHeader>
 
-            <button
+          <DialogFooter>
+            <Button
+              onClick={() => setApprovalModal(false)}
+              variant="outline"
+              disabled={approvalLoading}
+            >
+              Cancel
+            </Button>
+            <Button
               onClick={() => {
                 handleApproval({ status: "Approved By the Adviser" });
               }}
               disabled={approvalLoading}
-              className={`w-full py-2 rounded-lg text-sm font-medium shadow-md transition ${
-                approvalLoading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
-              }`}
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
               {approvalLoading ? "Processing..." : "Confirm Approval"}
-            </button>
-          </div>
-        </div>
-      )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* ---------------- Incomplete Confirmation Modal ---------------- */}
-      {incompleteConfirmModal && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
-            <button
-              onClick={() => setIncompleteConfirmModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+      <Dialog open={incompleteConfirmModal} onOpenChange={setIncompleteConfirmModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Roster Incomplete</DialogTitle>
+            <DialogDescription>
+              The roster is incomplete.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex gap-4 sm:justify-start">
+            <Button
+              onClick={() => {
+                handleApproval({
+                  status: pendingApprovalStatus,
+                  forceApprove: true,
+                });
+              }}
+              disabled={approvalLoading}
+              className="bg-indigo-600 hover:bg-indigo-700 flex-1"
             >
-              ✕
-            </button>
+              {approvalLoading ? "Processing..." : "Proceed Anyway (Approve)"}
+            </Button>
 
-            <h1 className="text-lg font-semibold mb-4">Roster Incomplete</h1>
-
-            <p className="text-gray-700 mb-6">The roster is incomplete.</p>
-
-            <div className=" flex gap-4 ">
-              <button
-                onClick={() => {
-                  handleApproval({
-                    status: pendingApprovalStatus,
-                    forceApprove: true,
-                  });
-                }}
-                disabled={approvalLoading}
-                className={`w-full py-2 rounded-lg text-sm font-medium ${
-                  approvalLoading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                }`}
-              >
-                {approvalLoading ? "Processing..." : "Proceed Anyway (Approve)"}
-              </button>
-
-              <button
-                onClick={() => {
-                  setIncompleteConfirmModal(false);
-                  setRevisionModal(true);
-                }}
-                className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium"
-              >
-                Send Revision Request
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <Button
+              onClick={() => {
+                setIncompleteConfirmModal(false);
+                setRevisionModal(true);
+              }}
+              variant="outline"
+              className="flex-1"
+            >
+              Send Revision Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {popup && (
         <DonePopUp
