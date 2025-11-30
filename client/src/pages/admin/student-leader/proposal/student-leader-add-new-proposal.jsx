@@ -224,15 +224,15 @@ export function AddNewProposal({ onClose, orgData, open = true }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl">Create New Proposal</DialogTitle>
           <DialogDescription>
             Fill in the details below to create a new proposal
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-6">
+        <div className="px-6 py-6 flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side */}
             <div className="space-y-6">
@@ -510,11 +510,11 @@ export function AddNewProposal({ onClose, orgData, open = true }) {
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 flex-shrink-0 border-t">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Submit Proposal</Button>
+          <Button onClick={handleSubmit} className="text-white">Submit Proposal</Button>
         </DialogFooter>
       </DialogContent>
 

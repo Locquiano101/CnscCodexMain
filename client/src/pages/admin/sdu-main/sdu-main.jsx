@@ -13,11 +13,11 @@ export function SduMainPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col">
         {/* Topbar */}
         <SduTopbar />
         {/* Page Content */}
-        <div className="flex-1 overflow-auto bg[rgb(245, 245, 249)]" >
+        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#F5F5F9' }}>
           <SduMainComponents user={user} />
         </div>
       </main>
@@ -62,8 +62,6 @@ function SduTopbar() {
       return { title: "Reports", description: "Generate and view system reports" };
     } else if (path.includes("/rooms")) {
       return { title: "Rooms / Locations", description: "Manage venue bookings and locations" };
-    } else if (path.includes("/post")) {
-      return { title: "Posts & Announcements", description: "Manage public posts and announcements" };
     } else if (path.includes("/logs")) {
       return { title: "Activity Logs", description: "View system activity and audit logs" };
     }

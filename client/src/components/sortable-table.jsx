@@ -61,7 +61,7 @@ export function SortableTable({
   if (loading) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-8 text-center ">
           <Spinner className="mx-auto h-8 w-8 text-primary" />
           <p className="mt-2 text-muted-foreground">Loading data...</p>
         </CardContent>
@@ -71,8 +71,8 @@ export function SortableTable({
 
   return (
     <Card className={className}>
-      <CardContent className="p-0">
-        <Table>
+      <CardContent className="p-0 overflow-x-auto">
+        <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
@@ -81,6 +81,7 @@ export function SortableTable({
                   onClick={() => column.sortable !== false && handleSort(column.key)}
                   className={cn(
                     column.sortable !== false && "cursor-pointer hover:bg-accent select-none",
+                    "whitespace-normal break-words px-3 py-2 text-xs",
                     column.headerClassName
                   )}
                 >
@@ -108,7 +109,7 @@ export function SortableTable({
                   {columns.map((column) => (
                     <TableCell
                       key={`${rowIndex}-${column.key}`}
-                      className={column.className}
+                      className={cn("align-top px-3 py-2 text-xs break-words", column.className)}
                     >
                       {column.render
                         ? column.render(row, rowIndex)

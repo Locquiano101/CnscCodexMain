@@ -8,6 +8,10 @@ export function SduMainDetailedProposal({ proposal, orgData, user, onClose }) {
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
+  // Debug: Log the SDG data
+  console.log('SDG Data:', proposal?.ProposedIndividualActionPlan?.alignedSDG);
+  console.log('SDG Type:', typeof proposal?.ProposedIndividualActionPlan?.alignedSDG);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
@@ -128,16 +132,80 @@ export function SduMainDetailedProposal({ proposal, orgData, user, onClose }) {
                 </h3>
                 <div className="bg-white rounded-md p-4 border border-gray-200">
                   <div className="flex flex-wrap gap-2">
-                    {proposal.ProposedIndividualActionPlan.alignedSDG.map(
-                      (sdg, index) => (
+                    {(() => {
+                      let raw = proposal?.ProposedIndividualActionPlan?.alignedSDG;
+                      if (!raw) return <span className="text-gray-500 text-xs">No SDGs specified</span>;
+
+                      // Normalize into an array of strings
+                      let normalized = [];
+
+                      if (Array.isArray(raw)) {
+                        // Case: ['["SDG 4","SDG 5","SDG 10"]'] -> parse first element if it looks like JSON array
+                        if (raw.length === 1 && typeof raw[0] === 'string' && raw[0].trim().startsWith('[')) {
+                          try {
+                            const parsed = JSON.parse(raw[0]);
+                            if (Array.isArray(parsed)) {
+                              normalized = parsed;
+                            } else if (typeof parsed === 'string') {
+                              raw = parsed;
+                            }
+                          } catch {
+                            // Fallback: clean the first element string
+                            normalized = raw[0]
+                              .replace(/[\[\]"]+/g, '')
+                              .split(',')
+                              .map(s => s.trim())
+                              .filter(Boolean);
+                          }
+                        } else {
+                          normalized = raw;
+                        }
+                      } else if (typeof raw === 'string') {
+                        // Try JSON first
+                        try {
+                          const parsed = JSON.parse(raw);
+                          if (Array.isArray(parsed)) {
+                            normalized = parsed;
+                          } else if (typeof parsed === 'string') {
+                            // A plain string inside JSON, fall through to regex
+                            raw = parsed;
+                          } else {
+                            raw = String(parsed);
+                          }
+                        } catch {
+                          // Fallback: extract tokens like SDG 4, SDG 5, SDG 10
+                          const matches = raw.match(/SDG\s*\d+/g);
+                          if (matches && matches.length) {
+                            normalized = matches;
+                          } else {
+                            // Another fallback: split by commas and clean quotes/brackets/whitespace
+                            normalized = raw
+                              .replace(/[\[\]"]+/g, '')
+                              .split(',')
+                              .map(s => s.trim())
+                              .filter(Boolean);
+                          }
+                        }
+                      } else {
+                        // Unknown type; stringify
+                        raw = String(raw);
+                        const matches = raw.match(/SDG\s*\d+/g);
+                        if (matches && matches.length) normalized = matches;
+                      }
+
+                      if (!normalized || normalized.length === 0) {
+                        return <span className="text-gray-500 text-xs">No SDGs specified</span>;
+                      }
+
+                      return normalized.map((sdg, index) => (
                         <span
                           key={index}
                           className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-md font-medium"
                         >
                           {sdg}
                         </span>
-                      )
-                    )}
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>

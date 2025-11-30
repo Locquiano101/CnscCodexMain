@@ -95,7 +95,7 @@ const addOfficialHeader = (doc, reportTitle) => {
 /**
  * Export Accreditation Report to PDF
  */
-export const exportAccreditationToPDF = (data, filters = {}) => {
+export const exportAccreditationToPDF = (data, filters = {}, fileLabel = 'Accreditation') => {
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
@@ -235,14 +235,14 @@ export const exportAccreditationToPDF = (data, filters = {}) => {
   });
 
   // Save the PDF
-  const fileName = `Accreditation_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+  const fileName = `${fileLabel}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(fileName);
 };
 
 /**
  * Export Accreditation Report to Excel
  */
-export const exportAccreditationToExcel = (data, filters = {}) => {
+export const exportAccreditationToExcel = (data, filters = {}, fileLabel = 'Accreditation') => {
   // Create workbook and worksheet
   const wb = XLSX.utils.book_new();
   
@@ -347,10 +347,10 @@ export const exportAccreditationToExcel = (data, filters = {}) => {
   ];
 
   // Add worksheet to workbook
-  XLSX.utils.book_append_sheet(wb, ws, 'Accreditation Report');
+  XLSX.utils.book_append_sheet(wb, ws, `${fileLabel} Report`);
 
   // Generate Excel file
-  const fileName = `Accreditation_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+  const fileName = `${fileLabel}_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb, fileName);
 };
 
@@ -367,103 +367,126 @@ export const exportAccomplishmentToPDF = (data, filters = {}) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   
-  // Add official header with logos
-  let yPosition = addOfficialHeader(doc, 'ACCOMPLISHMENT REPORT');
-  
-  yPosition += 8;
-  
-  // Add filter information
-  doc.setFontSize(8);
-  doc.setTextColor(0, 0, 0);
-  if (filters.status || filters.department || filters.dateFrom || filters.dateTo) {
-    doc.text('Filters Applied:', 14, yPosition);
-    yPosition += 4;
-    
-    if (filters.status) {
-      doc.text(`• Status: ${filters.status}`, 16, yPosition);
-      yPosition += 3;
-    }
-    if (filters.department) {
-      doc.text(`• Department: ${filters.department}`, 16, yPosition);
-      yPosition += 3;
-    }
-    if (filters.dateFrom || filters.dateTo) {
-      const dateRange = `${filters.dateFrom || 'Start'} to ${filters.dateTo || 'End'}`;
-      doc.text(`• Date Range: ${dateRange}`, 16, yPosition);
-      yPosition += 3;
-    }
-    yPosition += 2;
-  }
+  // Add official header with logos (use Accreditation title as requested)
+  let yPosition = addOfficialHeader(doc, 'ACCREDITATION REPORT');
 
-  // Prepare table data
-  const tableData = data.map((row, index) => [
-    index + 1,
-    row.organizationProfile?.orgName || 'N/A',
-    row.organizationProfile?.orgClass || '-',
-    row.accomplishments?.length || 0,
-    row.grandTotal || 0,
-    row.totalOrganizationalDevelopment || 0,
-    row.totalOrganizationalPerformance || 0,
-    row.totalServiceCommunity || 0
-  ]);
+  // Helper: format date text
+  const fmt = (date) => {
+    const d = new Date(date);
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  };
 
-  // Configure table
+  // Helper: derive accreditation status like in the table fallback
+  const getAccredStatus = (row) => {
+    if (row.calculatedAccreditationStatus) return row.calculatedAccreditationStatus;
+    const pts = row.accomplishmentData?.grandTotal ?? row.grandTotal ?? 0;
+    if (pts >= 90) return 'Outstanding & Fully Accredited';
+    if (pts >= 70) return 'Eligible for Renewal';
+    return 'Ineligible for Renewal';
+  };
+
+  // Prepare table data to match the on-screen table
+  const tableData = data.map((row, index) => {
+    // Validity: start from updatedAt/orgProfile.updatedAt/createdAt; end = +1y
+    const sourceDate = row.updatedAt || row.organizationProfile?.updatedAt || row.organizationProfile?.createdAt;
+    const startText = sourceDate ? fmt(sourceDate) : 'N/A';
+    let validityText = 'N/A';
+    if (sourceDate) {
+      const end = new Date(sourceDate);
+      end.setFullYear(end.getFullYear() + 1);
+      validityText = `${startText}\nto\n${fmt(end)}`;
+    }
+
+    const dateOfSubmission = row.createdAt ? fmt(row.createdAt) : 'N/A';
+
+    return [
+      // 1 Org ID No.
+      row.organizationProfile?.orgID || (row.organizationProfile?._id ? row.organizationProfile._id.toString() : 'N/A'),
+      // 2 Name of the Organization
+      row.organizationProfile?.orgName || 'N/A',
+      // 3 Nature
+      row.organizationProfile?.orgClass || '-',
+      // 4 Status of Accreditation
+      getAccredStatus(row),
+      // 5 Total Members
+      row.totalMembers ?? 0,
+      // 6 Total No. of Officers
+      row.totalOfficers ?? 0,
+      // 7 Adviser/s
+      row.adviserName || row.organizationProfile?.adviser?.name || '-',
+      // 8 President
+      row.presidentName || row.organizationProfile?.orgPresident?.name || '-',
+      // 9 APESOC Results (Total)
+      row.accomplishmentData?.grandTotal ?? row.grandTotal ?? 0,
+      // 10 Date of Submission
+      dateOfSubmission,
+      // 11 Validity of Accreditation
+      validityText,
+    ];
+  });
+
+  // Configure table to include all columns
   autoTable(doc, {
-    startY: yPosition,
+    startY: yPosition + 8,
     head: [[
-      'NO.',
-      'ORGANIZATION',
+      'ORG ID NO.',
+      'NAME OF THE ORGANIZATION',
       'NATURE',
-      'COUNT',
-      'TOTAL POINTS',
-      'ORG. DEV.',
-      'ORG. PERF.',
-      'SERVICE'
+      'STATUS OF ACCREDITATION',
+      'TOTAL MEMBERS',
+      'TOTAL NO. OF OFFICERS',
+      'ADVISER/S',
+      'PRESIDENT',
+      'APESOC TOTAL',
+      'DATE OF SUBMISSION',
+      'VALIDITY OF ACCREDITATION'
     ]],
     body: tableData,
     theme: 'grid',
     styles: {
       font: 'helvetica',
-      fontSize: 9,
-      cellPadding: 3,
+      fontSize: 8,
+      cellPadding: 2,
       halign: 'center',
-      valign: 'middle'
+      valign: 'middle',
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0],
+      overflow: 'linebreak'
     },
     headStyles: {
       fillColor: [255, 255, 255],
       textColor: [0, 0, 0],
       fontStyle: 'bold',
-      halign: 'center'
+      halign: 'center',
+      fontSize: 8,
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0]
     },
     columnStyles: {
-      0: { cellWidth: 12, halign: 'center' },
-      1: { cellWidth: 70, halign: 'left' },
-      2: { cellWidth: 30, halign: 'center' },
-      3: { cellWidth: 20, halign: 'center' },
-      4: { cellWidth: 25, halign: 'center' },
-      5: { cellWidth: 25, halign: 'center' },
-      6: { cellWidth: 25, halign: 'center' },
-      7: { cellWidth: 25, halign: 'center' }
+      0: { cellWidth: 22, halign: 'left' },   // Org ID
+      1: { cellWidth: 35, halign: 'left' },   // Name
+      2: { cellWidth: 23, halign: 'center' }, // Nature
+      3: { cellWidth: 28, halign: 'center' }, // Status of Accreditation
+      4: { cellWidth: 20, halign: 'center' }, // Total Members
+      5: { cellWidth: 20, halign: 'center' }, // Total Officers
+      6: { cellWidth: 24, halign: 'left' },   // Adviser/s
+      7: { cellWidth: 24, halign: 'left' },   // President
+      8: { cellWidth: 16, halign: 'center' }, // APESOC Total
+      9: { cellWidth: 24, halign: 'center' }, // Date of Submission
+      10: { cellWidth: 32, halign: 'center' } // Validity (multi-line)
     },
     margin: { top: 10, right: 14, bottom: 10, left: 14 },
     tableWidth: 'auto',
     didDrawPage: (data) => {
-      // Add header on each page
       if (data.pageNumber > 1) {
         addOfficialHeader(doc, 'ACCOMPLISHMENT REPORT');
       }
-      
       const pageCount = doc.internal.getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(0, 0, 0);
       doc.text(
         `Page ${data.pageNumber} of ${pageCount}`,
-        pageWidth / 2,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: 'center' }
-      );
-      doc.text(
-        `Generated on: ${new Date().toLocaleDateString()}`,
         pageWidth - 14,
         doc.internal.pageSize.getHeight() - 10,
         { align: 'right' }
@@ -471,7 +494,7 @@ export const exportAccomplishmentToPDF = (data, filters = {}) => {
     }
   });
 
-  const fileName = `Accomplishment_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+  const fileName = `Accreditation_Report_${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(fileName);
 };
 

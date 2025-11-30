@@ -168,7 +168,7 @@ export function SduMainFinancialReportOverall({ onSelectOrg }) {
   const chartData = prepareChartData();
 
   return (
-    <div className="h-full w-full overflow-auto bg-cnsc-white">
+    <div className="w-full overflow-auto bg-cnsc-white">
       {/* Header */}
       <div className="bg-white shadow border-b">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">

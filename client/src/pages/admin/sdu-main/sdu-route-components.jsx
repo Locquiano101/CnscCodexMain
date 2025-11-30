@@ -120,7 +120,7 @@ export function SduMainComponents({ user }) {
           />
         </div>
       )}
-      <div className="flex-1 overflow-auto bg[rgb(245, 245, 249)]" >
+      <div className="flex-1 overflow-auto" style={{ backgroundColor: 'rgb(245, 245, 249)' }}>
         <Routes>
           {/* Dashboard/Home */}
           <Route path="/" element={<UnderDevelopment />} />
@@ -255,8 +255,6 @@ export function SduMainComponents({ user }) {
           {/* Reports */}
           <Route path="/report" element={<UnderDevelopment />} />
 
-          {/* Posts */}
-          <Route path="/post" element={<UnderDevelopment />} />
 
           {/* Activity Logs (SDU-only) */}
           <Route path="/logs" element={<SduAuditLogsPage />} />

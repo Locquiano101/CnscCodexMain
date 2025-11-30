@@ -356,14 +356,14 @@ export function AccreditationReportsView() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header with Export Button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">Accreditation Report</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Accomplishment Report</h2>
         <Button
-          onClick={() => exportAccreditationToPDF(sortedData, filters)}
+          onClick={() => exportAccreditationToPDF(sortedData, filters, 'Accomplishment')}
           disabled={sortedData.length === 0}
-          className="gap-2"
+          className="gap-2 bg-red-600 text-white hover:bg-red-700"
         >
           <FileDown className="w-4 h-4" />
           Export PDF

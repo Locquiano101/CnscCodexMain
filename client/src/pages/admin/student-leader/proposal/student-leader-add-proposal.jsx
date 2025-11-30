@@ -106,8 +106,8 @@ export function AddProposal({ proposals = [], onClose, open = true }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl max-h-[95vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <span className="text-blue-600">📄</span> Add New Proposal
           </DialogTitle>
@@ -116,25 +116,36 @@ export function AddProposal({ proposals = [], onClose, open = true }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 px-6 py-4 flex-1 overflow-y-auto">
           {/* Select Activity */}
           <div className="space-y-2">
             <Label htmlFor="activity-select">Select Activity</Label>
-            <Select
-              value={selectedActivity?._id || ""}
-              onValueChange={handleActivitySelection}
-            >
-              <SelectTrigger id="activity-select">
-                <SelectValue placeholder="Choose an approved activity..." />
-              </SelectTrigger>
-              <SelectContent>
-                {proposals.map((activity) => (
-                  <SelectItem key={activity._id} value={activity._id}>
-                    {activity.activityTitle || activity.orgName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {proposals.length === 0 ? (
+              <div className="border border-dashed border-amber-300 bg-amber-50 rounded-lg p-4 text-center">
+                <p className="text-sm text-amber-700 font-medium mb-1">
+                  No activities available
+                </p>
+                <p className="text-xs text-amber-600">
+                  Please add activities to your Proposed Action Plan first before creating a proposal.
+                </p>
+              </div>
+            ) : (
+              <Select
+                value={selectedActivity?._id || ""}
+                onValueChange={handleActivitySelection}
+              >
+                <SelectTrigger id="activity-select">
+                  <SelectValue placeholder="Choose an approved activity..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {proposals.map((activity) => (
+                    <SelectItem key={activity._id} value={activity._id}>
+                      {activity.activityTitle || activity.orgName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Proposed Date */}
@@ -321,13 +332,14 @@ export function AddProposal({ proposals = [], onClose, open = true }) {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 flex-shrink-0 border-t text-white">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!selectedActivity || !uploadedFile || !proposedDate}
+            className="text-white"
           >
             Submit Proposal
           </Button>

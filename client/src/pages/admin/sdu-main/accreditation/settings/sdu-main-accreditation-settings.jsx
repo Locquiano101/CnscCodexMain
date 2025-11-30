@@ -27,8 +27,8 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
     useState(false);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6" style={{ backgroundColor: '#F5F5F9' }}>
-      <div className="h-full w-full bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="w-full bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 text-white">
           <div className="flex items-center gap-3">

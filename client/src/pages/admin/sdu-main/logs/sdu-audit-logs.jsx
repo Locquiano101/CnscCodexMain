@@ -124,9 +124,20 @@ export function SduAuditLogsPage() {
 			return parts.length ? parts.join(" • ") : JSON.stringify(meta);
 		};
 
-			return (
-				<div className="p-4">
-					<div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+		const formatRole = (role) => {
+			if (!role) return "—";
+			const lowerRole = role.toLowerCase();
+			if (lowerRole === "sdu" || lowerRole === "sdu main") return "SDU";
+			if (lowerRole === "student leader" || lowerRole === "student-leader" || lowerRole === "studentleader") return "Student Leader";
+			if (lowerRole === "dean") return "Dean";
+			if (lowerRole === "adviser") return "Adviser";
+			if (lowerRole === "sdu coordinator" || lowerRole === "sdu-coordinator") return "SDU Coordinator";
+			return role; // fallback to original
+		};
+
+		return (
+			<div className="p-6 flex-1" style={{ backgroundColor: '#F5F5F9' }}>
+				<div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
 						{/* Header */}
 						<div className="px-4 py-4 sm:px-6 sm:py-5 bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div>
@@ -199,7 +210,7 @@ export function SduAuditLogsPage() {
 												<td className="px-4 py-3">
 													{log.actorName || log.actorEmail || "Unknown"}
 												</td>
-												<td className="px-4 py-3">{log.actorPosition || "—"}</td>
+												<td className="px-4 py-3">{formatRole(log.actorPosition)}</td>
 												<td className="px-4 py-3">{actionLabels[log.action] || log.action}</td>
 												<td className="px-4 py-3">
 													{log.targetType || ""}
@@ -215,22 +226,37 @@ export function SduAuditLogsPage() {
 						</div>
 
 						{/* Footer / Pagination */}
-						<div className="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50  flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-							<div className="text-sm text-gray-600">Page {page}</div>
+						<div className="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+							<div className="text-sm text-gray-600">
+								Showing page {page} {items.length > 0 && `(${items.length} items)`}
+							</div>
 							<div className="flex items-center gap-2">
 								<button
-									className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 disabled:opacity-50"
-									onClick={() => setPage((p) => Math.max(1, p - 1))}
+									className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+									onClick={() => setPage(1)}
 									disabled={page <= 1 || loading}
+									title="First page"
 								>
-									Prev
+									««
 								</button>
 								<button
-									className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 disabled:opacity-50"
+									className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+									onClick={() => setPage((p) => Math.max(1, p - 1))}
+									disabled={page <= 1 || loading}
+									title="Previous page"
+								>
+									‹ Prev
+								</button>
+								<span className="px-3 py-1.5 text-sm font-medium text-gray-700">
+									Page {page}
+								</span>
+								<button
+									className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 									onClick={() => setPage((p) => p + 1)}
 									disabled={!hasMore || loading}
+									title="Next page"
 								>
-									Next
+									Next ›
 								</button>
 							</div>
 						</div>

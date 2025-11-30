@@ -393,9 +393,9 @@ export function AdviserProposal({ orgData }) {
         {/* Enhanced View Modal */}
         {selectedProposal && (
           <Dialog open={showViewModal} onOpenChange={(open) => !open && setShowViewModal(false)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+            <DialogContent className="max-w-4xl max-h-[95vh] p-0 flex flex-col">
               {/* Modal Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl flex-shrink-0">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-2xl font-bold mb-2">
@@ -413,11 +413,11 @@ export function AdviserProposal({ orgData }) {
                     </span>
                   </div>
                 </div>
+                </div>
               </div>
-            </div>
 
               {/* Modal Content */}
-              <div className="p-6 space-y-6">
+              <div className="p-6 space-y-6 flex-1 overflow-y-auto">
                 {/* Quick Info Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
@@ -542,24 +542,24 @@ export function AdviserProposal({ orgData }) {
                       </div>
                     )}
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-200">
-                  <button
-                    onClick={handleRevision}
-                    className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-                  >
-                    <AlertTriangle size={18} />
-                    Notify Revision
-                  </button>
-                  <button
-                    onClick={handleApproval}
-                    className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-                  >
-                    <CheckCircle size={18} />
-                    Approve Proposal
-                  </button>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 p-6 border-t border-slate-200 flex-shrink-0 bg-white rounded-b-2xl">
+                <button
+                  onClick={handleRevision}
+                  className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                >
+                  <AlertTriangle size={18} />
+                  Notify Revision
+                </button>
+                <button
+                  onClick={handleApproval}
+                  className="flex-1 bg-emerald-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                >
+                  <CheckCircle size={18} />
+                  Approve Proposal
+                </button>
               </div>
             </DialogContent>
           </Dialog>

@@ -88,6 +88,21 @@ export function SduMainOverallPresident({ onSelectOrg }) {
     year,
     count,
   }));
+  // Helper function to convert department names to acronyms
+  const getDepartmentAcronym = (department) => {
+    const acronyms = {
+      "College of Education": "COE",
+      "College of Engineering": "COEng",
+      "College of Arts and Sciences": "CAS",
+      "College of Business": "COB",
+      "College of Technology": "COT",
+      "College of Agriculture": "COA",
+      "College of Nursing": "CON",
+      "College of Medicine": "COM",
+    };
+    return acronyms[department] || department;
+  };
+
   // Step 1: Prepare department data
   const departmentCounts = presidentList.reduce((acc, p) => {
     acc[p.department] = (acc[p.department] || 0) + 1;
@@ -96,7 +111,7 @@ export function SduMainOverallPresident({ onSelectOrg }) {
 
   const departmentData = Object.entries(departmentCounts).map(
     ([dept, count]) => ({
-      department: dept,
+      department: getDepartmentAcronym(dept),
       count,
     })
   );

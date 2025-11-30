@@ -4,10 +4,9 @@ import { API_ROUTER } from "../../../../config/api.js";
 import { FilterPanel } from "../../../../components/filter-panel.jsx";
 import { SortableTable } from "../../../../components/sortable-table.jsx";
 import { 
-  exportAccomplishmentToPDF, 
-  exportAccomplishmentToExcel 
+  exportAccomplishmentToPDF
 } from "../../../../utils/export-reports.js";
-import { FileDown, FileSpreadsheet } from "lucide-react";
+import { FileDown } from "lucide-react";
 
 export function AccomplishmentReportsView() {
   const [data, setData] = useState([]);
@@ -145,19 +144,19 @@ export function AccomplishmentReportsView() {
     return sorted;
   }, [filteredData, sortConfig]);
 
-  // Table columns
+  // Table columns (updated to required fields)
   const columns = [
     {
       key: "index",
-      label: "No.",
+      label: "Org ID No.",
       sortable: false,
       className: "text-center font-medium",
       headerClassName: "text-center",
-      render: (row, index) => index + 1,
+      render: (row) => row.organizationProfile?.orgID || row.organizationProfile?._id || "-",
     },
     {
       key: "organizationProfile.orgName",
-      label: "Organization Name",
+      label: "Name of the Organization",
       render: (row) => (
         <div className="font-medium text-gray-900">
           {row.organizationProfile?.orgName || "N/A"}
@@ -172,84 +171,154 @@ export function AccomplishmentReportsView() {
       render: (row) => row.organizationProfile?.orgClass || "-",
     },
     {
-      key: "organizationProfile.orgDepartment",
-      label: "Department",
-      render: (row) => row.organizationProfile?.orgDepartment || "-",
-    },
-    {
-      key: "accomplishmentCount",
-      label: "Total Accomplishments",
-      className: "text-center",
-      headerClassName: "text-center",
-      render: (row) => (
-        <span className="font-medium">
-          {row.accomplishments?.length || 0}
-        </span>
-      ),
-    },
-    {
-      key: "grandTotal",
-      label: "Total Points",
-      className: "text-center font-medium",
-      headerClassName: "text-center",
-      render: (row) => (
-        <span className="text-blue-600 font-bold">
-          {row.grandTotal || 0}
-        </span>
-      ),
-    },
-    {
-      key: "categories",
-      label: "Categories",
-      render: (row) => {
-        const categories = new Set();
-        row.accomplishments?.forEach((acc) => {
-          if (acc.category) categories.add(acc.category);
-        });
-        const categoryList = Array.from(categories);
-        
-        if (categoryList.length === 0) return "-";
-        
-        return (
-          <div className="flex flex-wrap gap-1">
-            {categoryList.slice(0, 3).map((cat, idx) => (
-              <span
-                key={idx}
-                className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded"
-              >
-                {cat}
-              </span>
-            ))}
-            {categoryList.length > 3 && (
-              <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                +{categoryList.length - 3}
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "organizationProfile.status",
-      label: "Status",
+      key: "calculatedAccreditationStatus",
+      label: "Status of Accreditation",
       className: "text-center",
       headerClassName: "text-center",
       render: (row) => {
-        const status = row.organizationProfile?.status || "N/A";
+        // Fallback: derive status from APESOC total when calculatedAccreditationStatus is missing
+        let status = row.calculatedAccreditationStatus;
+        if (!status) {
+          const pts = row.accomplishmentData?.grandTotal || 0;
+          if (pts >= 90) status = "Outstanding & Fully Accredited";
+          else if (pts >= 70) status = "Eligible for Renewal";
+          else status = "Ineligible for Renewal";
+        }
         const statusColors = {
-          Active: "bg-green-100 text-green-800",
-          Inactive: "bg-gray-100 text-gray-800",
+          "Outstanding & Fully Accredited": "text-purple-800",
+          "Eligible for Renewal": " text-blue-800",
+          "Ineligible for Renewal": "text-gray-800",
           Pending: "bg-yellow-100 text-yellow-800",
         };
         return (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
-              statusColors[status] || "bg-gray-100 text-gray-800"
+            className={`px-2 py-1  text-xs font-medium ${
+              statusColors[status] || "text-gray-800"
             }`}
           >
             {status}
           </span>
         );
+      },
+    },
+    {
+      key: "organizationProfile.totalMembers",
+      label: "Total Members",
+      className: "text-center",
+      headerClassName: "text-center",
+      render: (row) => {
+        // Support multiple possible sources for members count
+        const fromProfile = row.organizationProfile?.totalMembers;
+        const fromCount = row.organizationProfile?.membersCount ?? row.membersCount;
+        const fromArrayLen = Array.isArray(row.organizationProfile?.members)
+          ? row.organizationProfile.members.length
+          : undefined;
+        const fromRosterLen = Array.isArray(row.organizationProfile?.roster?.members)
+          ? row.organizationProfile.roster.members.length
+          : Array.isArray(row.roster?.members)
+          ? row.roster.members.length
+          : undefined;
+        const fromMemberListLen = Array.isArray(row.organizationProfile?.memberList)
+          ? row.organizationProfile.memberList.length
+          : undefined;
+        const fromTopLevel = row.totalMembers;
+        const value = fromTopLevel ?? fromProfile ?? fromCount ?? fromArrayLen ?? fromRosterLen ?? fromMemberListLen;
+        return value != null ? value : "-";
+      },
+    },
+    {
+      key: "organizationProfile.totalOfficers",
+      label: "Total No. of Officers",
+      className: "text-center",
+      headerClassName: "text-center",
+      render: (row) => {
+        // Support multiple possible sources for officers count
+        const fromProfile = row.organizationProfile?.totalOfficers;
+        const fromCount = row.organizationProfile?.officersCount ?? row.officersCount;
+        const fromArrayLen = Array.isArray(row.organizationProfile?.officers)
+          ? row.organizationProfile.officers.length
+          : undefined;
+        const fromRosterLen = Array.isArray(row.organizationProfile?.roster?.officers)
+          ? row.organizationProfile.roster.officers.length
+          : Array.isArray(row.roster?.officers)
+          ? row.roster.officers.length
+          : undefined;
+        const fromOfficerListLen = Array.isArray(row.organizationProfile?.officerList)
+          ? row.organizationProfile.officerList.length
+          : undefined;
+        const fromTopLevel = row.totalOfficers;
+        const value = fromTopLevel ?? fromProfile ?? fromCount ?? fromArrayLen ?? fromRosterLen ?? fromOfficerListLen;
+        return value != null ? value : "-";
+      },
+    },
+    {
+      key: "organizationProfile.adviser.name",
+      label: "Adviser/s",
+      render: (row) => {
+        // Prefer top-level provided name if present
+        if (row.adviserName) return row.adviserName;
+        const adviser = row.organizationProfile?.adviser;
+        if (!adviser) return "-";
+        if (typeof adviser === "object" && adviser.name) return adviser.name;
+        return adviser.toString ? adviser.toString() : "-";
+      },
+    },
+    {
+      key: "PresidentProfile.name",
+      label: "President",
+      render: (row) => {
+        if (row.presidentName) return row.presidentName;
+        const president = row.organizationProfile?.orgPresident;
+        if (!president || typeof president !== "object") return "-";
+        return president.name || (president._id ? `ID: ${president._id.toString().slice(-6)}` : "-");
+      },
+    },
+    {
+      key: "accomplishmentData.grandTotal",
+      label: "APESOC Results (Total)",
+      className: "text-center",
+      headerClassName: "text-center",
+      render: (row) => {
+        const total = row.accomplishmentData?.grandTotal || 0;
+        return (
+          <span className="font-bold text-blue-600">{total}</span>
+        );
+      },
+    },
+    {
+      key: "createdAt",
+      label: "Date of Submission",
+      className: "text-center",
+      headerClassName: "text-center",
+      render: (row) => {
+        const d = row.createdAt ? new Date(row.createdAt) : null;
+        return d ? d.toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" }) : "-";
+      },
+    },
+    {
+      key: "updatedAt",
+      label: "Validity of Accreditation",
+      className: "text-center text-xs",
+      headerClassName: "text-center",
+      render: (row) => {
+        const sourceDate = row.updatedAt || row.organizationProfile?.updatedAt || row.organizationProfile?.createdAt;
+        if (sourceDate) {
+          const startDate = new Date(sourceDate);
+          const endDate = new Date(sourceDate);
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          const fmt = (date) => {
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+          };
+          return (
+            <div className="text-xs">
+              <div>{fmt(startDate)}</div>
+              <div className="text-gray-400">to</div>
+              <div>{fmt(endDate)}</div>
+            </div>
+          );
+        }
+        return "N/A";
       },
     },
   ];
@@ -292,10 +361,10 @@ export function AccomplishmentReportsView() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       {/* Header with Export Buttons */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">Accomplishment Report</h2>
+  <h2 className="text-2xl font-bold tracking-tight">Accreditation Report</h2>
         <div className="flex gap-2">
           <button
             onClick={() => exportAccomplishmentToPDF(sortedData, filters)}
@@ -304,14 +373,6 @@ export function AccomplishmentReportsView() {
           >
             <FileDown className="w-4 h-4" />
             Export PDF
-          </button>
-          <button
-            onClick={() => exportAccomplishmentToExcel(sortedData, filters)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            disabled={sortedData.length === 0}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            Export Excel
           </button>
         </div>
       </div>
@@ -355,6 +416,7 @@ export function AccomplishmentReportsView() {
       </div>
 
       {/* Table */}
+
       <SortableTable
         columns={columns}
         data={sortedData}
@@ -362,7 +424,10 @@ export function AccomplishmentReportsView() {
         onSort={setSortConfig}
         loading={loading}
         emptyMessage="No accomplishment records found"
+        className="w-full"
       />
+
+
     </div>
   );
 }

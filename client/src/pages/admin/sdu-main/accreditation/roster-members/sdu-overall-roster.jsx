@@ -211,7 +211,7 @@ export function SduMainRosterOverview({ onSelectOrg }) {
             </h3>
             <ResponsiveContainer width="100%" height={250}>
               <RechartsPieChart>
-                <Pie
+                <Pie 
                   data={analyticsData.statusDistribution}
                   cx="50%"
                   cy="50%"
@@ -243,6 +243,7 @@ export function SduMainRosterOverview({ onSelectOrg }) {
                   angle={-45}
                   textAnchor="end"
                   height={80}
+                  className="text-sm"
                 />
                 <YAxis />
                 <Tooltip />

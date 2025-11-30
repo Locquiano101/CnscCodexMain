@@ -173,7 +173,7 @@ export function StudentLeaderProposal({ orgData }) {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl">Proposals</CardTitle>
-            <Button onClick={() => setShowAddFormChoice(true)}>
+            <Button onClick={() => setShowAddFormChoice(true)} className="text-white">
               <Plus className="w-4 h-4 mr-2" />
               Add Proposal
             </Button>
@@ -465,13 +465,13 @@ function ProposalChoiceModal({ onClose, onSelect }) {
         <div className="flex flex-col gap-3 py-4">
           <Button
             onClick={() => onSelect("occurring")}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             Occurring Proposal
           </Button>
           <Button
             onClick={() => onSelect("new")}
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             New Proposal
           </Button>

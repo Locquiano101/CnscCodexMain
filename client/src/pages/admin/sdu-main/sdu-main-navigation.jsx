@@ -155,12 +155,6 @@ export function SduMainNavigation() {
       path: "/SDU/rooms",
     },
     {
-      key: "post",
-      icon: <PenBox className="w-5 h-5" />,
-      label: "Posts & Announcements",
-      path: "/SDU/post",
-    },
-    {
       key: "logs",
       icon: <ClipboardList className="w-5 h-5" />,
       label: "Activity Logs",
@@ -175,12 +169,12 @@ export function SduMainNavigation() {
     //   label: "Proposal Reports",
     //   path: "/SDU/proposal/reports",
     // },
-    {
-      key: "proposal-approval",
-      icon: <CheckCircle className="w-4 h-4" />,
-      label: "System-wide Approval",
-      path: "/SDU/proposal/system-wide",
-    },
+    // {
+    //   key: "proposal-approval",
+    //   icon: <CheckCircle className="w-4 h-4" />,
+    //   label: "System-wide Approval",
+    //   path: "/SDU/proposal/system-wide",
+    // },
   ];
 
   // Map nav items to requirement keys; items without mapping always shown
@@ -326,7 +320,6 @@ export function SduMainNavigation() {
               className={cn(
                 "w-full justify-start gap-3 h-11 px-3 text-sm font-medium transition-all rounded-lg cursor-pointer flex items-center",
                 activeKey === item.key ||
-                (item.key === "proposals" && isAnySubProposalActive) ||
                 (item.key === "accreditations" && isAnySubAccreditationActive)
                   ? "bg-primary text-white hover:bg-primary/90"
                   : "text-foreground hover:bg-muted"
@@ -343,15 +336,6 @@ export function SduMainNavigation() {
                   className={cn(
                     "w-4 h-4 transition-transform duration-200 flex-shrink-0",
                     shouldShowSubAccreditations ? "rotate-0" : "-rotate-90"
-                  )}
-                />
-              )}
-
-              {item.key === "proposals" && (
-                <ChevronDown
-                  className={cn(
-                    "w-4 h-4 transition-transform duration-200 flex-shrink-0",
-                    shouldShowSubProposals ? "rotate-0" : "-rotate-90"
                   )}
                 />
               )}
@@ -405,41 +389,7 @@ export function SduMainNavigation() {
               )}
             </div>
 
-            <div
-              className={cn(
-                "overflow-hidden transition-all duration-300 ease-in-out",
-                item.key === "proposals" && shouldShowSubProposals
-                  ? "max-h-[600px] opacity-100 mb-2"
-                  : item.key === "proposals"
-                  ? "max-h-0 opacity-0"
-                  : ""
-              )}
-            >
-              {item.key === "proposals" && (
-                <div className="space-y-1 pt-2 pl-3">
-                  {subProposalItems.map((subItem) => (
-                    <button
-                      key={subItem.key}
-                      onClick={() => {
-                        setActiveKey(subItem.key);
-                        navigate(subItem.path);
-                      }}
-                      className={cn(
-                        "w-full justify-start h-10 pl-11 pr-3 text-xs font-medium rounded-lg transition-all cursor-pointer flex items-center",
-                        activeKey === subItem.key
-                          ? "bg-primary/10 text-primary hover:bg-primary/15"
-                          : "text-muted-foreground hover:bg-muted"
-                      )}
-                    >
-                      <span className="mr-2 w-4 h-4 flex items-center justify-center flex-shrink-0">
-                        {subItem.icon}
-                      </span>
-                      <span className="truncate text-left flex-1">{subItem.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Proposals dropdown removed - now a regular navigation item */}
           </div>
         ))}
       </nav>

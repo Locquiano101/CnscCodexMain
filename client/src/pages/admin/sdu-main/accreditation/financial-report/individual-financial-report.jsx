@@ -511,3 +511,105 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
     </div>
   );
 }
+
+function ViewTransactionModal({
+  isOpen,
+  onClose,
+  transaction,
+  type,
+  onInquire,
+}) {
+  if (!isOpen || !transaction) return null;
+
+  const isReimbursement = type === "reimbursement";
+
+  // Build file URL (adjust base path if needed for your backend)
+  const fileUrl = transaction?.document?.fileName
+    ? `${DOCU_API_ROUTER}/${transaction.organizationProfile}/${transaction.document.fileName}`
+    : transaction?.file;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white flex flex-col w-1/2 h-9/10 shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div
+          className={`px-6 py-4 ${
+            isReimbursement ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-white">
+              {isReimbursement
+                ? "Cash Inflow Details"
+                : "Cash Outflow Details"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex h-full overflow-y-auto">
+          <div className="flex w-1/4 p-4 flex-col gap-4">
+            <p className="text-sm font-semibold text-gray-600">Description</p>
+            <p className="text-gray-900">{transaction.description}</p>
+            <p className="text-sm font-semibold text-gray-600">Amount</p>
+            <p
+              className={`text-lg font-bold ${
+                isReimbursement ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(transaction.amount)}
+            </p>
+            <p className="text-sm font-semibold text-gray-600">Date</p>
+            <p className="text-gray-900">
+              {new Date(transaction.date).toLocaleDateString()}
+            </p>
+            <p className="text-sm font-semibold text-gray-600">Expense Type</p>
+            <p className="text-gray-900">
+              {transaction.expenseType || "Uncategorized"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-gray-900">{transaction.name}</p>
+          </div>
+
+          {fileUrl && (
+            <iframe
+              key={fileUrl}
+              src={fileUrl}
+              className="w-full full border"
+              title="Transaction Document"
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-gray-50 border-t flex justify-end gap-4">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 transition"
+          >
+            Close
+          </button>
+          <button
+            onClick={() => {
+              onInquire();
+            }}
+            className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            Submit Inquiry
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

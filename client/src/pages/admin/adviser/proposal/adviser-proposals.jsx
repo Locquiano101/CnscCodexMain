@@ -28,6 +28,41 @@ export function AdviserProposalConduct({ orgData, user }) {
   const [proposalsConduct, setProposalsConduct] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null); // for details modal
 
+  // Wrapped multi-line pie label (ported from Dean/SDU implementation)
+  const renderWrappedPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.5; // position slightly inward
+    let x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    // Nudge horizontally away from edge
+    const horizontalNudge = 8;
+    x = x + (x > cx ? -horizontalNudge : horizontalNudge);
+
+    // Split name into at most two lines
+    const maxCharsPerLine = 12;
+    const cleanName = String(name);
+    let line1 = cleanName;
+    let line2 = "";
+    if (cleanName.length > maxCharsPerLine) {
+      const idx = cleanName.lastIndexOf(" ", maxCharsPerLine);
+      if (idx > 0) {
+        line1 = cleanName.slice(0, idx);
+        line2 = cleanName.slice(idx + 1);
+      } else {
+        line1 = cleanName.slice(0, maxCharsPerLine);
+        line2 = cleanName.slice(maxCharsPerLine);
+      }
+    }
+    const pctText = `(${(percent * 100).toFixed(0)}%)`;
+    return (
+      <text x={x} y={y} fill="#374151" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={10}>
+        <tspan x={x} dy={-6}>{line1}</tspan>
+        {line2 && <tspan x={x} dy={12}>{line2}</tspan>}
+        <tspan x={x} dy={line2 ? 12 : 12} fill="#6B7280">{pctText}</tspan>
+      </text>
+    );
+  };
+
   const fetchProposedPlanConduct = async () => {
     try {
       const { data } = await axios.get(
@@ -139,19 +174,16 @@ export function AdviserProposalConduct({ orgData, user }) {
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={Object.entries(statusStats).map(
-                      ([status, count]) => ({
-                        name: status,
-                        value: count,
-                      })
-                    )}
+                    data={Object.entries(statusStats).map(([status, count]) => ({
+                      name: status === "Approved For Conduct" ? "Approved" : status,
+                      value: count,
+                    }))}
                     cx="50%"
                     cy="50%"
                     outerRadius={70}
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} (${(percent * 100).toFixed(0)}%)`
-                    }
+                    label={renderWrappedPieLabel}
+                    style={{ fontSize: "10px" }}
                   >
                     {Object.entries(statusStats).map(([status], idx) => {
                       const colors = {

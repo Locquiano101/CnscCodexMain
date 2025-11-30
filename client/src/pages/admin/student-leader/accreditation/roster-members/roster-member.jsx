@@ -364,11 +364,10 @@ const RosterMemberCard = ({ member, orgId }) => {
           <h3 className="text-lg font-semibold text-gray-900 break-words">
             Name: {member.name}
           </h3>
-          <div className="flex flex-wrap gap-1">
-            <Badge variant="secondary" className="text-xs font-medium text-white break-words">
-              {member.position}
-            </Badge>
-          </div>
+          {/* Position displayed as plain text instead of badge */}
+          <p className="text-sm font-semibold text-indigo-600 break-words">
+            {member.position}
+          </p>
 
           <p className="text-sm text-gray-600 break-words">{member.email}</p>
           <p className="text-sm text-gray-600 break-words">{member.contactNumber}</p>

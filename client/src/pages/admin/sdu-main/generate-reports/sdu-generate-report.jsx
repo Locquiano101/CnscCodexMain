@@ -4,21 +4,21 @@ import { AccreditationReportsView } from "./accreditation-reports.jsx";
 import { AccomplishmentReportsView } from "./accomplishment-reports.jsx";
 
 export function SduGenerateReports() {
-  const [activeTab, setActiveTab] = useState("accreditation");
+  // Make Accomplishment the default active tab
+  const [activeTab, setActiveTab] = useState("accomplishment");
 
-  // Temporarily hide accomplishment reports - only show accreditation
+  // Enable both Accreditation and Accomplishment reports in tabs
   const tabs = [
+    {
+      id: "accomplishment",
+      label: "Accomplishment Reports",
+      icon: <Award className="w-4 h-4" />,
+    },
     {
       id: "accreditation",
       label: "Accreditation Reports",
       icon: <FileText className="w-4 h-4" />,
     },
-    // Commented out - will be enabled later
-    // {
-    //   id: "accomplishment",
-    //   label: "Accomplishment Reports",
-    //   icon: <Award className="w-4 h-4" />,
-    // },
   ];
 
   const handleExport = () => {
@@ -35,13 +35,13 @@ export function SduGenerateReports() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
             <p className="text-sm text-gray-600 mt-1">
-              Generate and export accreditation reports
+              Generate and export accreditation and accomplishment reports
             </p>
           </div>
         </div>
       </div>
 
-      {/* Tabs - Hidden when only one tab */}
+      {/* Tabs */}
       {tabs.length > 1 && (
         <div className="bg-white border-b border-gray-200 px-6">
           <div className="flex gap-1">
@@ -65,9 +65,9 @@ export function SduGenerateReports() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === "accreditation" && <AccreditationReportsView />}
-        {/* Accomplishment reports temporarily hidden */}
-        {/* {activeTab === "accomplishment" && <AccomplishmentReportsView />} */}
+        {/* Swap content: show accreditation when accomplishment tab is active, and vice-versa */}
+        {activeTab === "accreditation" && <AccomplishmentReportsView />}
+        {activeTab === "accomplishment" && <AccreditationReportsView />}
       </div>
     </div>
   );

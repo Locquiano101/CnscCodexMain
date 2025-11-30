@@ -24,6 +24,46 @@ export function SduMainIndividualProposeActionPlan({ selectedOrg }) {
   const [proposalsConduct, setProposalsConduct] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null); // for details modal
 
+  // Custom pie label that wraps long names into two lines
+  const renderWrappedPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+    // Compute label position
+    const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 1.5; // slightly closer to center
+  let x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  // Nudge labels a bit to the left to avoid overlapping pie edge
+  const horizontalNudge = 8;
+  x = x + (x > cx ? -horizontalNudge : horizontalNudge);
+
+    // Prepare text lines: split into max two lines by spaces
+    const maxCharsPerLine = 12; // tweak as needed
+    const cleanName = String(name);
+    let line1 = cleanName;
+    let line2 = "";
+    if (cleanName.length > maxCharsPerLine) {
+      // Find a split point near maxCharsPerLine
+      const idx = cleanName.lastIndexOf(" ", maxCharsPerLine);
+      if (idx > 0) {
+        line1 = cleanName.slice(0, idx);
+        line2 = cleanName.slice(idx + 1);
+      } else {
+        // No space before threshold; hard split
+        line1 = cleanName.slice(0, maxCharsPerLine);
+        line2 = cleanName.slice(maxCharsPerLine);
+      }
+    }
+
+    const pctText = `(${(percent * 100).toFixed(0)}%)`;
+
+    return (
+      <text x={x} y={y} fill="#374151" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={10}>
+        <tspan x={x} dy={-6}>{line1}</tspan>
+        {line2 && <tspan x={x} dy={12}>{line2}</tspan>}
+        <tspan x={x} dy={line2 ? 12 : 12} fill="#6B7280">{pctText}</tspan>
+      </text>
+    );
+  };
+
   const fetchProposedPlanConduct = async () => {
     try {
       const { data } = await axios.get(
@@ -116,7 +156,7 @@ export function SduMainIndividualProposeActionPlan({ selectedOrg }) {
   const monthlyStats = getMonthlyStats();
 
   return (
-    <div className="flex flex-col h-full w-full overflow-auto bg-gray-200">
+    <div className="flex flex-col min-h-full w-full overflow-auto bg-[#F5F5F9] p-4 md:p-6 gap-4">
       {/* Enhanced Header with maroon gradient */}
       <h1 className="text-2xl p-4 font-bold drop-shadow-lg">
         Student Leader Proposals
@@ -124,8 +164,7 @@ export function SduMainIndividualProposeActionPlan({ selectedOrg }) {
 
       {/* Charts Section */}
       {proposalsConduct.length > 0 && (
-        <div className="px-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Status Distribution Pie Chart */}
             <div className="bg-white rounded-lg shadow-sm p-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
@@ -136,7 +175,7 @@ export function SduMainIndividualProposeActionPlan({ selectedOrg }) {
                   <Pie
                     data={Object.entries(statusStats).map(
                       ([status, count]) => ({
-                        name: status,
+                        name: status === "Approved For Conduct" ? "Approved" : status,
                         value: count,
                       })
                     )}
@@ -144,9 +183,8 @@ export function SduMainIndividualProposeActionPlan({ selectedOrg }) {
                     cy="50%"
                     outerRadius={70}
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} (${(percent * 100).toFixed(0)}%)`
-                    }
+                    label={renderWrappedPieLabel}
+                    style={{ fontSize: "10px" }}
                   >
                     {Object.entries(statusStats).map(([status], idx) => {
                       const colors = {
@@ -218,11 +256,10 @@ export function SduMainIndividualProposeActionPlan({ selectedOrg }) {
               </ResponsiveContainer>
             </div>
           </div>
-        </div>
       )}
 
       {/* Enhanced Table Container */}
-      <div className="flex-1 flex flex-col px-4">
+      <div className="flex-1 flex flex-col">
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           {/* Table Header */}
           <div className="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200/70">
