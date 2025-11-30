@@ -24,9 +24,9 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
     : "bg-gradient-to-r from-yellow-500 to-orange-500";
 
   const headerTitle = isReimbursement
-    ? "Reimbursement Details"
+    ? "Cash Inflow Details"
     : isDisbursement
-    ? "Disbursement Details"
+    ? "Cash Outflow Details"
     : "Collection Details";
 
   const nameLabel = isReimbursement
@@ -250,16 +250,16 @@ export function TransactionModal({
         <DialogHeader className="px-6 py-6 border-b bg-white">
           <DialogTitle className="text-2xl font-bold text-gray-900">
             {isReimbursement
-              ? "Add Reimbursement"
+              ? "Add Cash Inflow"
               : isDisbursement
-              ? "Add Disbursement"
+              ? "Add Cash Outflow"
               : "Add Collection"}
           </DialogTitle>
           <p className="text-gray-600 text-sm mt-1">
             {isReimbursement
-              ? "Record collection of fees"
+              ? "Record cash inflow transaction"
               : isDisbursement
-              ? "Record disbursement transaction"
+              ? "Record cash outflow transaction"
               : "Record collection of fees"}
           </p>
         </DialogHeader>
@@ -274,9 +274,9 @@ export function TransactionModal({
                 onFileSelect={handleFileSelect}
                 title={`Upload ${
                   isReimbursement
-                    ? "Reimbursement"
+                    ? "Cash Inflow"
                     : isDisbursement
-                    ? "Disbursement"
+                    ? "Cash Outflow"
                     : "Collection"
                 } Document`}
                 className="w-full"
@@ -413,7 +413,7 @@ export function TransactionModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className={`text-white ${
+              className={`!text-white ${
                 isReimbursement
                   ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                   : isDisbursement

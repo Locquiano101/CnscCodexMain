@@ -18,20 +18,20 @@ export function StudentReimbursement({
             <div className="p-2.5 bg-green-100 rounded-lg">
               <TrendingUp className="w-5 h-5 text-green-600" />
             </div>
-            <CardTitle className="text-xl">Reimbursements</CardTitle>
+            <CardTitle className="text-xl">Cash Inflow</CardTitle>
           </div>
           <Button
             onClick={() => handleAddClick("reimbursement")}
-            className="bg-green-700 hover:bg-green-800 text-white"
+            className="bg-green-700 hover:bg-green-800 !text-white"
           >
-            Add Reimbursement
+            Add Cash Inflow
           </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-4 overflow-auto flex flex-col gap-3">
         {financialReport.reimbursements.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
-            No reimbursements found
+            No cash inflow found
           </div>
         ) : (
           financialReport.reimbursements.map((item, index) => (

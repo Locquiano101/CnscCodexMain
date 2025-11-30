@@ -322,9 +322,9 @@ export function SduMainAccreditationDocumentIndividualOrganization({
     return doc?.fileName ? (
       <div
         onClick={() => openDocumentDetails(doc, label, docKey)}
-        className="flex-1 h-full transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
+        className="flex-1 h-full transition-all duration-300 hover:bg-amber-50 cursor-pointer rounded-2xl"
       >
-        <div className=" h-full flex flex-col  bg-white rounded-lg shadow-md  hover:shadow-md transition-all duration-300">
+        <div className="h-full flex flex-col bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200">
           {/* Header */}
           <div className="p-4 border-gray-100">
             <div className="flex items-start justify-between gap-4">
@@ -374,7 +374,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
       <div className="flex-1 h-full min-h-0">
         <div
           onClick={() => handleNotifyOrganization(label, docKey)}
-          className="bg-white border-2 border-dashed border-gray-300 rounded-xl h-full flex flex-col justify-center items-center p-8 cursor-pointer hover:border-amber-400 hover:bg-amber-100 transition-all duration-500 group"
+          className="bg-white border-2 border-dashed border-gray-300 rounded-2xl h-full flex flex-col justify-center items-center p-8 cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all duration-300 group"
         >
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-300 transition-colors">
             <TriangleAlert className="w-8 h-8 text-gray-400 group-hover:text-amber-700 transition-colors" />
@@ -393,7 +393,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
 
   return (
     <>
-      <div className="grid h-full gap-4 p-4 lg:grid-cols-3">
+      <div className="grid h-full gap-6 p-6 lg:grid-cols-3" style={{ backgroundColor: '#F5F5F9' }}>
         <DocumentCard
           label="Joint Statement"
           doc={JointStatement}

@@ -210,8 +210,8 @@ export default function SduAccreditationRequirementsManager() {
   }
 
   return (
-    <div className="p-4">
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-4 sm:px-6 sm:py-5 bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -268,7 +268,7 @@ export default function SduAccreditationRequirementsManager() {
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Core Templates
             </h3>
-            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <div className="overflow-x-auto border border-gray-200 rounded-2xl">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-100 text-gray-700">
                   <tr>
@@ -324,7 +324,7 @@ export default function SduAccreditationRequirementsManager() {
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Custom Requirements
             </h3>
-            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <div className="overflow-x-auto border border-gray-200 rounded-2xl">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-100 text-gray-700">
                   <tr>

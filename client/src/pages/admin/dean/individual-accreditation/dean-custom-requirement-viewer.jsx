@@ -76,7 +76,7 @@ export default function DeanCustomRequirementViewer({ requirementKey, title, sel
   };
 
   return (
-    <div className="h-full overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="h-full overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">

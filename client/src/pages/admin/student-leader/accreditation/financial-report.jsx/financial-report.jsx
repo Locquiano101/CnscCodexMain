@@ -77,29 +77,28 @@ export default function FinancialReport({ orgData }) {
     months.forEach((m) => {
       monthlyStats[m] = {
         month: m,
-        collections: 0,
-        reimbursements: 0,
-        disbursements: 0,
+        cashInflow: 0,
+        cashOutflow: 0,
         balance: 0,
       };
     });
 
-    // 🟩 Add Collections
+    // 🟩 Add Collections to Cash Inflow
     financialReport.collections?.forEach((item) => {
       const month = months[new Date(item.date).getMonth()];
-      monthlyStats[month].collections += Number(item.amount) || 0;
+      monthlyStats[month].cashInflow += Number(item.amount) || 0;
     });
 
-    // 🟢 Add Reimbursements
+    // 🟢 Add Reimbursements to Cash Inflow
     financialReport.reimbursements?.forEach((item) => {
       const month = months[new Date(item.date).getMonth()];
-      monthlyStats[month].reimbursements += Number(item.amount) || 0;
+      monthlyStats[month].cashInflow += Number(item.amount) || 0;
     });
 
-    // 🔴 Add Disbursements
+    // 🔴 Add Disbursements to Cash Outflow
     financialReport.disbursements?.forEach((item) => {
       const month = months[new Date(item.date).getMonth()];
-      monthlyStats[month].disbursements += Number(item.amount) || 0;
+      monthlyStats[month].cashOutflow += Number(item.amount) || 0;
     });
 
     // 💰 Compute running balance per month
@@ -108,9 +107,8 @@ export default function FinancialReport({ orgData }) {
       const data = monthlyStats[month];
       runningBalance =
         runningBalance +
-        data.collections -
-        data.reimbursements -
-        data.disbursements;
+        data.cashInflow -
+        data.cashOutflow;
       return { ...data, balance: runningBalance };
     });
   };
@@ -180,10 +178,17 @@ export default function FinancialReport({ orgData }) {
     );
   }
 
+  const totalCollections = financialReport.collections.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
+
   const totalReimbursements = financialReport.reimbursements.reduce(
     (sum, item) => sum + item.amount,
     0
   );
+
+  const totalCashInflow = totalCollections + totalReimbursements;
 
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,
@@ -241,8 +246,8 @@ export default function FinancialReport({ orgData }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full overflow-auto w-full p-6 flex gap-6" style={{ backgroundColor: '#F5F5F9' }}>
-      <Card className="bg-white flex flex-col flex-1 gap-6 overflow-hidden">
+    <div className="w-full p-6 flex gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <Card className="bg-white flex flex-col flex-1 gap-6">
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="p-2 bg-amber-100 rounded w-10">
@@ -256,6 +261,38 @@ export default function FinancialReport({ orgData }) {
         <CardContent className="space-y-6">
           {/* Summary Cards */}
           <div className="flex flex-wrap gap-6">
+            <Card className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-green-600 font-medium">
+                      Cash Inflow
+                    </p>
+                    <p className="text-2xl font-bold text-green-800">
+                      {formatCurrency(totalCashInflow)}
+                    </p>
+                  </div>
+                  <TrendingUp className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] border-red-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-red-600 font-medium">
+                      Cash Outflow
+                    </p>
+                    <p className="text-2xl font-bold text-red-800">
+                      {formatCurrency(totalDisbursements)}
+                    </p>
+                  </div>
+                  <TrendingDown className="w-8 h-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="bg-amber-100 flex-1 min-w-[200px] border-amber-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -274,42 +311,10 @@ export default function FinancialReport({ orgData }) {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-600 font-medium">
-                      Total Reimbursements
-                    </p>
-                    <p className="text-2xl font-bold text-green-800">
-                      {formatCurrency(totalReimbursements)}
-                    </p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] border-red-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-red-600 font-medium">
-                      Total Disbursements
-                    </p>
-                    <p className="text-2xl font-bold text-red-800">
-                      {formatCurrency(totalDisbursements)}
-                    </p>
-                  </div>
-                  <TrendingDown className="w-8 h-8 text-red-600" />
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Charts */}
-          <div className="flex mt-4 flex-col gap-6 overflow-auto max-h-[600px]">
+          <div className="flex mt-4 flex-col gap-6">
             <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="text-lg">Monthly Comparison</CardTitle>
@@ -324,19 +329,14 @@ export default function FinancialReport({ orgData }) {
                       <Tooltip formatter={(value) => formatCurrency(value)} />
                       <Legend />
                       <Bar
-                        dataKey="collections"
-                        fill="#F59E0B"
-                        name="Collections"
-                      />
-                      <Bar
-                        dataKey="reimbursements"
+                        dataKey="cashInflow"
                         fill="#22c55e"
-                        name="Reimbursements"
+                        name="Cash Inflow"
                       />
                       <Bar
-                        dataKey="disbursements"
+                        dataKey="cashOutflow"
                         fill="#ef4444"
-                        name="Disbursements"
+                        name="Cash Outflow"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -385,7 +385,7 @@ export default function FinancialReport({ orgData }) {
       </Card>
 
       {/* Reimbursements and Disbursements */}
-      <div className="flex flex-col flex-1 gap-6 h-full overflow-hidden">
+      <div className="flex flex-col flex-1 gap-6">
         <AddCollectionFees
           financialReport={financialReport}
           handleAddClick={handleAddClick}

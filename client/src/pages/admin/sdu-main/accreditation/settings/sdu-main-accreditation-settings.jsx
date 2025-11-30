@@ -27,8 +27,8 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
     useState(false);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4">
-      <div className="h-full w-full bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center p-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="h-full w-full bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 text-white">
           <div className="flex items-center gap-3">
@@ -43,9 +43,9 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
         </div>
 
         {/* Actions */}
-        <div className="p-6 space-y-6 ">
+        <div className="p-6 space-y-6">
           {/* Reset Accreditation */}
-          <div className="flex items-center justify-between p-4 border border-blue-200 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-blue-200 bg-blue-50 rounded-2xl">
             <div>
               <h3 className="font-semibold text-gray-900">
                 Reset Accreditation Settings
@@ -64,14 +64,14 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
             </button>
           </div>
 
-          {/* Accreditation Warning */}
-          <div className="flex items-center justify-between p-4 border border-yellow-200 rounded-lg bg-yellow-50">
+          {/* Accreditation Reminder */}
+          <div className="flex items-center justify-between p-4 border border-yellow-200 rounded-2xl bg-yellow-50">
             <div>
               <h3 className="font-semibold text-gray-900">
-                Accreditation Compliance Warning
+                Accreditation Compliance Reminder
               </h3>
               <p className="text-sm text-gray-600">
-                Issue a formal warning regarding the organization’s
+                Issue a formal reminder regarding the organization's
                 accreditation status.
               </p>
             </div>
@@ -85,7 +85,7 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
           </div>
 
           {/* Accreditation Suspension */}
-          <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
+          <div className="flex items-center justify-between p-4 border border-red-200 rounded-2xl bg-red-50">
             <div>
               <h3 className="font-semibold text-gray-900">
                 Accreditation Suspension
@@ -105,7 +105,7 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
           </div>
 
           {/* Set Deadline */}
-          <div className="p-4 border border-gray-200 rounded-lg">
+          <div className="p-4 border border-gray-200 rounded-2xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1 mr-4">
                 <h3 className="font-semibold text-gray-900">
@@ -139,7 +139,7 @@ export function SduMainAccreditationSettings({ selectedOrg }) {
           </div>
 
           {/* Additional Actions */}
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
             <div>
               <h3 className="font-semibold text-gray-900">Generate Report</h3>
               <p className="text-sm text-gray-600">

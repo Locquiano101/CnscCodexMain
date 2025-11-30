@@ -61,7 +61,7 @@ export default function DocumentUploader({
 
             <Button
               onClick={() => fileInputRef.current?.click()}
-              className="mt-4"
+              className="mt-4 !text-white"
             >
               Choose PDF File
             </Button>

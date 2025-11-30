@@ -8,10 +8,12 @@ import { DeanRosterData } from "./individual-accreditation/dean-accreditation-ro
 import { DeanFinancialReport } from "./individual-accreditation/dean-accreditation-financial-report";
 import { DeanProposedPlan } from "./individual-accreditation/dean-accreditation-proposed-plan";
 import { DeanAccreditationDocument } from "./individual-accreditation/dean-accreditation-documents";
-import { X, School2 } from "lucide-react";
+import { X, School2, LogOut } from "lucide-react";
 import { DeanProposalConduct } from "./proposals/dean-proposal";
 import { DeanAccomplishmentReport } from "./accomplishment/dean-accomplishment";
 import { useState, useMemo } from "react";
+import axios from "axios";
+import { API_ROUTER } from "../../../App";
 
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -556,9 +558,12 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading 
   return (
     <div className="w-full h-full flex flex-col" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <h1 className="text-2xl font-semibold text-gray-900">Dean Dashboard</h1>
-        <p className="text-sm text-gray-600">Overview of organizations and activities</p>
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Dean Dashboard</h1>
+          <p className="text-sm text-gray-600">Overview of organizations and activities</p>
+        </div>
+        <LogoutButton />
       </div>
 
       {/* Dashboard Content */}
@@ -764,5 +769,90 @@ export function DeanDashboard({ organizationSummary, orgs, onSelectOrg, loading 
         </div>
       </div>
     </div>
+  );
+}
+
+function LogoutButton() {
+  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowModal(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setIsLoading(true);
+    try {
+      await axios.post(`${API_ROUTER}/logout`, {}, { withCredentials: true });
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelLogout = () => {
+    setShowModal(false);
+  };
+
+  return (
+    <>
+      {/* Logout Button */}
+      <button
+        onClick={handleLogoutClick}
+        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+      >
+        <LogOut size={16} />
+        Logout
+      </button>
+
+      {/* Modal Overlay */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          {/* Modal Content */}
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirm Logout
+              </h3>
+              <button
+                onClick={handleCancelLogout}
+                disabled={isLoading}
+                className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-600">
+                Are you sure you want to logout? You will need to sign in again
+                to access your account.
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={handleCancelLogout}
+                disabled={isLoading}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                disabled={isLoading}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoading ? "Logging out..." : "Logout"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

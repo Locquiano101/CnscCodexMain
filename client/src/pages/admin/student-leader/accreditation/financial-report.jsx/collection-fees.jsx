@@ -24,7 +24,7 @@ export function AddCollectionFees({
           </div>
           <Button
             onClick={() => handleAddClick("collection")}
-            className="bg-amber-700 hover:bg-amber-800 text-white"
+            className="bg-amber-700 hover:bg-amber-800 !text-white"
           >
             Add Collection Fees
           </Button>

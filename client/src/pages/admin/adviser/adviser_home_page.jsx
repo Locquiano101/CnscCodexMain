@@ -451,16 +451,22 @@ function ProposalsComponent({ orgData }) {
                   Activity
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <Calendar className="w-4 h-4 inline mr-2" />
-                  Date
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Date
+                  </div>
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <DollarSign className="w-4 h-4 inline mr-2" />
-                  Budget
+                  <div className="flex items-center">
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Budget
+                  </div>
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  <MapPin className="w-4 h-4 inline mr-2" />
-                  Venue
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Venue
+                  </div>
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Status

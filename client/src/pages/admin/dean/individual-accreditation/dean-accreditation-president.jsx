@@ -108,7 +108,7 @@ export function DeanPresident({ selectedOrg }) {
 
   // --- Main Render ---
   return (
-    <div className="h-full overflow-auto p-6 flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="h-full overflow-auto flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
       <div className="grid grid-cols-4 gap-6">
         {/* Current President */}
         <div className="col-span-4">

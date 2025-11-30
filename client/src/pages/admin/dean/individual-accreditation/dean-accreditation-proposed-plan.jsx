@@ -267,7 +267,7 @@ export function DeanProposedPlan({ selectedOrg }) {
   };
 
   return (
-    <div className="h-full overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="h-full overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Loading State */}
       {loading && (
         <div className="bg-white rounded-lg shadow-sm p-12">

@@ -133,9 +133,9 @@ export function AdviserRosterData({ orgData, user }) {
   ];
 
   return (
-    <div className="flex flex-col p-6 min-h-screen" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="flex flex-col h-full">
       {/* ---------------- Header ---------------- */}
-      <div className="bg-white shadow-md border border-gray-200 rounded-xl p-5 mb-4">
+      <div className="bg-white shadow-md border border-gray-200 rounded-xl p-5 m-6 mb-4 flex-shrink-0">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <h1 className="text-2xl font-bold text-gray-900">
             Roster Management
@@ -183,7 +183,7 @@ export function AdviserRosterData({ orgData, user }) {
       </div>
 
       {/* ---------------- Search Section ---------------- */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-md p-5  w-full max-w-lg">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-md p-5 w-full max-w-lg mb-4 mx-6 flex-shrink-0">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           Search Roster Member
         </label>
@@ -200,7 +200,7 @@ export function AdviserRosterData({ orgData, user }) {
       </div>
 
       {/* ---------------- Content ---------------- */}
-      <div className="flex-1 overflow-auto" style="background-color: rgb(245, 245, 249);">
+      <div className="flex-1 overflow-y-auto mx-6 mb-6">
         {!rosterData || filteredRoster.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-300 rounded-xl bg-white p-8">
             <p className="text-gray-500 mb-2">

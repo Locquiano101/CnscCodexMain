@@ -18,20 +18,20 @@ export function StudentDisbursement({
             <div className="p-2.5 bg-red-100 rounded-lg">
               <TrendingDown className="w-5 h-5 text-red-600" />
             </div>
-            <CardTitle className="text-xl">Disbursements</CardTitle>
+            <CardTitle className="text-xl">Cash Outflow</CardTitle>
           </div>
           <Button
             onClick={() => handleAddClick("disbursement")}
-            className="bg-red-700 hover:bg-red-800 text-white"
+            className="bg-red-700 hover:bg-red-800 !text-white"
           >
-            Add Disbursement
+            Add Cash Outflow
           </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-4 overflow-auto flex flex-col gap-3">
         {financialReport.disbursements.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
-            No disbursements found
+            No cash outflow found
           </div>
         ) : (
           financialReport.disbursements.map((item, index) => (

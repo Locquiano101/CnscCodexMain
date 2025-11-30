@@ -80,13 +80,13 @@ export function AdviserPage() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
       {/* Main content area */}
-      <div className="flex h-full overflow-auto">
+      <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-64 flex-shrink-0">
           <AdviserNavigation user={user} orgData={orgData} />
         </div>
         {/* Main content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col">
           {/* Topbar */}
           <AdviserTopbar orgData={orgData} />
           {/* Page Content */}

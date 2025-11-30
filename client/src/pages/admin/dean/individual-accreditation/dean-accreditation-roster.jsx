@@ -254,7 +254,7 @@ export function DeanRosterData({ selectedOrg }) {
   }
 
   return (
-    <div className="h-full overflow-auto p-6 flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="h-full overflow-auto flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
