@@ -125,7 +125,6 @@ export function SduMainComponents({ user }) {
                 />
               )}
             />
-            <Route path="system-wide" element={<UnderDevelopment />} />
           </Route>
 
           {/* Accreditation */}
