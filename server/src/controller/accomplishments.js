@@ -8,8 +8,14 @@ import { logAction } from "../middleware/audit.js";
 
 export const getAccomplishmentReportAll = async (req, res) => {
   try {
-    const report = await Accomplishment.find()
-      .populate("organizationProfile")
+  const report = await Accomplishment.find()
+      .populate({
+        path: "organizationProfile",
+        populate: [
+          { path: "adviser", select: "name email" },
+          { path: "orgPresident", select: "name email" },
+        ],
+      })
       .populate({
         path: "accomplishments",
         select:
@@ -19,7 +25,60 @@ export const getAccomplishmentReportAll = async (req, res) => {
           select: "label fileName status",
         },
       })
-      .select("accomplishments grandTotal organizationProfile");
+  .select("accomplishments grandTotal organizationProfile createdAt updatedAt");
+
+    // Collect all organizationProfile IDs for roster/member counts
+    const orgProfileIds = report
+      .map((r) => r.organizationProfile?._id)
+      .filter(Boolean);
+
+    let rosterByOrg = {};
+    let membersByRoster = {};
+    let memberCountsByOrg = {};
+    let officerCountsByOrg = {};
+
+    try {
+      // Lazy import models to avoid circular deps (already imported at top but ensuring clarity)
+      const { Roster, RosterMember } = await import("../models/index.js");
+
+      // Fetch rosters for these organization profiles
+      const rosters = await Roster.find({ organizationProfile: { $in: orgProfileIds } })
+        .select("_id organizationProfile")
+        .lean();
+      rosters.forEach((r) => {
+        rosterByOrg[r.organizationProfile.toString()] = r._id.toString();
+      });
+
+      const rosterIds = rosters.map((r) => r._id);
+      if (rosterIds.length) {
+        const rosterMembers = await RosterMember.find({ roster: { $in: rosterIds } })
+          .select("roster position")
+          .lean();
+
+        rosterMembers.forEach((m) => {
+          const rosterId = m.roster?.toString();
+          if (!membersByRoster[rosterId]) membersByRoster[rosterId] = [];
+          membersByRoster[rosterId].push(m);
+        });
+
+        // Derive counts per organization
+        Object.entries(rosterByOrg).forEach(([orgId, rosterId]) => {
+          const membersArr = membersByRoster[rosterId] || [];
+          const totalMembers = membersArr.length;
+          // Define officers: any position that is not a plain 'Member'
+          const totalOfficers = membersArr.filter((m) => {
+            if (!m.position) return false;
+            const p = m.position.toLowerCase();
+            // treat member if exactly 'member'
+            return p !== "member"; // everything else considered officer/leadership
+          }).length;
+          memberCountsByOrg[orgId] = totalMembers;
+            officerCountsByOrg[orgId] = totalOfficers;
+        });
+      }
+    } catch (e) {
+      console.warn("⚠️ Roster/member counts unavailable:", e.message);
+    }
 
     // Map to clean the response: we remove organizationProfile from sub-accomplishments
     const cleanedReport = report.map((item) => {
@@ -48,6 +107,12 @@ export const getAccomplishmentReportAll = async (req, res) => {
         accomplishments,
         organizationProfile: item.organizationProfile, // only once here
         grandTotal: item.grandTotal,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        totalMembers: memberCountsByOrg[item.organizationProfile?._id?.toString()] ?? null,
+        totalOfficers: officerCountsByOrg[item.organizationProfile?._id?.toString()] ?? null,
+        adviserName: item.organizationProfile?.adviser?.name || null,
+        presidentName: item.organizationProfile?.orgPresident?.name || null,
       };
     });
 

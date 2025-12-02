@@ -288,10 +288,11 @@ export const Login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find the user by email
-    const user = await User.findOne({ email });
+    // Find the user by email (trim to handle whitespace)
+    const user = await User.findOne({ email: email?.trim() });
 
-    if (!user || user.password !== password) {
+    // Trim password for comparison to handle trailing spaces/commas
+    if (!user || user.password?.trim() !== password?.trim()) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
@@ -299,8 +300,8 @@ export const Login = async (req, res) => {
     req.session.user = {
       userId: user._id,
       name: user.name || null, // fallback if name is missing
-      position: user.position,
-      email: user.email,
+      position: user.position?.trim(), // trim to handle trailing commas/spaces
+      email: user.email?.trim(),
       deliveryUnit: user.deliveryUnit,
       organizationProfile: user.organizationProfile,
     };

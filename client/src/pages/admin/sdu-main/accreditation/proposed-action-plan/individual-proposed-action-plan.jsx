@@ -240,7 +240,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
   };
 
   return (
-    <div className=" flex flex-col p-4 h-full w-full">
+    <div className="flex flex-col p-6 h-full w-full" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Loading State */}
       {loading && (
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12">
@@ -398,7 +398,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
             </div>
 
             {/* SDG Frequency */}
-            <div className="flex-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex-1 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
               <h3 className="text-xl font-bold text-slate-800 mb-4">
                 Proposals SDG Analysis
               </h3>
@@ -445,7 +445,7 @@ export function SduMainProposedActionPlanOrganization({ selectedOrg }) {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-cnsc-primary-color/5 border-b border-cnsc-primary-color/20">

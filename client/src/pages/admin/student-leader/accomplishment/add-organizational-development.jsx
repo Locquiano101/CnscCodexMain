@@ -2,12 +2,32 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { API_ROUTER } from "../../../../App";
 import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function OrganizationalDevelopmentModal({
   proposals,
   accomplishmentId,
   orgData,
   onClose,
+  open = true,
 }) {
   const [formData, setFormData] = useState({
     category: "",
@@ -62,6 +82,29 @@ export function OrganizationalDevelopmentModal({
     }
   };
 
+  // Handle category change from Select component
+  const handleCategoryChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      category: value,
+      proposal: "",
+      title: "",
+      description: "",
+    }));
+  };
+
+  // Handle proposal change from Select component
+  const handleProposalChange = (value) => {
+    const selected = proposals.find((p) => p._id === value);
+    console.log(selected);
+    setFormData((prev) => ({
+      ...prev,
+      proposal: value,
+      title: selected?.ProposedIndividualActionPlan?.activityTitle || "",
+      description: selected?.ProposedIndividualActionPlan?.briefDetails || "",
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -79,71 +122,71 @@ export function OrganizationalDevelopmentModal({
     formData.category === "Programs, Projects, and Activities (PPAs)";
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white relative rounded-2xl shadow-lg p-6 w-[32rem] max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex flex-col just-start mb-4">
-          <h2 className="text-xl mb-2 font-bold">Add Accomplishment</h2>
-
-          <button onClick={onClose} className="absolute top-4 right-4">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-[32rem] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add Accomplishment</DialogTitle>
+          <DialogDescription>
+            Fill in the details to add a new accomplishment report
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
           {/* Category Dropdown */}
-          <div>
-            <label className="block text-sm font-medium">Category</label>
-            <select
-              name="category"
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select
               value={formData.category}
-              onChange={handleChange}
-              className="w-full border rounded-lg p-2"
+              onValueChange={handleCategoryChange}
               required
             >
-              <option value="">-- Select Category --</option>
-              {categoryOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="-- Select Category --" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Proposal Dropdown - Only show for PPA category */}
           {isPPACategory && (
-            <div>
-              <label className="block text-sm font-medium">
-                Select Proposal
-              </label>
-              <select
-                name="proposal"
+            <div className="space-y-2">
+              <Label htmlFor="proposal">Select Proposal</Label>
+              <Select
                 value={formData.proposal}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
+                onValueChange={handleProposalChange}
                 required={isPPACategory}
               >
-                <option value="">-- Choose a Proposal --</option>
-                {proposals.map((proposal) => (
-                  <option key={proposal._id} value={proposal._id}>
-                    {proposal.ProposedIndividualActionPlan?.activityTitle ||
-                      "Untitled Proposal"}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="proposal">
+                  <SelectValue placeholder="-- Choose a Proposal --" />
+                </SelectTrigger>
+                <SelectContent>
+                  {proposals.map((proposal) => (
+                    <SelectItem key={proposal._id} value={proposal._id}>
+                      {proposal.ProposedIndividualActionPlan?.activityTitle ||
+                        "Untitled Proposal"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
           {/* Title */}
-          <div>
-            <label className="block text-sm font-medium">Title</label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full border rounded-lg p-2"
               required
               placeholder={
                 isPPACategory
@@ -154,14 +197,14 @@ export function OrganizationalDevelopmentModal({
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium">Description</label>
-            <textarea
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full border rounded-lg p-2"
-              rows="3"
+              rows={3}
               placeholder={
                 isPPACategory
                   ? "Description will auto-populate when you select a proposal"
@@ -170,28 +213,20 @@ export function OrganizationalDevelopmentModal({
               }
             />
           </div>
+          
           <p className="text-sm italic text-gray-500">
             Note: This entry serves as an initial submission intent of an
             accomplishment. Additional details will be provided as required.
           </p>
-          {/* Buttons */}
-          <div className="flex justify-end gap-3 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg border"
-            >
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-amber-600 text-white"
-            >
-              Save
-            </button>
-          </div>
+            </Button>
+            <Button type="submit">Save</Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

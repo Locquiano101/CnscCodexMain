@@ -7,13 +7,15 @@ import {
   Calendar,
   MessageCircle,
   Clock,
-  Badge,
-  Pencil, // 🔹 for Edit
+  Badge as BadgeIcon,
+  Pencil,
 } from "lucide-react";
 
 import { StudentLeaderAddPost } from "./add-post";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import axios from "axios";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function StudentPost({ orgData }) {
   const [posts, setPosts] = useState([]);
@@ -98,13 +100,14 @@ export function StudentPost({ orgData }) {
         <div className="flex gap-4">
           {/* Left Column */}
           <div className="flex flex-col gap-4 w-100">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Badge className="w-5 h-5 text-blue-600" />
-                About Organization
-              </h3>
-              <div className="space-y-4 text-sm">
-                {orgData?.orgCourse && (
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <BadgeIcon className="w-5 h-5 text-blue-600" />
+                  About Organization
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">{orgData?.orgCourse && (
                   <div className="flex items-start space-x-3">
                     <GraduationCap className="w-4 h-4 text-gray-500 mt-0.5" />
                     <div>
@@ -163,53 +166,59 @@ export function StudentPost({ orgData }) {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column */}
           <div className="flex flex-col gap-4 w-full ">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div
-                onClick={() => setAddNewPost(true)}
-                className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                    {orgData?.orgAcronym?.[0] || "O"}
-                  </div>
-                  <div className="flex-1">
-                    <div className="bg-gray-100 rounded-full px-4 py-3 text-gray-500 hover:bg-gray-200 transition-colors">
-                      What would you like to share with the community?
+            <Card className="bg-white">
+              <CardContent className="p-6">
+                <div
+                  onClick={() => setAddNewPost(true)}
+                  className="cursor-pointer hover:bg-gray-50 transition-colors -m-6 p-6"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                      {orgData?.orgAcronym?.[0] || "O"}
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-gray-100 rounded-full px-4 py-3 text-gray-500 hover:bg-gray-200 transition-colors">
+                        What would you like to share with the community?
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {posts.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No posts yet
-                </h3>
-              </div>
+              <Card className="bg-white">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No posts yet
+                  </h3>
+                </CardContent>
+              </Card>
             ) : (
               posts.map((post) => (
-                <div
+                <Card
                   key={post._id}
-                  className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                  className="bg-white hover:shadow-lg transition-shadow"
                 >
-                  <PostCard
-                    post={post}
-                    DOCU_API_ROUTER={DOCU_API_ROUTER}
-                    orgData={orgData}
-                    formatTimeAgo={formatTimeAgo}
-                    onEdit={() => setEditPost(post)} // 🔹 pass edit handler
-                  />
-                </div>
+                  <CardContent className="p-4">
+                    <PostCard
+                      post={post}
+                      DOCU_API_ROUTER={DOCU_API_ROUTER}
+                      orgData={orgData}
+                      formatTimeAgo={formatTimeAgo}
+                      onEdit={() => setEditPost(post)}
+                    />
+                  </CardContent>
+                </Card>
               ))
             )}
           </div>

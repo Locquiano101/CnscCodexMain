@@ -254,24 +254,22 @@ export function DeanRosterData({ selectedOrg }) {
   }
 
   return (
-    <div className="flex p-4 flex-col bg-gray-50 h-full">
+    <div className="h-full overflow-auto flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header */}
-      <div className="flex w-full justify-between items-center mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Roster Management
-          </h1>
-          <h1 className="text-sm font-bold text-gray-900">
-            Roster List Status:{" "}
-            {rosterData.roster.isComplete ? "Complete" : "Not Complete"}
-          </h1>
-          <h1 className="text-sm font-bold text-gray-900">
-            Roster List Approval Status: {rosterData.roster.overAllStatus}
-          </h1>
-        </div>
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Roster Management
+        </h1>
+        <p className="text-sm text-gray-600">
+          Roster List Status:{" "}
+          <span className="font-semibold">{rosterData.roster.isComplete ? "Complete" : "Not Complete"}</span>
+        </p>
+        <p className="text-sm text-gray-600">
+          Roster List Approval Status: <span className="font-semibold">{rosterData.roster.overAllStatus}</span>
+        </p>
 
         {/* Action Buttons (Replaces three-dots menu) */}
-        <div className="flex gap-2 items-center justify-end">
+        <div className="flex gap-2 items-center justify-end mt-4">
           {actions.map((a) => (
             <button
               key={a.id}
@@ -291,9 +289,9 @@ export function DeanRosterData({ selectedOrg }) {
       </div>
 
       {/* Content */}
-      <div className="h-full">
+      <div className="flex-1">
         {!rosterData || !rosterMembers.length ? (
-          <div className="flex flex-col items-center justify-center text-center border border-dashed border-gray-300 rounded-lg bg-white">
+          <div className="flex flex-col items-center justify-center text-center border border-dashed border-gray-300 rounded-lg bg-white p-12">
             <p className="text-gray-500 mb-2">
               No roster has been started yet.
             </p>

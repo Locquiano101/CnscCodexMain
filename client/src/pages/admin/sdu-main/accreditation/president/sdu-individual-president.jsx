@@ -66,8 +66,8 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
   if (noPresidentFound) {
     return (
       <>
-        <div className="bg-white p-4 h-full rounded-xl shadow-xl">
-          <div className="border-4 flex flex-col items-center justify-center text-center h-full rounded-2xl border-dashed border-yellow-500 hover:bg-amber-500/50 transition-all duration-300">
+        <div className="p-6 h-full rounded-2xl shadow-xl m-6" style={{ backgroundColor: '#F5F5F9' }}>
+          <div className="border-4 flex flex-col items-center justify-center text-center h-full rounded-2xl border-dashed border-yellow-500 hover:bg-amber-50 transition-all duration-300 bg-white">
             <div className="rounded-full p-6 h-fit w-fit bg-yellow-200 mx-auto mb-6 flex items-center justify-center">
               <AlertTriangle size={48} className="text-yellow-600" />
             </div>
@@ -138,7 +138,8 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
   } = presidentData;
 
   return (
-    <div className="p-6 bg-white m-4 mt-0 rounded-xl shadow-xl">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="p-6 bg-white rounded-2xl shadow-xl">
       <div className="border-b pb-4 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">
           Organization President
@@ -297,12 +298,12 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
           <h4 className="text-lg text-cnsc-primary-color font-bold mb-2">
             Class Schedule
           </h4>
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto border border-gray-300 text-sm">
+          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+            <table className="w-full table-auto text-sm">
               <thead>
                 <tr className="bg-gray-100 text-left">
                   <th className="px-4 py-2 border">Subject</th>
-                  <th className="px-4 py-2 border">Place</th>
+                  <th className="px-4 py-2 border">Place/Room</th>
                   <th className="px-4 py-2 border">Time Start</th>
                   <th className="px-4 py-2 border">Time End</th>
                   <th className="px-4 py-2 border">Day</th>
@@ -365,6 +366,7 @@ export function SduMainIndividualOrganizationPresident({ selectedOrg }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

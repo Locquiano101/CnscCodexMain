@@ -98,8 +98,8 @@ export function SduMainIndividualRosterView({ selectedOrg }) {
   }, [selectedOrg]);
 
   return (
-    <div className="p-4 pt-0">
-      <div className="p-6 bg-white shadow-xl rounded-xl">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="p-6 bg-white shadow-xl rounded-2xl">
         <div className="flex  justify-between mb-4 items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -164,7 +164,7 @@ export function SduMainIndividualRosterView({ selectedOrg }) {
               </p>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               {/* Table */}
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

@@ -84,8 +84,8 @@ export function SduMainAccreditationWarning({ onCancel }) {
       onCancel();
       handleClose();
     } catch (err) {
-      console.error("Error issuing warning:", err);
-      setError("Failed to issue warning. Please try again.");
+      console.error("Error issuing reminder:", err);
+      setError("Failed to issue reminder. Please try again.");
     } finally {
       setIsSubmitting(false); // ⬅️ re-enable button after request finishes
     }
@@ -99,10 +99,10 @@ export function SduMainAccreditationWarning({ onCancel }) {
           <div className="absolute inset-0 bg w-full backdrop-blur-sm flex items-center justify-center">
             <div className="bg-white flex flex-col gap-4 rounded-lg p-6 w-full">
               <h2 className="text-lg font-semibold text-gray-800">
-                Accreditation Warning
+                Accreditation Reminder
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Choose an Organization and issue a warning
+                Choose an Organization and issue a reminder
               </p>
               <button
                 onClick={() => setIsOpen(true)}
@@ -115,7 +115,7 @@ export function SduMainAccreditationWarning({ onCancel }) {
                     Loading...
                   </span>
                 ) : (
-                  "Issue Warning"
+                  "Issue Reminder"
                 )}
               </button>
               <button
@@ -242,7 +242,7 @@ export function SduMainAccreditationWarning({ onCancel }) {
                 <AlertTriangle className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-white">
-                Confirm Warning Action
+                Confirm Reminder Action
               </h2>
             </div>
 
@@ -268,7 +268,7 @@ export function SduMainAccreditationWarning({ onCancel }) {
               </div>
 
               <p className="text-center text-slate-600 mb-8 text-lg">
-                Are you sure you want to proceed with issuing a warning to this
+                Are you sure you want to proceed with issuing a reminder to this
                 organization?
               </p>
 
@@ -321,9 +321,9 @@ export function SduMainAccreditationWarning({ onCancel }) {
               <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-6">
                 <p className="text-sm text-red-800 leading-relaxed">
                   <span className="font-bold text-base block mb-2">
-                    ⚠️ Warning:
+                    ⚠️ Reminder:
                   </span>
-                  This action will issue an official warning to{" "}
+                  This action will issue an official reminder to{" "}
                   <span className="font-bold">
                     {selectedOrg?.orgName} ({selectedOrg?.orgAcronym})
                   </span>
@@ -333,12 +333,12 @@ export function SduMainAccreditationWarning({ onCancel }) {
 
               <div className="mb-6">
                 <label className="block text-sm font-bold mb-3 text-slate-700">
-                  Warning Note <span className="text-red-500">*</span>
+                  Reminder Note <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={warningNote}
                   onChange={(e) => setWarningNote(e.target.value)}
-                  placeholder="Provide detailed reasons for this warning..."
+                  placeholder="Provide detailed reasons for this reminder..."
                   className="w-full border-2 border-slate-300 rounded-xl p-4 min-h-[140px] focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all resize-none text-slate-700 placeholder:text-slate-400"
                   disabled={isSubmitting}
                   maxLength={1000}
@@ -381,7 +381,7 @@ export function SduMainAccreditationWarning({ onCancel }) {
                       Submitting...
                     </span>
                   ) : (
-                    "Confirm Warning"
+                    "Confirm Reminder"
                   )}
                 </button>
               </div>

@@ -108,8 +108,8 @@ export function DeanPresident({ selectedOrg }) {
 
   // --- Main Render ---
   return (
-    <div className="flex flex-col mt-4 h-full w-full gap-4 overflow-auto">
-      <div className="grid grid-cols-4 gap-4">
+    <div className="h-full overflow-auto flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="grid grid-cols-4 gap-6">
         {/* Current President */}
         <div className="col-span-4">
           <h1 className="text-center font-bold text-xl mb-2">
@@ -386,7 +386,7 @@ const InfoSection = ({
             <thead className="bg-gray-200 text-gray-700">
               <tr>
                 <th className="p-2 border text-left">Subject</th>
-                <th className="p-2 border text-left">Place</th>
+                <th className="p-2 border text-left">Place/Room</th>
                 <th className="p-2 border text-left">Day</th>
                 <th className="p-2 border text-left">Start</th>
                 <th className="p-2 border text-left">End</th>

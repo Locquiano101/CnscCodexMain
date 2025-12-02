@@ -1,11 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
-import { Upload, Banknote } from "lucide-react";
+import { Upload, Banknote, X } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 import CurrencyInput from "../../../../components/currency-input";
 import { API_ROUTER } from "../../../../App";
 import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export function AddNewProposal({ onClose, orgData }) {
+export function AddNewProposal({ onClose, orgData, open = true }) {
   const [formData, setFormData] = useState({
     activityTitle: "",
     briefDetails: "",
@@ -202,161 +223,148 @@ export function AddNewProposal({ onClose, orgData }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3/4 max-h-[95vh] flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800">
-            Create New Proposal
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-bold w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
+          <DialogTitle className="text-2xl">Create New Proposal</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to create a new proposal
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="px-6 py-6 flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side */}
             <div className="space-y-6">
               {/* Activity Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Activity Title *
-                </label>
-                <input
-                  type="text"
+              <div className="space-y-2">
+                <Label htmlFor="activityTitle">
+                  Activity Title <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="activityTitle"
                   name="activityTitle"
                   value={formData.activityTitle}
                   onChange={handleInputChange}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.activityTitle ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={errors.activityTitle ? "border-red-500" : ""}
                   placeholder="Enter activity title"
                 />
                 {errors.activityTitle && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.activityTitle}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.activityTitle}</p>
                 )}
               </div>
 
               {/* Brief Details */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Brief Details *
-                </label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="briefDetails">
+                  Brief Details <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="briefDetails"
                   name="briefDetails"
                   value={formData.briefDetails}
                   onChange={handleInputChange}
                   rows={4}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.briefDetails ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={errors.briefDetails ? "border-red-500" : ""}
                   placeholder="Provide brief details about the activity"
                 />
                 {errors.briefDetails && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.briefDetails}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.briefDetails}</p>
                 )}
               </div>
 
               {/* Aligned Objective */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aligned Objective *
-                </label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="alignedObjective">
+                  Aligned Objective <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="alignedObjective"
                   name="alignedObjective"
                   value={formData.alignedObjective}
                   onChange={handleInputChange}
                   rows={3}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.alignedObjective
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
+                  className={errors.alignedObjective ? "border-red-500" : ""}
                   placeholder="What objectives does this activity align with?"
                 />
                 {errors.alignedObjective && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.alignedObjective}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.alignedObjective}</p>
                 )}
               </div>
 
               {/* Venue and Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Venue Dropdown (from Rooms/Locations) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Venue *
-                  </label>
-                  <select
-                    name="venue"
+                {/* Venue */}
+                <div className="space-y-2">
+                  <Label htmlFor="venue">
+                    Venue <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
                     value={formData.venue}
-                    onChange={handleInputChange}
-                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.venue ? "border-red-500" : "border-gray-300"
-                    }`}
+                    onValueChange={(value) =>
+                      handleInputChange({ target: { name: "venue", value } })
+                    }
                     disabled={roomsLoading}
                   >
-                    <option value="">
-                      {roomsLoading ? "Loading rooms…" : "-- Select Venue --"}
-                    </option>
-                    {roomOptions.map((opt) => (
-                      <option key={opt.id} value={opt.label}>
-                        {opt.label}
-                        {opt.campus ? ` — ${opt.campus}` : ""}
-                      </option>
-                    ))}
-                    <option value="Other">Other</option>
-                  </select>
+                    <SelectTrigger
+                      id="venue"
+                      className={errors.venue ? "border-red-500" : ""}
+                    >
+                      <SelectValue
+                        placeholder={
+                          roomsLoading ? "Loading rooms…" : "-- Select Venue --"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roomOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.label}>
+                          {opt.label}
+                          {opt.campus ? ` — ${opt.campus}` : ""}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   {formData.venue === "Other" && (
-                    <input
-                      type="text"
+                    <Input
                       name="otherVenue"
                       value={formData.otherVenue}
                       onChange={handleInputChange}
                       placeholder="Enter other venue"
-                      className="mt-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                      className="mt-2"
                     />
                   )}
 
                   {roomsError && (
-                    <p className="text-amber-600 text-xs mt-1">
-                      {roomsError} — showing fallback options if any.
-                    </p>
+                    <Alert variant="warning" className="mt-2">
+                      <AlertDescription className="text-xs">
+                        {roomsError} — showing fallback options if any.
+                      </AlertDescription>
+                    </Alert>
                   )}
 
                   {errors.venue && (
-                    <p className="text-red-500 text-sm mt-1">{errors.venue}</p>
+                    <p className="text-red-500 text-sm">{errors.venue}</p>
                   )}
                 </div>
 
                 {/* Date */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date *
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="date">
+                    Date <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="date"
                     type="date"
                     name="date"
                     value={formData.date ? formData.date.split("T")[0] : ""}
                     onChange={handleInputChange}
-                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.date ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={errors.date ? "border-red-500" : ""}
                   />
-
                   {errors.date && (
-                    <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+                    <p className="text-red-500 text-sm">{errors.date}</p>
                   )}
                 </div>
               </div>
@@ -388,13 +396,13 @@ export function AddNewProposal({ onClose, orgData }) {
             {/* Right Side - SDG Selection and File Upload */}
             <div className="space-y-6">
               {/* SDG Section */}
-              <div className="md:col-span-2 text-black">
-                <label className="block text-sm font-semibold text-gray-800 mb-3">
+              <div>
+                <Label className="text-sm font-semibold">
                   Aligned Sustainable Development Goals (SDGs){" "}
                   <span className="text-red-500">*</span>
-                </label>
+                </Label>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border rounded-lg p-4 mt-3">
                   {[
                     { value: "SDG 1", label: "No Poverty" },
                     { value: "SDG 2", label: "Zero Hunger" },
@@ -404,134 +412,111 @@ export function AddNewProposal({ onClose, orgData }) {
                     { value: "SDG 6", label: "Clean Water & Sanitation" },
                     { value: "SDG 7", label: "Affordable & Clean Energy" },
                     { value: "SDG 8", label: "Decent Work & Economic Growth" },
-                    {
-                      value: "SDG 9",
-                      label: "Industry, Innovation & Infrastructure",
-                    },
+                    { value: "SDG 9", label: "Industry, Innovation & Infrastructure" },
                     { value: "SDG 10", label: "Reduced Inequalities" },
-                    {
-                      value: "SDG 11",
-                      label: "Sustainable Cities & Communities",
-                    },
-                    {
-                      value: "SDG 12",
-                      label: "Responsible Consumption & Production",
-                    },
+                    { value: "SDG 11", label: "Sustainable Cities & Communities" },
+                    { value: "SDG 12", label: "Responsible Consumption & Production" },
                     { value: "SDG 13", label: "Climate Action" },
                     { value: "SDG 14", label: "Life Below Water" },
                     { value: "SDG 15", label: "Life on Land" },
-                    {
-                      value: "SDG 16",
-                      label: "Peace, Justice & Strong Institutions",
-                    },
-                    {
-                      value: "SDG 17",
-                      label: "SDG 17: Partnerships for the Goals",
-                    },
+                    { value: "SDG 16", label: "Peace, Justice & Strong Institutions" },
+                    { value: "SDG 17", label: "SDG 17: Partnerships for the Goals" },
                   ].map((sdg) => (
                     <div
                       key={sdg.value}
-                      className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-2 hover:bg-gray-100 cursor-pointer"
+                      className="flex items-center space-x-2 bg-muted/30 rounded-lg p-2 hover:bg-muted/50 cursor-pointer"
+                      onClick={() => handleSDGChange(sdg.value)}
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        id={sdg.value}
                         checked={formData.alignedSDG.includes(sdg.value)}
-                        onChange={() => handleSDGChange(sdg.value)}
-                        className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer mr-2"
+                        onCheckedChange={() => handleSDGChange(sdg.value)}
                       />
-                      <span className="text-sm">{sdg.label}</span>
+                      <label
+                        htmlFor={sdg.value}
+                        className="text-sm cursor-pointer flex-1"
+                      >
+                        {sdg.label}
+                      </label>
                     </div>
                   ))}
                 </div>
 
                 {errors.alignedSDG && (
-                  <p className="text-red-500 text-sm mt-2">
-                    {errors.alignedSDG}
-                  </p>
+                  <p className="text-red-500 text-sm mt-2">{errors.alignedSDG}</p>
                 )}
               </div>
 
               {/* File Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Proposal Document *
-                </label>
+              <div className="space-y-3">
+                <Label>
+                  Proposal Document <span className="text-red-500">*</span>
+                </Label>
 
                 {!uploadedFile ? (
-                  <div className="flex items-center justify-center w-full">
-                    <label
-                      className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer bg-white hover:bg-gray-100 transition-colors ${
-                        errors.file ? "border-red-500" : "border-gray-300"
-                      }`}
-                    >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Upload className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-700">
-                          <span className="font-semibold">Click to upload</span>{" "}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          PDF files only (MAX. 10MB)
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,application/pdf"
-                        onChange={handleFileUpload}
-                      />
-                    </label>
-                  </div>
+                  <Label
+                    htmlFor="file-upload"
+                    className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors ${
+                      errors.file ? "border-red-500" : ""
+                    }`}
+                  >
+                    <Upload className="w-10 h-10 mb-3 text-muted-foreground" />
+                    <p className="mb-2 text-sm">
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      PDF files only (MAX. 10MB)
+                    </p>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,application/pdf"
+                      onChange={handleFileUpload}
+                    />
+                  </Label>
                 ) : (
-                  <div className="bg-white rounded-lg border-2 border-green-200 p-4">
+                  <div className="bg-green-50 rounded-lg border-2 border-green-200 p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="text-2xl">📄</div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-semibold text-gray-800 truncate">
+                          <h4 className="font-semibold text-sm truncate">
                             {uploadedFile.name}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs text-muted-foreground">
                             {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
                       </div>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={handleRemoveFile}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 hover:bg-red-50 rounded transition-colors"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         Remove
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
 
                 {errors.file && (
-                  <p className="text-red-500 text-sm mt-1">{errors.file}</p>
+                  <p className="text-red-500 text-sm">{errors.file}</p>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
-          <div className="flex gap-4 justify-end">
-            <button
-              onClick={onClose}
-              className="px-8 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Submit Proposal
-            </button>
-          </div>
-        </div>
-      </div>
+        <DialogFooter className="px-6 py-4 flex-shrink-0 border-t">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} className="text-white">Submit Proposal</Button>
+        </DialogFooter>
+      </DialogContent>
 
       {showPopup && (
         <DonePopUp
@@ -544,6 +529,6 @@ export function AddNewProposal({ onClose, orgData }) {
           }}
         />
       )}
-    </div>
+    </Dialog>
   );
 }

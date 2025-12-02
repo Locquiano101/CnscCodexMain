@@ -2,6 +2,11 @@ import { Edit, Trash2, X, AlertTriangle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export function AdviserPresident({ user, orgData }) {
   const [currentPresident, setCurrentPresident] = useState(null);
@@ -170,7 +175,7 @@ export function AdviserPresident({ user, orgData }) {
   }
 
   return (
-    <div className="flex flex-col mt-4 h-full w-full gap-4 overflow-auto ">
+    <div className="flex flex-col p-6 h-full w-full gap-4 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
       <div className="grid grid-cols-4 gap-4">
         {/* Current President (2 columns) */}
 
@@ -220,87 +225,80 @@ export function AdviserPresident({ user, orgData }) {
         </div>
       </div>
       {/* Email Modal */}
-      {showEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
-            <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Compose Email – President Notification</DialogTitle>
+            <DialogDescription>
+              Send an email regarding the president profile.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="org-name">Organization name</Label>
+              <Input
+                id="org-name"
+                type="email"
+                placeholder="To"
+                value={emailData.to}
+                onChange={(e) =>
+                  setEmailData({ ...emailData, to: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="subject">Subject</Label>
+              <Input
+                id="subject"
+                type="text"
+                placeholder="Subject"
+                value={emailData.inquirySubject}
+                onChange={(e) =>
+                  setEmailData({
+                    ...emailData,
+                    inquirySubject: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                placeholder="Message"
+                rows={5}
+                value={emailData.inquiryText}
+                onChange={(e) =>
+                  setEmailData({ ...emailData, inquiryText: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          {emailSent && (
+            <p className="text-green-600 text-sm text-right">
+              ✅ Email sent successfully!
+            </p>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
               onClick={() => setShowEmailModal(false)}
             >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-lg font-semibold mb-4">
-              Compose Email – President Notification
-            </h3>
-
-            <div className="flex flex-col gap-4">
-              <label>
-                <p>Organization name:</p>
-                <input
-                  type="email"
-                  placeholder="To"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  value={emailData.to}
-                  onChange={(e) =>
-                    setEmailData({ ...emailData, to: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                <p>Subject:</p>
-                <input
-                  type="text"
-                  placeholder="Subject"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  value={emailData.inquirySubject}
-                  onChange={(e) =>
-                    setEmailData({
-                      ...emailData,
-                      inquirySubject: e.target.value,
-                    })
-                  }
-                />
-              </label>
-              <label>
-                <p>Message:</p>
-                <textarea
-                  placeholder="Message"
-                  rows={5}
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  value={emailData.inquiryText}
-                  onChange={(e) =>
-                    setEmailData({ ...emailData, inquiryText: e.target.value })
-                  }
-                ></textarea>
-              </label>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setShowEmailModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                onClick={handleSendEmail}
-                disabled={emailLoading}
-              >
-                {emailLoading ? "Sending..." : "Send Email"}
-              </button>
-            </div>
-
-            {/* Success message */}
-            {emailSent && (
-              <p className="text-green-600 text-sm mt-2 text-right">
-                ✅ Email sent successfully!
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendEmail}
+              disabled={emailLoading}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {emailLoading ? "Sending..." : "Send Email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -362,34 +360,26 @@ function CurrentPresidentCard({ currentPresident }) {
   return (
     <div className="relative  bg-white shadow-md rounded-lg p-6">
       {/* Popup Overlay */}
-      {showPopup.show && (
-        <div className="fixed top-0 left-0 z-20 w-full h-full flex bg-black/30 items-center justify-center">
-          <div className="relative h-fit w-[400px] px-6 py-4 bg-white rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Manage President Profile
-            </h3>
-            <X
-              size={20}
-              onClick={() =>
-                setShowPopup({ show: false, type: "", member: null })
-              }
-              className="absolute top-3 right-3 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
+      <Dialog open={showPopup.show} onOpenChange={(open) => !open && setShowPopup({ show: false, type: "", member: null })}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage President Profile</DialogTitle>
+          </DialogHeader>
+
+          {showPopup.type === "approve" && (
+            <ApprovePresidentProfile
+              presidentData={currentPresident}
+              setShowPopup={setShowPopup}
             />
-            {showPopup.type === "approve" && (
-              <ApprovePresidentProfile
-                presidentData={currentPresident}
-                setShowPopup={setShowPopup}
-              />
-            )}
-            {showPopup.type === "notes" && (
-              <RevisePresidentProfile
-                presidentData={currentPresident}
-                setShowPopup={setShowPopup}
-              />
-            )}
-          </div>
-        </div>
-      )}
+          )}
+          {showPopup.type === "notes" && (
+            <RevisePresidentProfile
+              presidentData={currentPresident}
+              setShowPopup={setShowPopup}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Manage Dropdown */}
       <div
@@ -548,7 +538,7 @@ const InfoSection = ({
             <thead className="bg-gray-200 text-gray-700">
               <tr>
                 <th className="p-2 border text-left">Subject</th>
-                <th className="p-2 border text-left">Place</th>
+                <th className="p-2 border text-left">Place/Room</th>
                 <th className="p-2 border text-left">Day</th>
                 <th className="p-2 border text-left">Start</th>
                 <th className="p-2 border text-left">End</th>
@@ -752,34 +742,35 @@ export function ApprovePresidentProfile({ presidentData, setShowPopup }) {
 
   return (
     <div className="flex flex-col gap-2 w-full justify-start">
-      <h1 className="text-lg font-semibold text-gray-800">
+      <DialogDescription className="text-lg font-semibold text-gray-800">
         Approve President Profile of {presidentData?.name}?
-      </h1>
+      </DialogDescription>
 
-      <button
-        onClick={HandleSubmitApprovalOfPresidentProfile}
-        className="border px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
-        disabled={isLoading}
-      >
-        {isLoading ? "Approving..." : "Approve"}
-      </button>
+      <DialogFooter className="flex flex-col gap-2 sm:flex-col">
+        <Button
+          onClick={HandleSubmitApprovalOfPresidentProfile}
+          className="bg-green-500 hover:bg-green-600 w-full"
+          disabled={isLoading}
+        >
+          {isLoading ? "Approving..." : "Approve"}
+        </Button>
 
-      <button
-        onClick={CancelSubmissionOfPresidentProfile}
-        className="border px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
-        disabled={isLoading}
-      >
-        Cancel
-      </button>
+        <Button
+          onClick={CancelSubmissionOfPresidentProfile}
+          variant="outline"
+          className="w-full"
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
+      </DialogFooter>
 
       {/* Confirmation popup */}
-      {showConfirmation && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white flex items-center justify-center min-w-[300px] px-6 py-4 rounded shadow-lg">
-            <p className="text-center text-lg">{confirmationMessage}</p>
-          </div>
-        </div>
-      )}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="max-w-sm">
+          <p className="text-center text-lg">{confirmationMessage}</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -838,42 +829,40 @@ export function RevisePresidentProfile({ presidentData, setShowPopup }) {
 
   return (
     <div className="flex flex-col gap-3 w-full justify-start">
-      <h1 className="text-lg font-semibold text-gray-800">
+      <DialogDescription className="text-lg font-semibold text-gray-800">
         Send Revision Notes for {presidentData?.name}
-      </h1>
+      </DialogDescription>
 
-      <textarea
-        className="border rounded p-2 w-full min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <Textarea
         placeholder="Enter your revision notes here..."
         value={revisionNotes}
         onChange={(e) => setRevisionNotes(e.target.value)}
+        rows={4}
       />
 
-      <div className="flex gap-2">
-        <button
+      <DialogFooter className="flex gap-2 sm:justify-start">
+        <Button
           onClick={HandleSubmitRevisionOfPresidentProfile}
-          className="border px-4 py-2 bg-yellow-500 text-white rounded disabled:opacity-50"
+          className="bg-yellow-500 hover:bg-yellow-600"
           disabled={isLoading || !revisionNotes.trim()}
         >
           {isLoading ? "Sending..." : "Send Revision Notes"}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={CancelSubmissionOfPresidentProfile}
-          className="border px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
+          variant="outline"
           disabled={isLoading}
         >
           Cancel
-        </button>
-      </div>
+        </Button>
+      </DialogFooter>
 
       {/* Confirmation popup */}
-      {showConfirmation && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white flex items-center justify-center min-w-[300px] px-6 py-4 rounded shadow-lg">
-            <p className="text-center text-lg">{confirmationMessage}</p>
-          </div>
-        </div>
-      )}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="max-w-sm">
+          <p className="text-center text-lg">{confirmationMessage}</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

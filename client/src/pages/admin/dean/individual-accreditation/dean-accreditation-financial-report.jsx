@@ -65,34 +65,42 @@ export function DeanFinancialReport({ selectedOrg, user }) {
     months.forEach((month) => {
       monthlyStats[month] = {
         month,
-        reimbursements: 0,
-        disbursements: 0,
-        balance: currentBalance, // You might want to calculate this differently
+        cashInflow: 0,
+        cashOutflow: 0,
+        balance: currentBalance,
       };
     });
 
-    // Process reimbursements
+    // Process collections as cash inflow
+    financialReport.collections?.forEach((item) => {
+      const date = new Date(item.date);
+      const monthIndex = date.getMonth();
+      const monthName = months[monthIndex];
+      monthlyStats[monthName].cashInflow += item.amount;
+    });
+
+    // Process reimbursements as cash inflow
     financialReport.reimbursements.forEach((item) => {
       const date = new Date(item.date);
       const monthIndex = date.getMonth();
       const monthName = months[monthIndex];
-      monthlyStats[monthName].reimbursements += item.amount;
+      monthlyStats[monthName].cashInflow += item.amount;
     });
 
-    // Process disbursements
+    // Process disbursements as cash outflow
     financialReport.disbursements.forEach((item) => {
       const date = new Date(item.date);
       const monthIndex = date.getMonth();
       const monthName = months[monthIndex];
-      monthlyStats[monthName].disbursements += item.amount;
+      monthlyStats[monthName].cashOutflow += item.amount;
     });
 
-    // Calculate running balance (simplified - you might want to implement proper balance calculation)
+    // Calculate running balance
     let runningBalance = currentBalance;
     return months.map((month) => {
       const data = monthlyStats[month];
       runningBalance =
-        runningBalance - data.disbursements + data.reimbursements;
+        runningBalance + data.cashInflow - data.cashOutflow;
       return {
         ...data,
         balance: runningBalance,
@@ -172,10 +180,18 @@ export function DeanFinancialReport({ selectedOrg, user }) {
   }
 
   // Calculate totals from actual data
+  const totalCollections = financialReport.collections?.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  ) || 0;
+
   const totalReimbursements = financialReport.reimbursements.reduce(
     (sum, item) => sum + item.amount,
     0
   );
+
+  const totalCashInflow = totalCollections + totalReimbursements;
+
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,
     0
@@ -273,13 +289,28 @@ export function DeanFinancialReport({ selectedOrg, user }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full max-h-240  w-full pt-4 bg-gray-200 p-4 flex gap-4 ">
-      <div className="bg-white shadow-lg flex flex-col flex-1 p-6    border border-gray-100 overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Page Header */}
+      <div className="h-18 border-b bg-background flex items-center justify-between px-6 flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-semibold">Financial Statement</h1>
+          <p className="text-sm text-muted-foreground">Review financial reports and transactions</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{selectedOrg?.orgName || "Organization"}</p>
+            <p className="text-xs text-muted-foreground">{selectedOrg?.orgAcronym || ""}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-6 flex gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+        <div className="bg-white shadow-sm flex flex-col flex-1 p-6 rounded-lg border border-gray-200">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           {/* Left Section: Icon and Title */}
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-blue-100 ">
+            <div className="p-2 bg-blue-100 rounded">
               <span className="w-8 h-8 text-blue-600 text-2xl font-bold">₱</span>
 
             </div>
@@ -296,49 +327,48 @@ export function DeanFinancialReport({ selectedOrg, user }) {
 
         {/* Summary Cards */}
         <div className="flex flex-wrap gap-4">
-          {/* Current Balance */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 flex-1 min-w-[200px] p-4 border border-blue-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-600 font-medium">
-                  Current Balance
-                </p>
-                <p className="text-2xl font-bold text-blue-800">
-                  {formatCurrency(currentBalance)}
-                </p>
-              </div>
-             <span className="w-8 h-8 text-blue-600 text-2xl font-bold">₱</span>
-
-            </div>
-          </div>
-
-          {/* Reimbursements */}
+          {/* Cash Inflow */}
           <div className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] p-4  border border-green-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-green-600 font-medium">
-                  Total Reimbursements
+                  Cash Inflow
                 </p>
                 <p className="text-2xl font-bold text-green-800">
-                  {formatCurrency(totalReimbursements)}
+                  {formatCurrency(totalCashInflow)}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-600" />
             </div>
           </div>
 
-          {/* Disbursements */}
+          {/* Cash Outflow */}
           <div className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] p-4  border border-red-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-red-600 font-medium">
-                  Total Disbursements
+                  Cash Outflow
                 </p>
                 <p className="text-2xl font-bold text-red-800">
                   {formatCurrency(totalDisbursements)}
                 </p>
               </div>
               <TrendingDown className="w-8 h-8 text-red-600" />
+            </div>
+          </div>
+
+          {/* Current Balance */}
+          <div className="bg-amber-100 flex-1 min-w-[200px] p-4 border border-amber-200 shadow-sm rounded-lg mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-amber-600 font-medium">
+                  Current Balance
+                </p>
+                <p className="text-2xl font-bold text-amber-800">
+                  {formatCurrency(currentBalance)}
+                </p>
+              </div>
+              <span className="w-8 h-8 text-amber-600 text-2xl font-bold">₱</span>
             </div>
           </div>
         </div>
@@ -359,14 +389,14 @@ export function DeanFinancialReport({ selectedOrg, user }) {
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
                   <Bar
-                    dataKey="reimbursements"
+                    dataKey="cashInflow"
                     fill="#22c55e"
-                    name="Reimbursements"
+                    name="Cash Inflow"
                   />
                   <Bar
-                    dataKey="disbursements"
+                    dataKey="cashOutflow"
                     fill="#ef4444"
-                    name="Disbursements"
+                    name="Cash Outflow"
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -412,9 +442,9 @@ export function DeanFinancialReport({ selectedOrg, user }) {
         </div>
       </div>
 
-      {/* Reimbursements and Disbursements */}
+      {/* Cash Inflow and Cash Outflow */}
       <div className="flex flex-col flex-1 gap-4 h-full overflow-hidden">
-        {/* Reimbursements */}
+        {/* Cash Inflow */}
         <div className="bg-white p-0 shadow-lg border overflow-hidden border-gray-100 flex-1 flex flex-col">
           <div className="sticky flex justify-between w-full top-0 z-10 bg-white p-6 border-b border-gray-400 items-center gap-3">
             <div className="flex gap-2 items-center">
@@ -422,14 +452,14 @@ export function DeanFinancialReport({ selectedOrg, user }) {
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <h2 className="text-xl font-bold text-gray-800">
-                Reimbursements
+                Cash Inflow
               </h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
             {financialReport.reimbursements.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No reimbursements found
+                No cash inflow found
               </div>
             ) : (
               financialReport.reimbursements.map((item, index) => (
@@ -459,20 +489,20 @@ export function DeanFinancialReport({ selectedOrg, user }) {
           </div>
         </div>
 
-        {/* Disbursements */}
+        {/* Cash Outflow */}
         <div className="bg-white  shadow-lg border border-gray-100 flex-1 flex flex-col overflow-hidden">
           <div className="sticky justify-between top-0 z-10 bg-white  p-4 border-b border-gray-400 flex items-center">
             <div className="flex items-center gap-2">
               <div className="p-2.5 bg-red-100 rounded-lg">
                 <TrendingDown className="w-5 h-5 text-red-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800">Disbursements</h2>
+              <h2 className="text-xl font-bold text-gray-800">Cash Outflow</h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
             {financialReport.disbursements.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No disbursements found
+                No cash outflow found
               </div>
             ) : (
               financialReport.disbursements.map((item, index) => (
@@ -554,6 +584,7 @@ export function DeanFinancialReport({ selectedOrg, user }) {
               ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

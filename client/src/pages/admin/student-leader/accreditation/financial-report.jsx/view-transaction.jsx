@@ -3,6 +3,8 @@ import { X, Calendar, User, FileText, Tag, Banknote } from "lucide-react";
 import CurrencyInput from "../../../../../components/currency-input";
 import DocumentUploader from "../../../../../components/document_uploader";
 import { DOCU_API_ROUTER } from "../../../../../App";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
   if (!isOpen || !transaction) return null;
@@ -22,9 +24,9 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
     : "bg-gradient-to-r from-yellow-500 to-orange-500";
 
   const headerTitle = isReimbursement
-    ? "Reimbursement Details"
+    ? "Cash Inflow Details"
     : isDisbursement
-    ? "Disbursement Details"
+    ? "Cash Outflow Details"
     : "Collection Details";
 
   const nameLabel = isReimbursement
@@ -36,23 +38,16 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
   const amountColor = isDisbursement ? "text-red-600" : "text-green-600";
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
         {/* Header */}
-        <div className={`px-6 py-4 border-b ${headerGradient}`}>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-white">{headerTitle}</h2>
-            <button
-              onClick={onClose}
-              className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+        <DialogHeader className="px-6 py-4 border-b bg-white">
+          <DialogTitle className="text-xl font-bold text-gray-900">{headerTitle}</DialogTitle>
+        </DialogHeader>
 
-        {/* Content */}
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="space-y-4">
           <div>
             <p className="text-sm font-semibold text-gray-600">Description</p>
             <p className="text-gray-900">{transaction.description}</p>
@@ -110,19 +105,17 @@ export function ViewTransactionModal({ isOpen, onClose, transaction, type }) {
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 transition"
-          >
+        <DialogFooter className="bg-gray-50 px-6 py-4 border-t">
+          <Button variant="outline" onClick={onClose}>
             Close
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -251,57 +244,39 @@ export function TransactionModal({
   const isCollection = type === "collection";
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-2xl flex flex-col rounded-3xl shadow-2xl max-h-[95vh] overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
         {/* Header */}
-        <div
-          className={`px-8 py-6 border-b border-gray-100 ${
-            isReimbursement
-              ? "bg-gradient-to-r from-emerald-500 to-teal-600"
+        <DialogHeader className="px-6 py-6 border-b bg-white">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            {isReimbursement
+              ? "Add Cash Inflow"
               : isDisbursement
-              ? "bg-gradient-to-r from-blue-500 to-indigo-600"
-              : "bg-gradient-to-r from-yellow-500 to-orange-500"
-          }`}
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-white ">
-                {isReimbursement
-                  ? "Add Reimbursement"
-                  : isDisbursement
-                  ? "Add Disbursement"
-                  : "Add Collection"}
-              </h2>
-              <p className="text-white/80 text-sm mt-1">
-                {isReimbursement
-                  ? "Request reimbursement for expenses"
-                  : isDisbursement
-                  ? "Record disbursement transaction"
-                  : "Record collection of fees"}
-              </p>
-            </div>
-            <button
-              onClick={handleClose}
-              className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-all duration-200"
-              type="button"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
+              ? "Add Cash Outflow"
+              : "Add Collection"}
+          </DialogTitle>
+          <p className="text-gray-600 text-sm mt-1">
+            {isReimbursement
+              ? "Record cash inflow transaction"
+              : isDisbursement
+              ? "Record cash outflow transaction"
+              : "Record collection of fees"}
+          </p>
+        </DialogHeader>
 
-        {/* Form Content */}
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="space-y-6">
+        {/* Form Content - Scrollable */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="space-y-6">
             {/* File Upload */}
             <div className="h-fit">
               <DocumentUploader
                 onFileSelect={handleFileSelect}
                 title={`Upload ${
                   isReimbursement
-                    ? "Reimbursement"
+                    ? "Cash Inflow"
                     : isDisbursement
-                    ? "Disbursement"
+                    ? "Cash Outflow"
                     : "Collection"
                 } Document`}
                 className="w-full"
@@ -423,24 +398,22 @@ export function TransactionModal({
                 />
               </div>
             </div>
+            </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
-          <div className="flex gap-4 justify-end">
-            <button
+          {/* Footer */}
+          <DialogFooter className="bg-gray-50 px-6 py-4 border-t">
+            <Button
               type="button"
+              variant="outline"
               onClick={handleClose}
-              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`px-8 py-3 text-white rounded-xl font-semibold shadow-lg transition-all duration-200 ${
+              className={`!text-white ${
                 isReimbursement
                   ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                   : isDisbursement
@@ -449,14 +422,14 @@ export function TransactionModal({
               } ${
                 isSubmitting
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:shadow-xl transform hover:-translate-y-0.5"
+                  : ""
               }`}
             >
               {isSubmitting ? "Submitting..." : "Submit Transaction"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

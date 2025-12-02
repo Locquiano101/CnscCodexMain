@@ -13,6 +13,40 @@
   --color-cnsc-blue-color: #1c4060;
 
   --color-brian-blue: #1b3a57;
+
+  /* shadcn/ui theme variables */
+  --radius: 0.5rem;
+  
+  /* shadcn color system */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 29.8%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 29.8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 29.8%;
+  --primary: 0 60% 15.7%; 
+  --primary-foreground: 0 0% 98%;
+  --secondary: 28 100% 46.7%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 60% 15.7%;
+}
+
+/* Reset base styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 .stroked-text-cnsc {
@@ -25,8 +59,8 @@
 .stroked-text-codex {
   color: #ee8f00;
   font-weight: 700; /* or bold */
-  -webkit-text-stroke: 3px white;
-  text-stroke: 3px white;
+  /* Using text-shadow for pseudo outline to avoid unsupported text-stroke */
+  text-shadow: 0 0 2px rgba(0,0,0,0.15), 0 0 6px rgba(0,0,0,0.1);
 }
 /* Scrollbar width */
 ::-webkit-scrollbar {
@@ -43,7 +77,11 @@ input::-webkit-inner-spin-button {
 /* For Firefox */
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { appearance: textfield; }
 
 /* Scrollbar Track */
 ::-webkit-scrollbar-track {
@@ -67,6 +105,24 @@ input[type="number"] {
 
 body {
   font-family: "Afacad", sans-serif;
+}
+
+/* Horizontal tab scrollbar refinements */
+.nav-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #c5c5c5 transparent;
+}
+.nav-scroll::-webkit-scrollbar { height: 6px; }
+.nav-scroll::-webkit-scrollbar-track { background: transparent; }
+.nav-scroll::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 9999px;
+}
+.nav-scroll:hover::-webkit-scrollbar-thumb { background: #9b9b9b; }
+/* Optionally hide scrollbar completely on very small screens */
+@media (max-width: 640px) {
+  .nav-scroll { scrollbar-width: none; }
+  .nav-scroll::-webkit-scrollbar { display: none; }
 }
 
 .underline-animate {

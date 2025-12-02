@@ -207,8 +207,8 @@ export function SduRoomsLocations() {
   };
 
   return (
-    <div className="p-4">
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-4 sm:px-6 sm:py-5 bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

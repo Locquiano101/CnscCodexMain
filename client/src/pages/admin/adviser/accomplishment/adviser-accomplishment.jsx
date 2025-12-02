@@ -4,6 +4,9 @@ import { API_ROUTER } from "../../../../App";
 import { useState, useEffect } from "react";
 import { Award, Target, Users, FileText, Heart, Calendar } from "lucide-react";
 import { AdviserAccomplishmentReportDetailed } from "./adviser-detailed-accomplishment";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 
 // Category icon mapping
 const getCategoryIcon = (category) => {
@@ -114,9 +117,9 @@ export function AdviserAccomplishmentReport({ orgData, user }) {
   }, {});
 
   return (
-    <div className="h-full w-full overflow-hidden  flex flex-col bg-gray-100">
+    <div className="h-full w-full overflow-hidden flex flex-col" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Header Section */}
-      <div className="flex-shrink-0 border-b p-4 border-gray-200 bg-white shadow-sm">
+      <div className="flex-shrink-0 border-b p-6 border-gray-200 bg-white shadow-sm">
         <div className="flex justify-between items-center mb-3">
           <h1 className="text-3xl font-bold text-gray-900">
             Accomplishment Reports Analytics
@@ -129,103 +132,111 @@ export function AdviserAccomplishmentReport({ orgData, user }) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1  p-4 px-2  gap-4  overflow-auto flex flex-col ">
+      <div className="flex-1 p-6 gap-6 overflow-auto flex flex-col">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  gap-2">
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Accomplishments
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {accomplishments.length}
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Accomplishments
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {accomplishments.length}
+                  </p>
+                </div>
+                <Award className="w-8 h-8 text-blue-500" />
               </div>
-              <Award className="w-8 h-8 text-blue-500" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Points
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {accomplishmentData?.grandTotal || 0}
-                </p>
+          <Card className="bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Points
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {accomplishmentData?.grandTotal || 0}
+                  </p>
+                </div>
+                <Target className="w-8 h-8 text-green-500" />
               </div>
-              <Target className="w-8 h-8 text-green-500" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Categories</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {Object.keys(categoryStats).length}
-                </p>
+          <Card className="bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Categories</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {Object.keys(categoryStats).length}
+                  </p>
+                </div>
+                <FileText className="w-8 h-8 text-amber-500" />
               </div>
-              <FileText className="w-8 h-8 text-amber-500" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Most Recent</p>
-                <p className="text-sm font-bold text-gray-900 ">
-                  {accomplishments.length > 0
-                    ? formatDate(
-                        Math.max(
-                          ...accomplishments.map(
-                            (acc) => new Date(acc.createdAt)
+          <Card className="bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Most Recent</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    {accomplishments.length > 0
+                      ? formatDate(
+                          Math.max(
+                            ...accomplishments.map(
+                              (acc) => new Date(acc.createdAt)
+                            )
                           )
                         )
-                      )
-                    : "N/A"}
-                </p>
+                      : "N/A"}
+                  </p>
+                </div>
+                <Calendar className="w-8 h-8 text-orange-500" />
               </div>
-              <Calendar className="w-8 h-8 text-orange-500" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-6">
           {categories.map((category) => (
-            <button
+            <Button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 border-2 border-gray-300 shadow-md text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
-                selectedCategory === category
-                  ? "bg-blue-500 text-white shadow-md"
-                  : "bg-white text-gray-700 hover:bg-gray-100 shadow-sm border border-gray-200"
+              variant={selectedCategory === category ? "default" : "outline"}
+              className={`whitespace-nowrap flex-shrink-0 ${
+                selectedCategory === category ? "text-white" : ""
               }`}
             >
               {category}{" "}
               {category !== "All" && `(${categoryStats[category] || 0})`}
-            </button>
+            </Button>
           ))}
         </div>
 
         {/* Main Content Grid */}
-        <div className="w-full  grid grid-cols-5 gap-2  overflow-hidden">
+        <div className="w-full grid grid-cols-5 gap-6 overflow-hidden">
           {/* Left: Accomplishments List */}
-          <div className="col-span-1 flex gap-2 flex-col overflow-auto pr-1">
+          <div className="col-span-1 flex gap-6 flex-col overflow-auto pr-1">
             {filteredAccomplishments.length > 0 ? (
               filteredAccomplishments.map((accomplishment) => (
-                <div
+                <Card
                   key={accomplishment._id}
                   onClick={() => setSelectedAccomplishment(accomplishment)}
-                  className={`bg-white shadow-sm hover:shadow-md border transition-all duration-200 p-4 cursor-pointer ${
+                  className={`bg-white cursor-pointer transition-all duration-200 ${
                     selectedAccomplishment?._id === accomplishment._id
-                      ? "border-amber-500 ring-blue-200"
-                      : "border-white hover:border-amber-200"
+                      ? "border-amber-500 ring-2 ring-amber-200"
+                      : "border-gray-200 hover:border-amber-200"
                   }`}
                 >
+                  <CardContent className="p-4">
                   {/* Category Badge */}
                   <div
                     className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-3 ${getCategoryColor(
@@ -269,7 +280,8 @@ export function AdviserAccomplishmentReport({ orgData, user }) {
                       </div>
                     </div>
                   </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))
             ) : (
               /* Empty State */

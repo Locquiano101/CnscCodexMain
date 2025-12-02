@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER } from "../../../../App";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 export function StudentLeaderAddPost({ orgData, Modal }) {
   const [postType, setPostType] = useState(null);
@@ -90,20 +94,16 @@ export function StudentLeaderAddPost({ orgData, Modal }) {
     postType === "document" ? files.length === 0 : files.length < MAX_IMAGES;
 
   return (
-    <div className="bg-black/50 backdrop-blur-sm fixed inset-0 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+    <Dialog open={true} onOpenChange={Modal}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0">
+        <DialogHeader className="p-6 border-b">
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <Plus className="text-amber-600" /> Create Post
-          </h2>
-          <button onClick={Modal} className="text-gray-400 hover:text-gray-600">
-            <X size={22} />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto">{/* Post Type */}
           {/* Post Type */}
           <div>
             <h3 className="text-sm font-semibold text-gray-600 mb-3">
@@ -266,13 +266,13 @@ export function StudentLeaderAddPost({ orgData, Modal }) {
             <h3 className="text-sm font-semibold text-gray-600 mb-2">
               Caption
             </h3>
-            <textarea
+            <Textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Write something..."
               rows={4}
               maxLength={500}
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none"
+              className="resize-none"
             />
             <p className="text-xs text-gray-400 mt-1">
               {caption.length}/500 characters
@@ -281,22 +281,25 @@ export function StudentLeaderAddPost({ orgData, Modal }) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t bg-gray-50 rounded-b-2xl">
-          <button
-            onClick={Modal}
-            className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!postType || files.length === 0}
-            className="flex-1 bg-amber-600 text-white py-2.5 rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50"
-          >
-            Create Post
-          </button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter className="p-6 border-t bg-gray-50">
+          <div className="flex gap-3 w-full">
+            <Button
+              onClick={Modal}
+              variant="outline"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!postType || files.length === 0}
+              className="flex-1 bg-amber-600 hover:bg-amber-700"
+            >
+              Create Post
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

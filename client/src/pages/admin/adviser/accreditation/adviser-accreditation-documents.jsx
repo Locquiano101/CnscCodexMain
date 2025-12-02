@@ -19,6 +19,8 @@ import {
 import axios from "axios";
 import { DonePopUp } from "../../../../components/components";
 import { EmailModal } from "../../../../components/accreditation-email";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function AdviserAccreditationDocument({ orgData, user }) {
   const [accreditationDocumentData, setAccreditationDocumentData] =
@@ -197,7 +199,7 @@ export function AdviserAccreditationDocument({ orgData, user }) {
   }
 
   return (
-    <div className="w-full  p-4 gap-4 flex flex-col h-full">
+    <div className="w-full p-6 gap-4 flex flex-col h-full" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Summary Stats */}
       <div className="bg-white rounded-2xl shadow-lg border-slate-200 p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -289,17 +291,10 @@ export function AdviserAccreditationDocument({ orgData, user }) {
         />
       </div>
       {/* Document Details Modal */}
-      {showDetailsPopup && selectedDocumentDetails && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-3/4 max-h-11/12 w-full h-full overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col">
-            <button
-              onClick={closeDetailsPopup}
-              className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 bg-white/80 backdrop-blur-sm"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex h-full ">
+      {selectedDocumentDetails && (
+        <Dialog open={showDetailsPopup} onOpenChange={(open) => !open && closeDetailsPopup()}>
+          <DialogContent className="max-w-[90vw] h-[90vh] p-0">
+            <div className="flex h-full">
               {/* Left Panel - Document Info */}
               <div className="w-1/3 bg-gray-50 p-6 border-r border-gray-200 overflow-y-auto">
                 <div className="space-y-6">
@@ -314,40 +309,40 @@ export function AdviserAccreditationDocument({ orgData, user }) {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600 block mb-1">
-                        Document Type
-                      </label>
-                      <p className="text-lg font-medium text-gray-900">
-                        {selectedDocumentDetails.label}
-                      </p>
-                    </div>
+                    <label className="text-sm font-medium text-gray-600 block mb-1">
+                      Document Type
+                    </label>
+                    <p className="text-lg font-medium text-gray-900">
+                      {selectedDocumentDetails.label}
+                    </p>
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 block mb-1">
-                        File Name
-                      </label>
-                      <p className="text-gray-900 break-all">
-                        {selectedDocumentDetails.fileName}
-                      </p>
-                    </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-1">
+                      File Name
+                    </label>
+                    <p className="text-gray-900 break-all">
+                      {selectedDocumentDetails.fileName}
+                    </p>
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 block mb-1">
-                        Status
-                      </label>
-                      <div
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(
-                          selectedDocumentDetails.status
-                        )}`}
-                      >
-                        {getStatusIcon(selectedDocumentDetails.status)}
-                        <span>{selectedDocumentDetails.status}</span>
-                      </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-1">
+                      Status
+                    </label>
+                    <div
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(
+                        selectedDocumentDetails.status
+                      )}`}
+                    >
+                      {getStatusIcon(selectedDocumentDetails.status)}
+                      <span>{selectedDocumentDetails.status}</span>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 block mb-1">
-                        Upload Date
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-1">
+                      Upload Date
                       </label>
                       <div className="flex items-center gap-2 text-gray-900">
                         <Calendar className="w-4 h-4 text-gray-500" />
@@ -449,8 +444,8 @@ export function AdviserAccreditationDocument({ orgData, user }) {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Revision Modal */}
@@ -490,41 +485,37 @@ export function AdviserAccreditationDocument({ orgData, user }) {
         }
       />
 
-      {approvalModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-100">
-          <div className="h-fit bg-white w-1/4 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            {/* Close Button */}
-            <button
+      <Dialog open={approvalModal} onOpenChange={setApprovalModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approval: Roster of Organization</DialogTitle>
+            <DialogDescription>
+              By approving this section of the accreditation, you confirm that you have reviewed the information provided and consent to its approval. Would you like to proceed?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
               onClick={() => setApprovalModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              variant="outline"
             >
-              ✕
-            </button>
-
-            <h1 className="text-lg font-semibold mb-4">
-              Approval: Roster of Organization
-            </h1>
-
-            <p className="mb-4 text-gray-700">
-              By approving this section of the accreditation, you confirm that
-              you have reviewed the information provided and consent to its
-              approval. Would you like to proceed?
-            </p>
-
-            <button
+              Cancel
+            </Button>
+            <Button
               onClick={() => {
                 handleApproval({
                   status: "Approved by the Adviser",
-                }); // 👈 call with "Revision" // 👈 call with "Approved"
+                });
                 setApprovalModal(false);
               }}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
               Confirm Approval
-            </button>
-          </div>
-        </div>
-      )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {popup && (
         <DonePopUp
           type={popup.type}

@@ -5,6 +5,11 @@ import axios from "axios";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { X, Search } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 export default function StudentLeaderRosters({ orgData }) {
   const [activeModal, setActiveModal] = useState(null); // 'add', 'edit', 'import', etc.
@@ -113,26 +118,27 @@ export default function StudentLeaderRosters({ orgData }) {
 
   if (loading) {
     return (
-      <div className="p-4 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Loading roster members...</p>
-        </div>
+      <div className="p-6 min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F9' }}>
+        <Card className="bg-white">
+          <CardContent className="p-8 text-center">
+            <p className="text-gray-600">Loading roster members...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
-          >
-            Retry
-          </button>
-        </div>
+      <div className="p-6 min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F9' }}>
+        <Card className="bg-white">
+          <CardContent className="p-8 text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -158,54 +164,56 @@ export default function StudentLeaderRosters({ orgData }) {
   ];
 
   return (
-    <div className="p-4 flex flex-col bg-gray-cnsc- min-h-screen">
+    <div className="h-full overflow-auto p-6 flex flex-col" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Outer Container for Roster Management */}
-      <div className="rounded-xl shadow-md p-6 bg-gray-100 border-gray-400">
-        <div className="flex w-full justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Roster Management
-            </h1>
-            <h1 className="text-sm font-bold text-gray-900">
-              Status:{" "}
-              {rosterData.roster.isComplete ? "Complete" : "Not Complete"}
-            </h1>
-          </div>
+      <Card className="bg-white">
+        <CardHeader>
+          <div className="flex w-full justify-between items-center">
+            <div>
+              <CardTitle className="text-2xl">Roster Management</CardTitle>
+              <Badge variant={rosterData.roster.isComplete ? "default" : "secondary"} className="mt-2 text-white whitespace-nowrap">
+                Status: {rosterData.roster.isComplete ? "Complete" : "Not Complete"}
+              </Badge>
+            </div>
 
-          {/* Action Buttons (Replaces three-dots menu) */}
-          <div className="flex flex-wrap gap-2 items-center justify-end">
-            {actions.map((a) => (
-              <button
-                key={a.id}
-                onClick={a.onClick}
-                className={
-                  a.tone === "primary"
-                    ? "px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-                    : a.tone === "secondary"
-                    ? "px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600"
-                    : "px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-                }
-              >
-                {a.label}
-              </button>
-            ))}
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 items-center justify-end">
+              {actions.map((a) => (
+                <Button
+                  key={a.id}
+                  onClick={a.onClick}
+                  variant={a.tone === "primary" ? "default" : a.tone === "secondary" ? "default" : "outline"}
+                  className={
+                    a.tone === "primary"
+                      ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      : a.tone === "secondary"
+                      ? "bg-amber-500 hover:bg-amber-600 text-white"
+                      : ""
+                  }
+                >
+                  {a.label}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        </CardHeader>
 
         {/* 🔍 Search Bar */}
         {rosterMembers.length > 0 && (
-          <div className="mt-4 flex items-center bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-300">
-            <Search className="text-gray-500 mr-2" size={20} />
-            <input
-              type="text"
-              placeholder="Search members..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full outline-none text-gray-700"
-            />
-          </div>
+          <CardContent>
+            <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-300">
+              <Search className="text-gray-500 mr-2" size={20} />
+              <Input
+                type="text"
+                placeholder="Search members..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+          </CardContent>
         )}
-      </div>
+      </Card>
 
       {!rosterData || rosterMembers.length === 0 ? (
         <div className="text-center py-12">
@@ -214,12 +222,12 @@ export default function StudentLeaderRosters({ orgData }) {
             Click the Actions button above to begin creating your student leader
             roster.
           </p>
-          <button
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+          <Button
             onClick={() => setActiveModal("add")}
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
             Start Roster
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="mt-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 overflow-auto">
@@ -241,13 +249,15 @@ export default function StudentLeaderRosters({ orgData }) {
 
       {/* Modal Rendering */}
       {activeModal === "add" && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <AddRosterForm
-            orgData={orgData}
-            onClose={() => setActiveModal(null)}
-            onMemberAdded={handleMemberAdded}
-          />
-        </div>
+        <Dialog open={activeModal === "add"} onOpenChange={() => setActiveModal(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+            <AddRosterForm
+              orgData={orgData}
+              onClose={() => setActiveModal(null)}
+              onMemberAdded={handleMemberAdded}
+            />
+          </DialogContent>
+        </Dialog>
       )}
 
       {activeModal === "Completion" && (
@@ -255,38 +265,31 @@ export default function StudentLeaderRosters({ orgData }) {
           rosterId={rosterData.roster._id}
           onFinish={() => setActiveModal(null)}
           onClose={() => setActiveModal(null)}
-        /> // closes when user cancels
+        />
       )}
 
       {activeModal === "export" && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="h-fit relative w-full max-w-md px-6 py-6 bg-white flex flex-col justify-center rounded-xl shadow-xl">
-            <button
-              onClick={() => setActiveModal(null)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <h1 className="text-lg font-semibold mb-2">Export Roster</h1>
-            <p className="text-sm text-gray-600 mb-6">
-              Do you want to export the roster members into an Excel file?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setActiveModal(null)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm"
-              >
+        <Dialog open={activeModal === "export"} onOpenChange={() => setActiveModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Export Roster</DialogTitle>
+              <DialogDescription>
+                Do you want to export the roster members into an Excel file?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setActiveModal(null)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleExportExcel}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md transition"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 Export
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
@@ -318,66 +321,69 @@ const SubmitForCompletion = ({ rosterId, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="h-fit relative w-fit px-12 py-6 max-w-xl bg-white flex flex-col justify-center items-center rounded-xl ">
-        <h1 className="text-lg font-semibold mb-6">Submit for completion?</h1>
-        <X className="absolute top-4 right-4" />
-        <div className="flex gap-4">
-          <button
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Submit for completion?</DialogTitle>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
             onClick={handleSubmit}
             disabled={isProcessing}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
             {isProcessing ? "Processing..." : "Confirm"}
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded-lg"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
 const RosterMemberCard = ({ member, orgId }) => {
   console.log(`${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`);
   return (
-    <div className="bg-white rounded-lg flex flex-col gap-2 items-center shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
-        <img
-          src={
-            member.profilePicture
-              ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
-              : "/cnsc-logo.png"
-          }
-          alt="Profile Picture"
-          className="max-h-32 aspect-square border object-cover rounded"
-        />
-      </div>
+    <Card className="bg-white hover:shadow-lg transition-shadow">
+      <CardContent className="p-6 flex flex-col gap-2 items-center">
+        <div className="flex items-center justify-center w-full">
+          <img
+            src={
+              member.profilePicture
+                ? `${DOCU_API_ROUTER}/${orgId}/${member.profilePicture}`
+                : "/cnsc-logo.png"
+            }
+            alt="Profile Picture"
+            className="max-h-32 aspect-square border object-cover rounded"
+          />
+        </div>
 
-      <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Name: {member.name}
-        </h3>
-        <p className="text-sm font-medium text-indigo-600">{member.position}</p>
+        <div className="space-y-1 w-full">
+          <h3 className="text-lg font-semibold text-gray-900 break-words">
+            Name: {member.name}
+          </h3>
+          {/* Position displayed as plain text instead of badge */}
+          <p className="text-sm font-semibold text-indigo-600 break-words">
+            {member.position}
+          </p>
 
-        <p className="text-sm text-gray-600">{member.email}</p>
-        <p className="text-sm text-gray-600">{member.contactNumber}</p>
-        <p className="text-sm text-gray-500">{member.address}</p>
-      </div>
+          <p className="text-sm text-gray-600 break-words">{member.email}</p>
+          <p className="text-sm text-gray-600 break-words">{member.contactNumber}</p>
+          <p className="text-sm text-gray-500 break-words">{member.address}</p>
+        </div>
 
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-500">
-          Birth Date:{" "}
-          {member.birthDate
-            ? new Date(member.birthDate).toLocaleDateString()
-            : "Not provided"}
-        </p>
-        <p className="text-xs text-gray-500">Status: {member.status}</p>
-      </div>
-    </div>
+        <div className="mt-4 pt-4 border-t border-gray-100 w-full">
+          <p className="text-xs text-gray-500 break-words">
+            Birth Date:{" "}
+            {member.birthDate
+              ? new Date(member.birthDate).toLocaleDateString()
+              : "Not provided"}
+          </p>
+          <p className="text-xs text-gray-500 break-words">Status: {member.status}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

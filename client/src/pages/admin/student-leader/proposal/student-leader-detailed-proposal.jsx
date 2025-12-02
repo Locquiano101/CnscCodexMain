@@ -1,44 +1,47 @@
 import { DOCU_API_ROUTER } from "../../../../App";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  FileText,
+  MapPin,
+  Calendar,
+  DollarSign,
+  Target,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
-export function ShowDetailedProposal({ proposal, onClose }) {
+export function ShowDetailedProposal({ proposal, onClose, open = true }) {
   if (!proposal) return null;
-
-  console.log(proposal);
 
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
-  console.log(proposal);
-
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl h-full max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-500 border border-gray-200/50">
-        {/* Enhanced Header with gradient */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200/70 bg-gradient-to-r from-slate-50 via-white to-blue-50">
-          <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Proposal Details
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Comprehensive proposal information and documents
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="group text-gray-400 hover:text-gray-600 text-2xl font-bold w-12 h-12 flex items-center justify-center hover:bg-red-50 rounded-2xl transition-all duration-300 hover:scale-110 border border-transparent hover:border-red-200"
-          >
-            <span className="group-hover:rotate-90 transition-transform duration-300">
-              ✕
-            </span>
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-[95vw] h-[95vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle className="text-2xl">Proposal Details</DialogTitle>
+          <DialogDescription>
+            Comprehensive proposal information and documents
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Enhanced Content: Split View */}
+        {/* Split View: Details + Document Preview */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Enhanced Left: Details Panel */}
-          <div className="w-2/5 border-r border-gray-200/70 overflow-y-auto bg-gradient-to-b from-gray-50/30 to-white">
-            <div className="p-8 space-y-8">
+          {/* Left: Details Panel */}
+          <div className="w-2/5 border-r overflow-y-auto">
+            <div className="p-6 space-y-6">
               {proposal?.ProposedIndividualActionPlan?.activityTitle && (
                 <div className="group">
                   <div className="flex items-center mb-3">
@@ -483,14 +486,11 @@ export function ShowDetailedProposal({ proposal, onClose }) {
               </div>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold hover:scale-105 hover:shadow-lg"
-          >
+          <Button variant="outline" onClick={onClose}>
             Close
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

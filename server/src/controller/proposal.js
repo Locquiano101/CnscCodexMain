@@ -328,13 +328,13 @@ export const getApprovedPPA = async (req, res) => {
   const { orgId } = req.params; // make sure your route passes orgProfileId
 
   try {
+    // Get all PPAs for this organization (not filtering by status)
     const proposals = await Proposal.find({
       organizationProfile: orgId, // ✅ filter by organizationProfile
-      overallStatus: "Intent Approved", // ✅ only approved
     });
 
     if (!proposals || proposals.length === 0) {
-      return res.status(404).json({ error: "No approved proposals found" });
+      return res.status(404).json({ error: "No proposals found" });
     }
 
     return res.status(200).json(proposals);

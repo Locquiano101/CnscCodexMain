@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 import * as Controller from "./controller/index.js";
 import { ensureAuthenticated, requireRoles } from "./middleware/auth.js";
+import { enforceRequirement } from "./middleware/requirement-gating.js";
+import { rateLimit } from "./middleware/rate-limit.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -34,9 +36,21 @@ router.get(
   "/getAllActiveOrganizationProfile/",
   Controller.GetAllActiveOrganizationsWithDetails
 );
-router.get("/getPresidents", Controller.GetAllPresidents);
-router.get("/getProposalsBySdu/:id", Controller.getPpaBySdu);
-router.get("/getAllProposedActionPlan", Controller.getAllProposedActionPlan);
+router.get(
+  "/getPresidents",
+  enforceRequirement("president-info"),
+  Controller.GetAllPresidents
+);
+router.get(
+  "/getProposalsBySdu/:id",
+  enforceRequirement("action-plan"),
+  Controller.getPpaBySdu
+);
+router.get(
+  "/getAllProposedActionPlan",
+  enforceRequirement("action-plan"),
+  Controller.getAllProposedActionPlan
+);
 
 /* ---------- STUDENT DEVELOPMENT ACCREDITATION ---------- */
 router.get("/getAllAccreditationId", Controller.GetAllAccreditationId);
@@ -47,17 +61,31 @@ router.get(
 );
 
 /* ---------- STUDENT DEVELOPMENT PRESIDENT ---------- */
-router.get("/getPresidents/:orgId", Controller.GetPresidentByOrg);
-router.get("/getPresident/:orgPresidentId", Controller.GetPresidentById);
+router.get(
+  "/getPresidents/:orgId",
+  enforceRequirement("president-info"),
+  Controller.GetPresidentByOrg
+);
+router.get(
+  "/getPresident/:orgPresidentId",
+  enforceRequirement("president-info"),
+  Controller.GetPresidentById
+);
 router.get(
   "/getPreviousPresident/:orgId",
+  enforceRequirement("president-info"),
   Controller.getPreviousPresidentsByOrg
 );
 
 /* ---------- STUDENT DEVELOPMENT ROSTER ---------- */
-router.get("/getAllroster", Controller.GetAllRostersWithMembers);
+router.get(
+  "/getAllroster",
+  enforceRequirement("roster"),
+  Controller.GetAllRostersWithMembers
+);
 router.get(
   "/getRosterByOrg/:orgProfileId",
+  enforceRequirement("roster"),
   Controller.GetRosterMembersByOrganizationIdSDU
 );
 
@@ -69,9 +97,14 @@ router.get(
   "/getAllCollaboratingOrganizationProfile",
   Controller.GetAllOrganizationProfileStudent
 );
-router.get("/getFinancialReport", Controller.getFinancialReportAll);
+router.get(
+  "/getFinancialReport",
+  enforceRequirement("financial-report"),
+  Controller.getFinancialReportAll
+);
 router.get(
   "/getFinancialReport/:OrgProfileId",
+  enforceRequirement("financial-report"),
   Controller.getFinancialReportByOrg
 );
 
@@ -88,37 +121,51 @@ router.get(
 router.get("/getAccomplishmentAll", Controller.getAccomplishmentReportAll);
 router.get(
   "/getAccreditatationDocuments/:orgProfileId",
+  enforceRequirement("accreditation-documents"),
   Controller.GetAccreditationDocumentsByOrg
 );
 router.get(
   "/getAccreditatationDocuments",
+  enforceRequirement("accreditation-documents"),
   Controller.GetAccreditationDocumentsAll
 );
 
 /* ---------- STUDENT LEADER PROPOSALS ---------- */
 router.get(
   "/getStudentLeaderProposalConduct/:orgProfileId",
+  enforceRequirement("action-plan"),
   Controller.getProposalConductByOrgProfile
 );
 router.get(
   "/getAllSystemWideProposalConduct",
+  enforceRequirement("action-plan"),
   Controller.getAllSystemWideProposal
 );
 router.get(
   "/getStudentLeaderAccomplishmentReady/:orgProfileId",
+  enforceRequirement("action-plan"),
   Controller.getDoneProposalConductsByOrgProfile
 );
-router.get("/getApprovedPPA/:orgId", Controller.getApprovedPPA);
-
+router.get(
+  "/getApprovedPPA/:orgId",
+  enforceRequirement("action-plan"),
+  Controller.getApprovedPPA
+);
 router.get(
   "/getStudentLeaderProposalById/:accreditationId",
+  enforceRequirement("action-plan"),
   Controller.getStudentPpaByAccreditationId
 );
-router.get("/getAllProposalConduct", Controller.getAllProposalConduct);
+router.get(
+  "/getAllProposalConduct",
+  enforceRequirement("action-plan"),
+  Controller.getAllProposalConduct
+);
 
 /* ---------- STUDENT LEADER ROSTER MEMBERS ---------- */
 router.get(
   "/getRosterMembers/:orgProfileId",
+  enforceRequirement("roster"),
   Controller.GetRosterMemberByOrganization
 );
 
@@ -141,6 +188,32 @@ router.get(
   // SDU-only visibility; adjust roles here as needed
   requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
   Controller.ListAuditLogs
+);
+
+/* ---------- ACCREDITATION REQUIREMENTS (Visibility) ---------- */
+router.get(
+  "/accreditation/requirements/visible",
+  ensureAuthenticated,
+  Controller.listVisibleRequirements
+);
+router.get(
+  "/accreditation/requirements/:key/submission/:orgId",
+  ensureAuthenticated,
+  Controller.getRequirementSubmission
+);
+router.get(
+  "/admin/accreditation/requirements/:key/submissions",
+  ensureAuthenticated,
+  // Allow adviser to view submissions for oversight of own org
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main", "adviser"]),
+  Controller.listRequirementSubmissions
+);
+router.patch(
+  "/admin/accreditation/requirements/:key/submissions/:submissionId/status",
+  ensureAuthenticated,
+  // Extend status update capability to adviser
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main", "adviser"]),
+  Controller.updateRequirementSubmissionStatus
 );
 
 /* ---------- ROOMS / LOCATIONS ---------- */
@@ -170,6 +243,50 @@ router.patch(
   ensureAuthenticated,
   requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
   Controller.setRoomActive
+);
+
+/* ---------- ACCREDITATION REQUIREMENTS (Admin) ---------- */
+router.get(
+  "/admin/accreditation/requirements",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.listAllRequirements
+);
+router.get(
+  "/admin/accreditation/requirements/gating-status",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  Controller.gatingStatus
+);
+router.post(
+  "/admin/accreditation/requirements",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  rateLimit("requirement-mod", { windowMs: 5 * 60 * 1000, max: 20 }),
+  upload.single("file"),
+  Controller.createCustomRequirement
+);
+router.patch(
+  "/admin/accreditation/requirements/:id",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  rateLimit("requirement-mod", { windowMs: 5 * 60 * 1000, max: 40 }),
+  upload.single("file"),
+  Controller.updateRequirement
+);
+router.patch(
+  "/admin/accreditation/requirements/:id/enable",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  rateLimit("requirement-mod", { windowMs: 5 * 60 * 1000, max: 60 }),
+  Controller.toggleRequirement
+);
+router.delete(
+  "/admin/accreditation/requirements/:id",
+  ensureAuthenticated,
+  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"]),
+  rateLimit("requirement-mod", { windowMs: 5 * 60 * 1000, max: 20 }),
+  Controller.deleteRequirement
 );
 
 /* =========================================================
@@ -237,19 +354,37 @@ router.post(
 /* ---------- STUDENT DEVELOPMENT PRESIDENT ---------- */
 router.post(
   "/updateStatusPresident/:presidentId",
+  enforceRequirement("president-info"),
   Controller.UpdatePresidentProfileStatus
 );
-router.post("/addPresident", Controller.AddPresident);
+router.post(
+  "/addPresident",
+  enforceRequirement("president-info"),
+  Controller.AddPresident
+);
 router.post(
   "/addPresidentProfile/:presidentId",
+  enforceRequirement("president-info"),
   Controller.uploadFileAndAddDocument,
   Controller.UpdatePresidentProfile
 );
 
 /* ---------- STUDENT DEVELOPMENT ROSTER ---------- */
-router.post("/CompleteStudentRoster/:rosterId", Controller.CompleteRosterList);
-router.post("/ApproveRosterList/:rosterId", Controller.ApprovedRosterList);
-router.post("/RevisionRosterList/:rosterId", Controller.revisionNoteRosterList);
+router.post(
+  "/CompleteStudentRoster/:rosterId",
+  enforceRequirement("roster"),
+  Controller.CompleteRosterList
+);
+router.post(
+  "/ApproveRosterList/:rosterId",
+  enforceRequirement("roster"),
+  Controller.ApprovedRosterList
+);
+router.post(
+  "/RevisionRosterList/:rosterId",
+  enforceRequirement("roster"),
+  Controller.revisionNoteRosterList
+);
 router.post("/gradeAccomplishment/", Controller.gradeAccomplishment);
 router.post(
   "/resetAccomplishmentGrades/:OrgProfileId",
@@ -264,44 +399,70 @@ router.post("/postApproveRoster/:rosterId", Controller.ApprovedRosterList);
 /* ---------- COLLABORATION & FINANCIAL ---------- */
 router.post(
   "/addReciept",
+  enforceRequirement("financial-report"),
   Controller.uploadFileAndAddDocument,
   Controller.AddReceipt
 );
-router.post("/financialReportInquiry", Controller.SendFinancialEmailInquiry);
+router.post(
+  "/financialReportInquiry",
+  enforceRequirement("financial-report"),
+  Controller.SendFinancialEmailInquiry
+);
 
 /* ---------- STUDENT LEADER ACCREDITATION ---------- */
 router.post(
   "/addAccreditationDocument",
+  enforceRequirement("accreditation-documents"),
   Controller.uploadFileAndAddDocument,
   Controller.AddAccreditationDocument
 );
+// Student leader submission for template/custom accreditation requirement
+router.post(
+  "/accreditation/requirements/:key/submit",
+  ensureAuthenticated,
+  upload.single("file"),
+  Controller.submitRequirement
+);
 
 /* ---------- STUDENT LEADER PROPOSALS ---------- */
-router.post("/postStudentLeaderProposal", Controller.postStudentLeaderProposal);
+router.post(
+  "/postStudentLeaderProposal",
+  enforceRequirement("action-plan"),
+  Controller.postStudentLeaderProposal
+);
 router.put(
   "/updateProposalConduct/:id",
+  enforceRequirement("action-plan"),
   upload.single("file"),
   Controller.updateProposalConduct
 );
-router.delete("/deleteProposalConduct/:id", Controller.deleteProposalConduct);
+router.delete(
+  "/deleteProposalConduct/:id",
+  enforceRequirement("action-plan"),
+  Controller.deleteProposalConduct
+);
 
 router.post(
   "/postStudentLeaderProposalConduct",
+  enforceRequirement("action-plan"),
   Controller.uploadFileAndAddDocument,
   Controller.postProposalConduct
 );
 router.post(
   "/postStudentLeaderNewProposalConduct",
+  enforceRequirement("action-plan"),
   Controller.uploadFileAndAddDocument,
   Controller.postNewProposalConduct
 );
 router.post(
   "/postStudentLeaderAccomplishment",
+  enforceRequirement("action-plan"),
   Controller.uploadFileAndAddDocument,
   Controller.postProposalConduct
 );
 router.post(
   "/UpdateStudentLeaderProposal/:ProposalId",
+  enforceRequirement("action-plan"),
   Controller.updateStudentLeaderProposal
 );
 
@@ -321,6 +482,7 @@ router.post(
 /* ---------- STUDENT LEADER ROSTER MEMBERS ---------- */
 router.post(
   "/addRosterMember",
+  enforceRequirement("roster"),
   Controller.uploadFileAndAddDocument,
   Controller.AddNewRosterMember
 );

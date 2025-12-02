@@ -3,6 +3,12 @@ import { ChevronDown, Search, CheckCircle, X, Banknote } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 import CurrencyInput from "../../../../../components/currency-input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function EditPpa({
   selectedProposal,
@@ -100,61 +106,57 @@ export default function EditPpa({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full flex flex-col max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="flex justify-between px-4 p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
             Edit Proposed Action Plan
-          </h2>
-          <X size={24} onClick={onClose} />
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Activity Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Activity Title *
-              </label>
-              <input
+              <Label htmlFor="activityTitle">Activity Title *</Label>
+              <Input
+                id="activityTitle"
                 type="text"
                 name="activityTitle"
                 value={formData.activityTitle}
                 onChange={handleInputChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 placeholder="Enter activity title"
+                className="mt-2"
               />
             </div>
 
             {/* Venue */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Venue *
-              </label>
-              <input
+              <Label htmlFor="venue">Venue *</Label>
+              <Input
+                id="venue"
                 type="text"
                 name="venue"
                 value={formData.venue}
                 onChange={handleInputChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 placeholder="Enter venue location"
+                className="mt-2"
               />
             </div>
 
             {/* Proposed Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Proposed Month *
-              </label>
-              <input
+              <Label htmlFor="proposedDate">Proposed Month *</Label>
+              <Input
+                id="proposedDate"
                 type="month"
                 name="proposedDate"
                 value={formData.proposedDate}
                 onChange={handleInputChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="mt-2"
               />
             </div>
 
@@ -176,41 +178,37 @@ export default function EditPpa({
           <div className="mt-6 space-y-6">
             {/* Brief Details */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Brief Details *
-              </label>
-              <textarea
+              <Label htmlFor="briefDetails">Brief Details *</Label>
+              <Textarea
+                id="briefDetails"
                 name="briefDetails"
                 value={formData.briefDetails}
                 onChange={handleInputChange}
                 required
-                rows="3"
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                rows={3}
                 placeholder="Enter brief details about the activity"
+                className="mt-2"
               />
             </div>
 
             {/* Aligned Organization Objectives */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Aligned Organization Objectives *
-              </label>
-              <textarea
+              <Label htmlFor="AlignedObjective">Aligned Organization Objectives *</Label>
+              <Textarea
+                id="AlignedObjective"
                 name="AlignedObjective"
                 value={formData.AlignedObjective}
                 onChange={handleInputChange}
                 required
-                rows="3"
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                rows={3}
                 placeholder="Describe how this aligns with organizational objectives"
+                className="mt-2"
               />
             </div>
 
             {/* Collaborating Entities */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Collaborating Entities
-              </label>
+              <Label htmlFor="collaboratingEntities">Collaborating Entities</Label>
               <OrganizationDropdown
                 selectedOrgs={selectedOrganizations}
                 onSelectOrgs={handleOrgSelection}
@@ -219,10 +217,8 @@ export default function EditPpa({
             </div>
             {/* Aligned SDG */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Aligned SDG *
-              </label>
-              <div className="flex w-full col-span-2 flex-wrap gap-2">
+              <Label className="text-base">Aligned SDG *</Label>
+              <div className="flex w-full col-span-2 flex-wrap gap-2 mt-2">
                 {[
                   { value: "SDG 1", label: "SDG 1: No Poverty" },
                   { value: "SDG 2", label: "SDG 2: Zero Hunger" },
@@ -271,11 +267,10 @@ export default function EditPpa({
                 ].map((sdg) => (
                   <div key={sdg.value} className="bg-gray-200 rounded-full">
                     <label className="flex items-center space-x-1 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={formData.alignedSDG.includes(sdg.value)}
-                        onChange={() => handleSDGChange(sdg.value)}
-                        className="appearance-none h-5 w-5 rounded-full border border-gray-400 checked:bg-amber-500 cursor-pointer"
+                        onCheckedChange={() => handleSDGChange(sdg.value)}
+                        className="h-5 w-5 rounded-full border-gray-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
                       />
                       <span className="text-sm">{sdg.label}</span>
                     </label>
@@ -283,59 +278,62 @@ export default function EditPpa({
                 ))}
               </div>
             </div>
-            {/* Submit Button */}
-            <div className="mt-8 flex gap-4">
-              <button
-                onClick={onClose}
-                className="flex-1 py-3 px-4 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className={`flex-1 py-3 px-4 rounded-md font-medium ${
-                  isSubmitting
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-amber-600 hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                } text-white transition duration-200`}
-              >
-                {isSubmitting ? "Updating Proposal..." : "Save Changes"}
-              </button>
-            </div>
           </div>
         </div>
-      </div>
+
+        <DialogFooter className="px-6 py-4 border-t">
+          <div className="flex gap-2 w-full">
+            <Button
+              type="button"
+              onClick={onClose}
+              variant="outline"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex-1 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400"
+            >
+              {isSubmitting ? "Updating Proposal..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+
       {/* Upload Status Popup */}
       {showPopUp && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-60">
-          <div className="bg-white rounded-lg shadow-xl p-8 flex flex-col items-center justify-center max-w-sm w-full mx-4">
-            {!uploadSuccess ? (
-              <>
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
-                <p className="text-lg font-medium text-gray-800">
-                  Uploading...
-                </p>
-                <p className="text-sm text-gray-600 text-center mt-2">
-                  Please wait while we process your proposal
-                </p>
-              </>
-            ) : (
-              <>
-                <CheckCircle size={48} className="text-green-500 mb-4" />
-                <p className="text-lg font-medium text-gray-800">
-                  Update Complete!
-                </p>
-                <p className="text-sm text-gray-600 text-center mt-2">
-                  Your proposal has been successfully updated
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+        <Dialog open={showPopUp} onOpenChange={() => {}}>
+          <DialogContent className="max-w-sm">
+            <div className="flex flex-col items-center justify-center p-4">
+              {!uploadSuccess ? (
+                <>
+                  <div className="animate-spin rounded-full h-12 w-8 border-b-2 border-amber-600 mb-4"></div>
+                  <p className="text-lg font-medium text-gray-800">
+                    Uploading...
+                  </p>
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Please wait while we process your proposal
+                  </p>
+                </>
+              ) : (
+                <>
+                  <CheckCircle size={48} className="text-green-500 mb-4" />
+                  <p className="text-lg font-medium text-gray-800">
+                    Update Complete!
+                  </p>
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Your proposal has been successfully updated
+                  </p>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </Dialog>
   );
 }
 

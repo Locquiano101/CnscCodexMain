@@ -26,6 +26,8 @@ import {
 } from "recharts";
 import { API_ROUTER } from "../../../../App";
 import axios from "axios";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export function AdviserFinancialReport({ orgData }) {
   const [financialReport, setFinancialReport] = useState(null);
@@ -74,34 +76,42 @@ export function AdviserFinancialReport({ orgData }) {
     months.forEach((month) => {
       monthlyStats[month] = {
         month,
-        reimbursements: 0,
-        disbursements: 0,
-        balance: currentBalance, // You might want to calculate this differently
+        cashInflow: 0,
+        cashOutflow: 0,
+        balance: currentBalance,
       };
     });
 
-    // Process reimbursements
+    // Process collections as Cash Inflow
+    financialReport.collections?.forEach((item) => {
+      const date = new Date(item.date);
+      const monthIndex = date.getMonth();
+      const monthName = months[monthIndex];
+      monthlyStats[monthName].cashInflow += item.amount;
+    });
+
+    // Process reimbursements as Cash Inflow
     financialReport.reimbursements.forEach((item) => {
       const date = new Date(item.date);
       const monthIndex = date.getMonth();
       const monthName = months[monthIndex];
-      monthlyStats[monthName].reimbursements += item.amount;
+      monthlyStats[monthName].cashInflow += item.amount;
     });
 
-    // Process disbursements
+    // Process disbursements as Cash Outflow
     financialReport.disbursements.forEach((item) => {
       const date = new Date(item.date);
       const monthIndex = date.getMonth();
       const monthName = months[monthIndex];
-      monthlyStats[monthName].disbursements += item.amount;
+      monthlyStats[monthName].cashOutflow += item.amount;
     });
 
-    // Calculate running balance (simplified - you might want to implement proper balance calculation)
+    // Calculate running balance
     let runningBalance = currentBalance;
     return months.map((month) => {
       const data = monthlyStats[month];
       runningBalance =
-        runningBalance - data.disbursements + data.reimbursements;
+        runningBalance + data.cashInflow - data.cashOutflow;
       return {
         ...data,
         balance: runningBalance,
@@ -140,10 +150,18 @@ export function AdviserFinancialReport({ orgData }) {
   }
 
   // Calculate totals from actual data
+  const totalCollections = financialReport.collections?.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  ) || 0;
+
   const totalReimbursements = financialReport.reimbursements.reduce(
     (sum, item) => sum + item.amount,
     0
   );
+
+  const totalCashInflow = totalCollections + totalReimbursements;
+
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,
     0
@@ -242,75 +260,79 @@ export function AdviserFinancialReport({ orgData }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full w-full pt-4 bg-transparent flex gap-4 ">
-      <div className="bg-white flex flex-col flex-1 p-6   shadow-lg border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-          {/* Left Section: Icon and Title */}
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-blue-100 rounded-lg w-10 flex justify-center">
-              <span className="text-blue-600 font-bold text-2xl">₱</span>
+    <div className="h-full w-full p-6 flex gap-4" style={{ backgroundColor: '#F5F5F9' }}>
+      <Card className="flex flex-col flex-1 overflow-hidden">
+        <CardContent className="p-6">
+          {/* Header */}
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+            {/* Left Section: Icon and Title */}
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-blue-100 rounded-lg w-10 flex justify-center">
+                <span className="text-blue-600 font-bold text-2xl">₱</span>
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Financial Report
+              </h2>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-800">
-              Financial Report
-            </h2>
+
+            {/* Right Section: Button */}
+            <Button className="bg-amber-500 hover:bg-amber-600">
+              Summarize Report
+            </Button>
           </div>
 
-          {/* Right Section: Button */}
-          <button className="bg-amber-500 text-white px-5 py-2.5 font-semibold ">
-            Summarize Report
-          </button>
-        </div>
+          {/* Summary Cards */}
+          <div className="flex flex-wrap gap-4">
+            {/* Cash Inflow */}
+            <div className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] p-4 rounded-lg border border-green-200 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600 font-medium">
+                    Cash Inflow
+                  </p>
+                  <p className="text-2xl font-bold text-green-800">
+                    {formatCurrency(totalCashInflow)}
+                  </p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
 
-        {/* Summary Cards */}
-        <div className="flex flex-wrap gap-4">
-          {/* Current Balance */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 flex-1 min-w-[200px] p-4 border border-blue-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-600 font-medium">
-                  Current Balance
-                </p>
-                <p className="text-2xl font-bold text-blue-800">
-                  {formatCurrency(currentBalance)}
-                </p>
+            {/* Cash Outflow */}
+            <div className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] p-4 rounded-lg border border-red-200 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-red-600 font-medium">
+                    Cash Outflow
+                  </p>
+                  <p className="text-2xl font-bold text-red-800">
+                    {formatCurrency(totalDisbursements)}
+                  </p>
+                </div>
+                <TrendingDown className="w-8 h-8 text-red-600" />
+              </div>
+            </div>
+
+            {/* Current Balance */}
+            <div className="bg-amber-100 flex-1 min-w-[200px] p-4 rounded-lg border border-amber-200 shadow-sm mb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-amber-600 font-medium">
+                    Current Balance
+                  </p>
+                  <p className="text-2xl font-bold text-amber-800">
+                    {formatCurrency(currentBalance)}
+                  </p>
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <span className="text-amber-600 text-2xl font-bold">₱</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Reimbursements */}
-          <div className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] p-4  border border-green-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-green-600 font-medium">
-                  Total Reimbursements
-                </p>
-                <p className="text-2xl font-bold text-green-800">
-                  {formatCurrency(totalReimbursements)}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-green-600" />
-            </div>
-          </div>
-
-          {/* Disbursements */}
-          <div className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] p-4  border border-red-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-red-600 font-medium">
-                  Total Disbursements
-                </p>
-                <p className="text-2xl font-bold text-red-800">
-                  {formatCurrency(totalDisbursements)}
-                </p>
-              </div>
-              <TrendingDown className="w-8 h-8 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Section */}
-        <div className="flex flex-col gap-6 overflow-auto max-h-[600px]">
+          {/* Charts */}
+          <div className="flex mt-4 flex-col gap-6">
           {/* Monthly Comparison Bar Chart */}
           <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -325,14 +347,14 @@ export function AdviserFinancialReport({ orgData }) {
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
                   <Bar
-                    dataKey="reimbursements"
+                    dataKey="cashInflow"
                     fill="#22c55e"
-                    name="Reimbursements"
+                    name="Cash Inflow"
                   />
                   <Bar
-                    dataKey="disbursements"
+                    dataKey="cashOutflow"
                     fill="#ef4444"
-                    name="Disbursements"
+                    name="Cash Outflow"
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -375,81 +397,75 @@ export function AdviserFinancialReport({ orgData }) {
             </div>
           )}
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Reimbursements and Disbursements */}
+      {/* Collections, Cash Inflow and Cash Outflow */}
       <div className="flex flex-col flex-1 gap-4 h-full overflow-hidden">
-        {/* Collectible Fees */}
-        <div className="bg-white p-0  border overflow-hidden border-gray-100 flex-1 flex flex-col">
-          <div className="flex flex-col flex-1 gap-4 h-full overflow-hidden">
-            {/* Collectible Fees */}
-            <div className="bg-white p-0 border overflow-hidden border-gray-100 flex-1 flex flex-col">
-              <div className="sticky flex justify-between w-full top-0 z-10 bg-white p-6 border-b border-gray-400 items-center gap-3">
-                <div className="flex gap-2 items-center">
-                  <div className="p-2.5 bg-amber-100 rounded-lg w-10 flex justify-center">
-                    <span className="text-amber-600 font-bold text-lg">₱</span>
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-800">
-                    Collectible Fees
-                  </h2>
-                </div>
+        {/* Collection Fees */}
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <div className="sticky flex justify-between w-full top-0 z-10 bg-white p-6 border-b items-center gap-3">
+            <div className="flex gap-2 items-center">
+              <div className="p-2.5 bg-amber-100 rounded-lg">
+                <span className="text-amber-600 font-bold text-xl">₱</span>
               </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Collection Fees
+              </h2>
             </div>
           </div>
-
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
-            {financialReport.reimbursements.length === 0 ? (
+            {(financialReport.collections?.length || 0) === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No reimbursements found
+                No collection fees found
               </div>
             ) : (
-              financialReport.reimbursements.map((item, index) => (
+              financialReport.collections.map((item, index) => (
                 <div
-                  key={`reimbursement-${index}`}
-                  className="bg-green-50 p-4  border border-green-200"
+                  key={`collection-${index}`}
+                  className="bg-amber-50 p-4 rounded-lg border border-amber-200"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium text-gray-800">
                       {item.description}
                     </h3>
-                    <span className="text-green-600 font-bold">
+                    <span className="text-amber-600 font-bold">
                       {formatCurrency(item.amount)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-600">
                     <span>
-                      Date Reimbursed:
-                      {new Date(item.date).toLocaleDateString()}
+                      Date Collected: {new Date(item.date).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1"></div>
                 </div>
               ))
             )}
           </div>
-        </div>
-        {/* Reimbursements */}
-        <div className="bg-white p-0  border overflow-hidden border-gray-100 flex-1 flex flex-col">
-          <div className="sticky flex justify-between w-full top-0 z-10 bg-white p-6 border-b border-gray-400 items-center gap-3">
+        </Card>
+
+        {/* Cash Inflow (Reimbursements) */}
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <div className="sticky flex justify-between w-full top-0 z-10 bg-white p-6 border-b items-center gap-3">
             <div className="flex gap-2 items-center">
               <div className="p-2.5 bg-green-100 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <h2 className="text-xl font-bold text-gray-800">
-                Reimbursements
+                Cash Inflow
               </h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
             {financialReport.reimbursements.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No reimbursements found
+                No cash inflow found
               </div>
             ) : (
               financialReport.reimbursements.map((item, index) => (
                 <div
                   key={`reimbursement-${index}`}
-                  className="bg-green-50 p-4  border border-green-200"
+                  className="bg-green-50 p-4 rounded-lg border border-green-200"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium text-gray-800">
@@ -461,37 +477,35 @@ export function AdviserFinancialReport({ orgData }) {
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-600">
                     <span>
-                      Date Reimbursed:
-                      {new Date(item.date).toLocaleDateString()}
+                      Date: {new Date(item.date).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1"></div>
                 </div>
               ))
             )}
           </div>
-        </div>
+        </Card>
 
-        {/* Disbursements */}
-        <div className="bg-white  shadow-lg border border-gray-100 flex-1 flex flex-col overflow-hidden">
-          <div className="sticky justify-between top-0 z-10 bg-white  p-4 border-b border-gray-400 flex items-center">
+        {/* Cash Outflow (Disbursements) */}
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <div className="sticky justify-between top-0 z-10 bg-white p-6 border-b flex items-center">
             <div className="flex items-center gap-2">
               <div className="p-2.5 bg-red-100 rounded-lg">
                 <TrendingDown className="w-5 h-5 text-red-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800">Disbursements</h2>
+              <h2 className="text-xl font-bold text-gray-800">Cash Outflow</h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
             {financialReport.disbursements.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No disbursements found
+                No cash outflow found
               </div>
             ) : (
               financialReport.disbursements.map((item, index) => (
                 <div
                   key={`disbursement-${index}`}
-                  className="bg-red-50 p-4  border border-red-200"
+                  className="bg-red-50 p-4 rounded-lg border border-red-200"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium text-gray-800">
@@ -503,15 +517,14 @@ export function AdviserFinancialReport({ orgData }) {
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-600">
                     <span>
-                      Date Disbursed: {new Date(item.date).toLocaleDateString()}
+                      Date: {new Date(item.date).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1"></div>
                 </div>
               ))
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

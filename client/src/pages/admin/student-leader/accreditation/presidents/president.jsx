@@ -15,11 +15,16 @@ import AddStudentPresident from "./add_president";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 import { ProportionCropTool } from "./../../../../../components/image_uploader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 // Loading Component
 const LoadingScreen = () => {
   return (
-    <div className="flex flex-col h-full w-full items-center justify-center min-h-96">
-      <div className="flex flex-col items-center space-y-6">
+    <Card className="bg-white flex items-center justify-center min-h-96">
+      <CardContent className="flex flex-col items-center space-y-6 p-8">
         {/* Animated spinner */}
         <div className="relative">
           <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
@@ -42,8 +47,8 @@ const LoadingScreen = () => {
           <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-200"></div>
           <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-400"></div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -126,40 +131,42 @@ export default function StudentLeaderPresidentListComponent({
   // Show error message if there's an error
   if (error) {
     return (
-      <div className="flex flex-col  h-full w-full items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <Card className="bg-white">
+        <CardContent className="flex flex-col items-center justify-center min-h-96 p-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-red-600 mb-2">
+              Error Loading Data
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">{error}</p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
+              Retry
+            </Button>
           </div>
-          <h3 className="text-xl font-semibold text-red-600 mb-2">
-            Error Loading Data
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="flex flex-col h-full w-full gap-8 overflow-auto p-4">
+    <div className="flex flex-col h-full w-full gap-6 overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Current President */}
       <div>
         {/* Header */}
@@ -170,30 +177,34 @@ export default function StudentLeaderPresidentListComponent({
         </div>
 
         {currentPresident ? (
-          <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
-            <CurrentPresidentCard
-              currentPresident={currentPresident}
-              orgData={orgData}
-            />
-          </div>
-        ) : (
-          <div
-            onClick={handleAdd}
-            className="group bg-gradient-to-br from-indigo-50 to-white rounded-2xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 p-8 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 hover:shadow-lg "
-          >
-            <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center border border-indigo-300 group-hover:border-indigo-500 group-hover:scale-105 transition-all duration-300">
-              <Plus
-                size={44}
-                className="text-indigo-600 group-hover:text-indigo-700"
+          <Card className="bg-white shadow-md hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
+              <CurrentPresidentCard
+                currentPresident={currentPresident}
+                orgData={orgData}
               />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-800 mt-4 group-hover:text-indigo-700 transition-colors duration-200">
-              Add Current President
-            </h3>
-            <p className="text-sm text-gray-500 mt-2 group-hover:text-gray-600 transition-colors duration-200">
-              Click here to assign a new president
-            </p>
-          </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card
+            onClick={handleAdd}
+            className="group bg-gradient-to-br from-indigo-50 to-white border-2 border-dashed border-indigo-300 hover:border-indigo-500 cursor-pointer hover:shadow-lg transition-all duration-300"
+          >
+            <CardContent className="p-8 flex flex-col justify-center items-center text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center border border-indigo-300 group-hover:border-indigo-500 group-hover:scale-105 transition-all duration-300">
+                <Plus
+                  size={44}
+                  className="text-indigo-600 group-hover:text-indigo-700"
+                />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 group-hover:text-indigo-700 transition-colors duration-200">
+                Add Current President
+              </h3>
+              <p className="text-sm text-gray-500 mt-2 group-hover:text-gray-600 transition-colors duration-200">
+                Click here to assign a new president
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -204,50 +215,56 @@ export default function StudentLeaderPresidentListComponent({
           <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2">
             Former Presidents
           </h2>
-          <span className="text-sm text-gray-500 italic">
+          <Badge variant="secondary" className="text-sm italic">
             {remainingPresidents.length}{" "}
             {remainingPresidents.length === 1 ? "record" : "records"}
-          </span>
+          </Badge>
         </div>
 
         {remainingPresidents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {remainingPresidents.map((president) => (
-              <div
+              <Card
                 key={president._id}
-                className="bg-white shadow-md rounded-2xl p-4 border border-gray-100 hover:shadow-xl transition-all duration-300"
+                className="bg-white shadow-md hover:shadow-xl transition-all duration-300"
               >
-                <PresidentCard
-                  president={president}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  showActions={false}
-                />
-              </div>
+                <CardContent className="p-4">
+                  <PresidentCard
+                    president={president}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    showActions={false}
+                  />
+                </CardContent>
+              </Card>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-            <p className="text-gray-500 text-base italic">
-              No former presidents yet.
-            </p>
-          </div>
+          <Card className="bg-gray-50 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-10">
+              <p className="text-gray-500 text-base italic">
+                No former presidents yet.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Modal */}
       {showAddForm && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <AddStudentPresident
-            orgInfo={orgData}
-            AccreditationId={accreditationData._id}
-            onClose={() => setShowAddForm(false)}
-            onSuccess={() => {
-              setShowAddForm(false);
-              window.location.reload();
-            }}
-          />
-        </div>
+        <Dialog open={showAddForm} onOpenChange={() => setShowAddForm(false)}>
+          <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
+            <AddStudentPresident
+              orgInfo={orgData}
+              AccreditationId={accreditationData._id}
+              onClose={() => setShowAddForm(false)}
+              onSuccess={() => {
+                setShowAddForm(false);
+                window.location.reload();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
@@ -390,12 +407,13 @@ const CurrentPresidentCard = ({ currentPresident, orgData }) => {
           </h3>
           <div className="flex flex-wrap gap-2">
             {talentSkills.map((talent, index) => (
-              <span
+              <Badge
                 key={index}
-                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                variant="secondary"
+                className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200"
               >
                 {talent.skill} ({talent.level})
-              </span>
+              </Badge>
             ))}
           </div>
         </div>
@@ -412,7 +430,7 @@ const CurrentPresidentCard = ({ currentPresident, orgData }) => {
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
                   <th className="p-2 border text-left">Subject</th>
-                  <th className="p-2 border text-left">Place</th>
+                  <th className="p-2 border text-left">Place/Room</th>
                   <th className="p-2 border text-left">Day</th>
                   <th className="p-2 border text-left">Class Start</th>
                   <th className="p-2 border text-left">Class End</th>
@@ -462,34 +480,40 @@ const PresidentCard = ({
 }) => {
   if (!president) {
     return (
-      <div className="bg-white rounded-lg p-6 text-center">
-        <div className="text-gray-500">
-          <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
-          <p>No president assigned</p>
-        </div>
-      </div>
+      <Card className="bg-white">
+        <CardContent className="p-6 text-center">
+          <div className="text-gray-500">
+            <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
+            <p>No president assigned</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white   h-full w-full  duration-200 p-4 relative">
+    <div className="bg-white h-full w-full duration-200 relative">
       {/* Action buttons - only show for current president */}
       {showActions && (
         <div className="absolute top-3 right-3 flex gap-1">
-          <button
+          <Button
             onClick={() => onEdit(president)}
-            className="text-gray-400 hover:text-blue-600 p-1"
+            variant="ghost"
+            size="icon"
+            className="text-gray-400 hover:text-blue-600"
             title="Edit"
           >
             <Edit className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onDelete(president)}
-            className="text-gray-400 hover:text-red-600 p-1"
+            variant="ghost"
+            size="icon"
+            className="text-gray-400 hover:text-red-600"
             title="Delete"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -538,15 +562,16 @@ const PresidentCard = ({
         <h3 className="text-xl font-semibold text-gray-900">
           {president.name}
         </h3>
-        <p
-          className={`text-sm font-medium px-3 py-1 rounded-full inline-block ${
+        <Badge
+          variant={president.isCurrent ? "default" : "secondary"}
+          className={
             president.isCurrent
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-600 bg-gray-50"
-          }`}
+              ? "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-gray-50 hover:bg-gray-100"
+          }
         >
           {president.isCurrent ? "Current President" : "Former President"}
-        </p>
+        </Badge>
         <div className="text-sm text-gray-600 space-y-1">
           <p>{president.courseYear}</p>
           <p>Age: {president.age}</p>
@@ -624,17 +649,16 @@ export function UploadPresidentProfilePicture({
     if (!finalCropData && cropRef.current?.hasImage) {
       try {
         console.log("No crop data yet. Cropping now...");
-        const result = await cropRef.current.cropImage(); // Should return { croppedFile, ... }
+        const result = await cropRef.current.cropImage();
         finalCropData = result;
         console.log("Cropped result:", result);
-        setCropData(result); // Cache it
+        setCropData(result);
       } catch (err) {
         console.error("❌ Failed to crop image before upload:", err);
         alert("Please crop the image before uploading.");
         return;
       }
     }
-    // Still no data? Bail.
     if (!finalCropData || !finalCropData.croppedFile) {
       alert("Please select and crop an image first.");
       return;
@@ -665,7 +689,7 @@ export function UploadPresidentProfilePicture({
         formData
       );
 
-      const data = res.data; // ✅ No need to call .json()
+      const data = res.data;
       console.log("✅ Upload successful:", data);
       alert("Profile picture uploaded successfully!");
     } catch (err) {
@@ -676,29 +700,16 @@ export function UploadPresidentProfilePicture({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
-      onClick={closeModal}
-    >
-      <div
-        className="   w-full max-w-lg relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={closeModal}
-          className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-red-100 rounded-full flex items-center justify-center text-gray-600 hover:text-red-500 transition"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-center mb-4">
+    <Dialog open={isOpen} onOpenChange={closeModal}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-center">
             Upload & Crop Image
-          </h2>
+          </DialogTitle>
+        </DialogHeader>
 
+        <div className="space-y-6">
           <ProportionCropTool
             title="Crop Your Image"
             cropRef={cropRef}
@@ -707,23 +718,23 @@ export function UploadPresidentProfilePicture({
             showReset={true}
           />
 
-          <div className="mt-6 flex justify-center gap-4">
-            <button
+          <div className="flex justify-center gap-4">
+            <Button
               onClick={handleUpload}
               disabled={uploading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700"
             >
               {uploading ? "Processing..." : "Upload Image"}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => cropRef.current?.resetImage()}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2 rounded-lg font-medium"
+              variant="outline"
             >
               Reset
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

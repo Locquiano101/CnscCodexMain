@@ -23,6 +23,40 @@ import { ShowDeanDetailedProposal } from "./dean-detailed-proposal";
 export function DeanProposalConduct({ orgData, user }) {
   const [proposalsConduct, setProposalsConduct] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null); // for details modal
+  // Wrapped multi-line pie label (ported from SDU implementation)
+  const renderWrappedPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.5; // position slightly inward
+    let x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    // Nudge horizontally away from edge
+    const horizontalNudge = 8;
+    x = x + (x > cx ? -horizontalNudge : horizontalNudge);
+
+    // Split name into at most two lines
+    const maxCharsPerLine = 12;
+    const cleanName = String(name);
+    let line1 = cleanName;
+    let line2 = "";
+    if (cleanName.length > maxCharsPerLine) {
+      const idx = cleanName.lastIndexOf(" ", maxCharsPerLine);
+      if (idx > 0) {
+        line1 = cleanName.slice(0, idx);
+        line2 = cleanName.slice(idx + 1);
+      } else {
+        line1 = cleanName.slice(0, maxCharsPerLine);
+        line2 = cleanName.slice(maxCharsPerLine);
+      }
+    }
+    const pctText = `(${(percent * 100).toFixed(0)}%)`;
+    return (
+      <text x={x} y={y} fill="#374151" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={10}>
+        <tspan x={x} dy={-6}>{line1}</tspan>
+        {line2 && <tspan x={x} dy={12}>{line2}</tspan>}
+        <tspan x={x} dy={line2 ? 12 : 12} fill="#6B7280">{pctText}</tspan>
+      </text>
+    );
+  };
   const fetchProposedPlanConduct = async () => {
     try {
       const { data } = await axios.get(
@@ -116,37 +150,45 @@ export function DeanProposalConduct({ orgData, user }) {
   const monthlyStats = getMonthlyStats();
 
   return (
-    <div className="flex flex-col h-full w-full overflow-auto bg-gray-200">
-      {/* Enhanced Header with maroon gradient */}
-      <h1 className="text-2xl p-4 font-bold drop-shadow-lg">
-        Student Leader Proposals
-      </h1>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Page Header */}
+      <div className="h-18 border-b bg-background flex items-center justify-between px-6 flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-semibold">Proposals</h1>
+          <p className="text-sm text-muted-foreground">Review and manage activity proposals</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-medium">{orgData?.orgName || "Organization"}</p>
+            <p className="text-xs text-muted-foreground">{orgData?.orgAcronym || ""}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
+        <div className="flex flex-col gap-6">
 
       {/* Charts Section */}
       {proposalsConduct.length > 0 && (
-        <div className="px-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Status Distribution Pie Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Status Distribution
-              </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Status Distribution Pie Chart */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Status Distribution
+            </h3>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={Object.entries(statusStats).map(
-                      ([status, count]) => ({
-                        name: status,
-                        value: count,
-                      })
-                    )}
+                    data={Object.entries(statusStats).map(([status, count]) => ({
+                      name: status === "Approved For Conduct" ? "Approved" : status,
+                      value: count,
+                    }))}
                     cx="50%"
                     cy="50%"
                     outerRadius={70}
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} (${(percent * 100).toFixed(0)}%)`
-                    }
+                    label={renderWrappedPieLabel}
+                    style={{ fontSize: "10px" }}
                   >
                     {Object.entries(statusStats).map(([status], idx) => {
                       const colors = {
@@ -217,17 +259,15 @@ export function DeanProposalConduct({ orgData, user }) {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </div>
         </div>
       )}
 
       {/* Enhanced Table Container */}
-      <div className="flex-1 flex flex-col px-4">
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          {/* Table Header */}
-          <div className="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200/70">
-            <h3 className="text-lg font-semibold text-gray-800">Proposals</h3>
-          </div>
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        {/* Table Header */}
+        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800">Proposals</h3>
+        </div>
 
           {/* Enhanced Table */}
           <div className="flex flex-col overflow-hidden">
@@ -357,6 +397,7 @@ export function DeanProposalConduct({ orgData, user }) {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       </div>
 

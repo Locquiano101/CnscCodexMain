@@ -39,6 +39,11 @@ import backgroundImage from "./../../../assets/cnsc-codex-2.svg";
 
 import { StudentPost } from "./posts/student-post";
 import { StudentLeaderNotification } from "./student-leader-notification";
+import DocumentUploader from "../../../components/document_uploader";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import cnscLogo from "../../../assets/cnsc-codex-2.svg";
 
 export default function StudentLeaderMainPage() {
   // User and organization data
@@ -135,60 +140,26 @@ export default function StudentLeaderMainPage() {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
-      {/* Header */}
-
-      <div className="flex items-center justify-center bg-cnsc-secondary-color h-fit w-full px-4 shadow-2xl">
-        {/* Left: Logo + Title */}
-        <div className="w-full h-full flex justify-start items-center">
-          {isPosting && (
-            <Home
-              onClick={() => navigate("/student-leader")}
-              size={32}
-              className="hover:cursor-pointer"
-            />
-          )}
-        </div>
-        <div className="flex min-w-fit items-center space-x-2 p-4">
-          <img
-            src={backgroundImage} // replace with your actual logo path
-            alt="CNSC Codex Logo"
-            className="h-12 aspect-square rounded-full bg-white"
-          />
-          <span className="font-bold text-xl text-cnsc-primary-color">
-            CNSC CODEX
-          </span>
-        </div>
-        <div className="w-full h-full" />
-
-        {/* Right: Manual + Icons */}
-        {/* <div className="flex items-center space-x-4">
-        <button className="flex items-center space-x-1 bg-amber-100 text-amber-600 px-2 py-1 rounded text-sm font-medium hover:bg-amber-200 transition">
-          <HelpCircle size={16} />
-          <span>Manual</span>
-        </button>
-
-        <Bell
-          size={20}
-          className="text-cnsc-primary-color cursor-pointer hover:scale-110 transition"
-        />
-      </div> */}
-      </div>
-
       {/* Main content area */}
       <div className="flex h-full overflow-auto">
         {/* Sidebar */}
         {!isPosting && (
-          <div className="w-1/5 h-full flex flex-col bg-cnsc-primary-color">
+          <div className="w-64 flex-shrink-0">
             <StudentNavigation orgData={orgData} />
-            <LogoutButton />
           </div>
         )}
         {/* Main content */}
-        <div className="flex-1 h-full overflow-y-auto">
-          <StudentRoutes
-            orgData={orgData}
-            accreditationData={accreditationData}
-          />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Topbar */}
+          <StudentTopbar orgData={orgData} />
+          {/* Page Content */}
+          <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#F5F5F9' }}>
+            <StudentRoutes
+              orgData={orgData}
+              accreditationData={accreditationData}
+              user={user}
+            />
+          </div>
         </div>
       </div>
 
@@ -210,9 +181,95 @@ export default function StudentLeaderMainPage() {
   );
 }
 
-function StudentRoutes({ orgData, accreditationData }) {
+function StudentTopbar({ orgData }) {
+  const location = useLocation();
+  
+  // Map routes to page info
+  const getPageInfo = () => {
+    const path = location.pathname;
+    
+    if (path === "/student-leader" || path === "/student-leader/") {
+      return { title: "Dashboard", description: "Manage your organization's activities" };
+    } else if (path.includes("/accreditation")) {
+      return { title: "Accreditation", description: "Track and manage accreditation requirements" };
+    } else if (path.includes("/accomplishment")) {
+      return { title: "Accomplishments", description: "View and submit organizational accomplishments" };
+    } else if (path.includes("/proposal")) {
+      return { title: "Proposals", description: "Create and manage activity proposals" };
+    } else if (path.includes("/post")) {
+      return { title: "Posts", description: "Share updates and announcements" };
+    } else if (path.includes("/notifications")) {
+      return { title: "Notifications", description: "Stay updated with your organization" };
+    }
+    
+    return { title: "CNSC Codex", description: "Student Leader Portal" };
+  };
+
+  const { title, description } = getPageInfo();
+  const imageSrc = orgData._id && orgData.orgLogo
+    ? `${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`
+    : backgroundImage;
+
   return (
-    <div className="flex flex-col w-full h-full bg-gray-200 overflow-hidden">
+    <div className="h-18 border-b bg-background flex items-center justify-between px-6">
+      {/* Left: Page Title & Description */}
+      <div>
+        <h1 className="text-xl font-semibold">{title}</h1>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+
+      {/* Right: Org Picture & Name */}
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <p className="text-sm font-medium">{orgData.orgName || "Organization"}</p>
+          <p className="text-xs text-muted-foreground">{orgData.orgAcronym || ""}</p>
+        </div>
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <img
+            src={imageSrc}
+            alt="Organization Logo"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StudentRoutes({ orgData, accreditationData, user }) {
+  // Fetch visible accreditation requirements for dynamic custom routes
+  const [visibleRequirements, setVisibleRequirements] = useState([]);
+  useEffect(() => {
+    let ignore = false;
+    async function fetchVisible() {
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
+        if (!ignore) setVisibleRequirements(data || []);
+      } catch (err) {
+        console.warn("StudentRoutes: failed to fetch visible requirements", err?.message);
+      }
+    }
+    fetchVisible();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const customRequirementRoutes = visibleRequirements
+    .filter((r) => r.type === "custom")
+    .map((r) => (
+      <Route
+        key={r.key}
+        path={`custom-${r.key}`}
+        element={<StudentLeaderCustomRequirementViewer requirementKey={r.key} title={r.title} orgData={orgData} user={user} />}
+      />
+    ));
+
+  return (
+    <div className="flex flex-col w-full h-full overflow-hidden" style={{ backgroundColor: '#F5F5F9' }}>
       <Routes>
         <Route
           index
@@ -277,6 +334,7 @@ function StudentRoutes({ orgData, accreditationData }) {
               />
             }
           />
+          {customRequirementRoutes}
         </Route>
 
         <Route
@@ -301,6 +359,154 @@ function StudentRoutes({ orgData, accreditationData }) {
           }
         />
       </Routes>
+    </div>
+  );
+}
+
+// Lightweight viewer for custom accreditation requirements for student leaders.
+// Future enhancement: allow document upload per custom requirement.
+function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, user }) {
+  const [submission, setSubmission] = useState(null); // { status, document { fileName } }
+  const [loading, setLoading] = useState(true);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  // Derive organization profile id directly from orgData passed down
+  const orgProfileId = orgData?._id || user?.organization?._id;
+
+  useEffect(() => {
+    let ignore = false;
+    async function fetchSubmission() {
+      if (!orgProfileId) return;
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/${requirementKey}/submission/${orgProfileId}`,
+          { withCredentials: true }
+        );
+        if (!ignore) setSubmission(data.submission);
+      } catch (err) {
+        console.warn("Failed to fetch requirement submission", err?.message);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    fetchSubmission();
+    return () => {
+      ignore = true;
+    };
+  }, [orgProfileId, requirementKey]);
+
+  const handleUpload = async () => {
+    if (!file || !orgProfileId) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("organizationProfile", orgProfileId);
+      const { data } = await axios.post(
+        `${API_ROUTER}/accreditation/requirements/${requirementKey}/submit`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" }, withCredentials: true }
+      );
+      setSubmission(data.submission);
+      setFile(null);
+    } catch (err) {
+      alert(err.response?.data?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const statusStyles = {
+    Approved: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    Pending: "bg-amber-50 text-amber-700 border border-amber-200",
+    Rejected: "bg-red-50 text-red-700 border border-red-200",
+  };
+  const pill = submission?.status ? (
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[submission.status] || "bg-gray-100 text-gray-600 border"}`}>{submission.status}</span>
+  ) : null;
+
+  return (
+    <div className="p-6">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">{title} {pill}</h2>
+        </div>
+        <p className="text-sm text-gray-600">
+          Upload the document corresponding to <code>{requirementKey}</code>. Re-uploading will replace the previous file and reset status to Pending.
+        </p>
+        {loading && <div className="text-gray-500 text-sm">Loading submission info...</div>}
+        <div className="flex flex-col lg:flex-row gap-6 overflow-hidden">
+          {/* Left: Uploader + logs */}
+          <div className="w-full lg:w-1/3 flex flex-col gap-4">
+            <DocumentUploader
+              onFileSelect={setFile}
+              acceptedFormats="application/pdf"
+              title={submission ? "Select a document to replace" : "Select a document to upload"}
+              showReset={true}
+              className="mb-2"
+            />
+            <button
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              onClick={handleUpload}
+              disabled={!file || uploading}
+            >
+              {uploading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block mr-2"></div>
+                  Uploading...
+                </>
+              ) : submission ? (
+                "Replace File"
+              ) : (
+                "Upload File"
+              )}
+            </button>
+            {submission?.logs && submission.logs.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <h4 className="font-semibold text-gray-900 mb-2">Document Logs</h4>
+                <ul className="space-y-1 text-sm text-gray-700 max-h-32 overflow-y-auto">
+                  {submission.logs.map((log, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full mt-1"></span>
+                      <span>{log}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          {/* Right: Preview */}
+          <div className="flex-1 min-h-[420px] flex flex-col">
+            {!loading && submission?.document?.fileName ? (
+              <div className="flex-1 flex flex-col gap-3">
+                <div className="border rounded-lg overflow-hidden bg-white shadow-sm flex-1">
+                  <iframe
+                    className="w-full h-[520px]"
+                    src={`${DOCU_API_ROUTER}/${orgProfileId}/${submission.document.fileName}#toolbar=0&navpanes=0&scrollbar=0`}
+                    title="Requirement Submission Preview"
+                    onError={() => setPreviewError(true)}
+                  />
+                </div>
+                {previewError && (
+                  <div className="p-4 text-sm rounded-md bg-red-50 border border-red-200 text-red-700 flex flex-col gap-2">
+                    <span>File not found at the expected path.</span>
+                    <span>It may be stored in a legacy folder. Use the fallback link or re-upload.</span>
+                  </div>
+                )}
+                
+              </div>
+            ) : (
+              !loading && (
+                <div className="flex-1 border border-dashed rounded-xl text-center text-gray-500 bg-white flex items-center justify-center">
+                  No submission yet.
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -396,160 +602,109 @@ function StudentNavigation({ orgData }) {
 
   return (
     <>
-      <div className="h-full w-full flex-col">
-        <div className="mt-2 mb-4 flex items-center space-x-4 cursor-pointer group">
-          {/* Logo container */}
-          <div
-            className="relative my-1 ml-3 w-16 aspect-square rounded-full 
-                    bg-cnsc-secondary-color flex items-center justify-center 
-                    overflow-hidden shadow-md ring-2 ring-white/40 
-                    transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg"
-          >
-            {imageSrc ? (
-              <img
-                src={imageSrc}
-                alt="Organization Logo"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <div
-                onClick={handleUploadClick}
-                className="w-full h-full relative"
-              >
-                {/* Background image */}
-                <img
-                  src={backgroundImage}
-                  alt="Organization Logo"
-                  className="w-full h-full object-cover rounded-full"
-                />
-                {/* Plus icon on hover */}
-                <Plus
-                  size={44}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                       text-white drop-shadow-md opacity-0 
-                       group-hover:opacity-100 transition-opacity duration-300"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Welcome + Org name */}
+      <div className="h-full w-full flex flex-col bg-background border-r">
+        {/* Logo and Brand Header */}
+        <div className="h-18 border-b flex items-center px-6 gap-3">
+          <img src={cnscLogo} alt="CNSC Codex" className="w-10 h-10" />
           <div className="flex flex-col">
-            <span className="text-white/80 text-sm font-medium">Welcome!</span>
-            <h1
-              onClick={() => navigate("/student-leader/post")}
-              className="text-white font-extrabold text-lg tracking-wide drop-shadow-sm 
-                     transition-colors duration-300 group-hover:text-cnsc-secondary-color"
-            >
-              {orgData.orgName} Organization
-            </h1>
+            <h1 className="font-bold text-lg leading-tight">CNSC Codex</h1>
+            <p className="text-xs text-muted-foreground">Student Leader</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-1 mx-2 ">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {[
             {
               key: "home",
-              icon: <Home className="mr-3 w-5 h-5" />,
+              icon: <Home className="w-5 h-5" />,
               label: "Dashboard",
               path: "/student-leader",
             },
             {
               key: "accreditations",
-              icon: <FolderOpen className="mr-3 w-5 h-5" />,
+              icon: <FolderOpen className="w-5 h-5" />,
               label: "Accreditations",
               path: "/student-leader/accreditation",
             },
             {
               key: "accomplishments",
-              icon: <File className="mr-3 w-5 h-5" />,
+              icon: <File className="w-5 h-5" />,
               label: "Accomplishments",
               path: "/student-leader/accomplishment",
             },
             {
               key: "proposals",
-              icon: <FileText className="mr-3 w-5 h-5" />,
+              icon: <FileText className="w-5 h-5" />,
               label: "Proposals",
               path: "/student-leader/proposal",
             },
             {
               key: "Notifications",
-              icon: <Bell className="mr-3 w-5 h-5" />,
+              icon: <Bell className="w-5 h-5" />,
               label: "Notifications",
               path: "/student-leader/notifications",
             },
-            // {
-            //   key: "logs",
-            //   icon: <Clock className="mr-3 w-5 h-5" />,
-            //   label: "Logs",
-            //   path: "/student-leader/log",
-            // },
           ].map((item) => (
             <NavLink
               key={item.key}
               to={item.path}
               end={item.key === "home"}
               className={({ isActive }) =>
-                `flex items-center rounded-xl py-4 px-6 text-lg font-medium transition-all duration-300 ${
+                cn(
+                  "flex items-center gap-3 h-11 px-3 rounded-md cursor-pointer transition-colors text-sm font-medium",
                   isActive
-                    ? "bg-white text-cnsc-primary-color shadow-md"
-                    : "text-white hover:bg-amber-500/90 hover:pl-8"
-                }`
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "text-foreground hover:bg-muted"
+                )
               }
             >
               {item.icon}
-              {item.label}
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
+
+        {/* Logout Button */}
+        <div className="p-3 border-t">
+          <LogoutButton />
+        </div>
       </div>
 
       {/* Upload Logo Modal */}
       {isUploadingLogo && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-2xl shadow-2xl w-[420px] relative animate-fadeIn">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-xl font-bold text-cnsc-primary-color">
-                Upload Organization Logo
-              </h2>
-              <X
-                size={28}
-                onClick={cancelUploadLogo}
-                className="cursor-pointer hover:text-red-500 transition-colors"
-              />
-            </div>
+        <Dialog open={isUploadingLogo} onOpenChange={setIsUploadingLogo}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Organization Logo</DialogTitle>
+            </DialogHeader>
 
-            {/* Crop Tool */}
             <ProportionCropTool
               cropRef={cropRef}
               file={selectedFile}
               onCropComplete={handleCropComplete}
               initialProportion="1:1"
               acceptedFormats="image/*"
-              className="bg-gray-100 rounded-lg shadow-inner"
+              className="bg-muted rounded-lg"
             />
 
-            {/* Buttons */}
-            <div className="mt-6 flex justify-end gap-3">
-              <button
+            <DialogFooter>
+              <Button
+                variant="outline"
                 onClick={cancelUploadLogo}
-                className="bg-gray-400 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
                 disabled={isUploading}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSubmitOrgLogo}
-                className="bg-cnsc-primary-color text-white px-5 py-2 rounded-lg shadow hover:bg-cnsc-secondary-color disabled:opacity-50 transition-colors"
                 disabled={isUploading}
               >
                 {isUploading ? "Uploading..." : "Crop & Upload"}
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
@@ -566,11 +721,7 @@ function LogoutButton() {
   const handleConfirmLogout = async () => {
     setIsLoading(true);
     try {
-      // Replace with your actual API call
-      await new Promise((resolve) => setTimeout(resolve, 300)); // Simulated API call
       await axios.post(`${API_ROUTER}/logout`, {}, { withCredentials: true });
-
-      // Optional: redirect or update UI after logout
       window.location.href = "/";
     } catch (error) {
       console.error("Logout failed:", error);
@@ -584,109 +735,120 @@ function LogoutButton() {
 
   return (
     <>
-      {/* Logout Button */}
-      <div
+      <button
         onClick={handleLogoutClick}
-        className=" rounded-2xl flex gap-2 items-center justify-center text-2xl text-white font-bold px-4 w-full   border-cnsc-primary-color py-2  hover:text-cnsc-secondary-color transition-all duration-500 cursor-pointer  hover:bg-red-700 "
+        className={cn(
+          "w-full flex items-center gap-3 h-11 px-3 rounded-md cursor-pointer transition-colors",
+          "text-destructive hover:bg-destructive/10"
+        )}
       >
-        <LogOut size={16} />
-        Logout
-      </div>
+        <LogOut className="w-5 h-5" />
+        <span className="font-medium">Logout</span>
+      </button>
 
-      {/* Modal Overlay */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          {/* Modal Content */}
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Confirm Logout
-              </h3>
-              <button
-                onClick={handleCancelLogout}
-                className="text-gray-400 text-2xl hover:text-gray-600 transition-colors"
-                disabled={isLoading}
-              >
-                <X />
-              </button>
-            </div>
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Logout</DialogTitle>
+          </DialogHeader>
 
-            {/* Modal Body */}
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <LogOut size={24} className="text-red-600" />
-                </div>
-                <div>
-                  <p className="text-gray-900 font-medium">
-                    Are you sure you want to log out?
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    You'll need to sign in again to access your account.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex gap-3 p-6 pt-0">
-              <button
-                onClick={handleCancelLogout}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmLogout}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Logging out...
-                  </>
-                ) : (
-                  <>
-                    <LogOut size={16} />
-                    Logout
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to logout? You will need to sign in again to access your account.
+            </p>
           </div>
-        </div>
-      )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancelLogout}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmLogout}
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging out..." : "Logout"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
+
 function StudentAccreditationNavigationPage() {
-  const tabs = [
-    { to: ".", label: "Overview", end: true },
-    { to: "financial-report", label: "Financial Report" },
-    { to: "documents", label: "Accreditation Documents" },
-    { to: "roster-of-members", label: "Roster of Members" },
-    { to: "president-information", label: "President's Information Sheet" },
-    { to: "PPA", label: "Proposed Action Plan" },
+  // Fetch all visible requirements so we can display both template and custom items.
+  const [visibleRequirements, setVisibleRequirements] = useState(null); // null = loading; [] = none
+  useEffect(() => {
+    let ignore = false;
+    async function fetchVisible() {
+      try {
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
+        if (!ignore) setVisibleRequirements(data || []);
+      } catch (err) {
+        console.warn("StudentAccreditationNavigationPage: failed to fetch requirements", err?.message);
+        setVisibleRequirements([]); // fallback show all templates by default below
+      }
+    }
+    fetchVisible();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const templateMap = {
+    "financial-report": { to: "financial-report", label: "Financial Report" },
+    "accreditation-documents": { to: "documents", label: "Accreditation Documents" },
+    roster: { to: "roster-of-members", label: "Roster of Members" },
+    "president-info": { to: "president-information", label: "President's Information Sheet" },
+    "action-plan": { to: "PPA", label: "Proposed Action Plan" },
+  };
+  const orderedTemplateKeys = [
+    "financial-report",
+    "accreditation-documents",
+    "roster",
+    "president-info",
+    "action-plan",
   ];
 
+  const enabledTemplateTabs = orderedTemplateKeys
+    .filter((key) => {
+      if (visibleRequirements === null) return true; // optimistic show while loading
+      const anyDisabledFallback = visibleRequirements.length === 0; // we treat empty as error fallback
+      if (anyDisabledFallback) return true;
+      return visibleRequirements.some((r) => r.type === "template" && r.key === key);
+    })
+    .map((key) => templateMap[key]);
+
+  const customTabs = (visibleRequirements || [])
+    .filter((r) => r.type === "custom")
+    .map((r) => ({ to: `custom-${r.key}`, label: r.title }));
+
+  const tabs = [{ to: ".", label: "Overview", end: true }, ...enabledTemplateTabs, ...customTabs];
+
   return (
-    <div className="h-full flex flex-col ">
+    <div className="h-full flex flex-col">
       {/* Navigation */}
-      <nav className="flex gap-4 px-6 py-4 bg-white  ">
+      <nav className="flex gap-1 px-6 py-3 bg-background border-b overflow-x-auto">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}
             end={tab.end}
             className={({ isActive }) =>
-              `text-lg font-semibold px-4 pt-2 ${
+              cn(
+                "px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors",
                 isActive
-                  ? "border-b-2 border-cnsc-primary-z color text-cnsc-primary-color"
-                  : "text-gray-600 hover:text-cnsc-primary-color"
-              }`
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )
             }
           >
             {tab.label}
@@ -694,8 +856,8 @@ function StudentAccreditationNavigationPage() {
         ))}
       </nav>
 
-      {/* Tab Content */}
-      <div className="h-full overflow-hidden  flex flex-col ">
+      {/* Tab Content (make scrollable) */}
+      <div className="flex-1 overflow-y-auto">
         <Outlet />
       </div>
     </div>

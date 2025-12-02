@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import { useEffect, useState } from "react";
-import { MapPin, Pencil, Plus, Trash } from "lucide-react";
+import { MapPin, Pencil, Plus, Trash, FileText } from "lucide-react";
 
 import { AddProposal } from "./student-leader-add-proposal";
 import { AddNewProposal } from "./student-leader-add-new-proposal";
@@ -22,6 +22,11 @@ import {
   Legend,
 } from "recharts";
 import { EditProposal } from "./student-leader-edit-proposal";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function StudentLeaderProposal({ orgData }) {
   const [proposals, setProposals] = useState([]);
@@ -30,6 +35,39 @@ export function StudentLeaderProposal({ orgData }) {
   const [proposalToEdit, setProposalToEdit] = useState(null); // for edit modal
   const [showAddFormChoice, setShowAddFormChoice] = useState(false);
   const [selectedAddType, setSelectedAddType] = useState(null);
+
+  // Wrapped multi-line pie label renderer (consistent with Dean/Adviser)
+  const renderWrappedPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.5;
+    let x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const horizontalNudge = 8;
+    x = x + (x > cx ? -horizontalNudge : horizontalNudge);
+
+    const maxCharsPerLine = 12;
+    const cleanName = String(name);
+    let line1 = cleanName;
+    let line2 = "";
+    if (cleanName.length > maxCharsPerLine) {
+      const idx = cleanName.lastIndexOf(" ", maxCharsPerLine);
+      if (idx > 0) {
+        line1 = cleanName.slice(0, idx);
+        line2 = cleanName.slice(idx + 1);
+      } else {
+        line1 = cleanName.slice(0, maxCharsPerLine);
+        line2 = cleanName.slice(maxCharsPerLine);
+      }
+    }
+    const pctText = `(${(percent * 100).toFixed(0)}%)`;
+    return (
+      <text x={x} y={y} fill="#374151" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={10}>
+        <tspan x={x} dy={-6}>{line1}</tspan>
+        {line2 && <tspan x={x} dy={12}>{line2}</tspan>}
+        <tspan x={x} dy={line2 ? 12 : 12} fill="#6B7280">{pctText}</tspan>
+      </text>
+    );
+  };
 
   const fetchApprovedProposedActionPlanData = async () => {
     try {
@@ -162,51 +200,42 @@ export function StudentLeaderProposal({ orgData }) {
   };
 
   return (
-    <div className="flex flex-col h-full w-full overflow-auto bg-gray-200">
-      {/* Enhanced Header with maroon gradient */}
-      <div className="relative p-4 bg-slate-200">
-        <div className="relative flex justify-between items-center">
-          <h1 className="text-2xl font-bold drop-shadow-lg">
-            Student Leader Proposals
-          </h1>
-          <button
-            onClick={() => setShowAddFormChoice(true)}
-            className="group relative bg-amber-500 px-6 py-2 rounded-xl flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-amber-400 hover:border-amber-300"
-          >
-            <Plus
-              size={22}
-              className="group-hover:rotate-90 transition-transform duration-300"
-            />
-            <span className="font-semibold">Add Proposal</span>
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-col h-full w-full overflow-auto p-6 space-y-6" style={{ backgroundColor: '#F5F5F9' }}>
+      {/* Header */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl">Proposals</CardTitle>
+            <Button onClick={() => setShowAddFormChoice(true)} className="text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Proposal
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Charts Section */}
       {proposalsConduct.length > 0 && (
-        <div className="px-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Status Distribution Pie Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Status Distribution
-              </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Status Distribution Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Status Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={Object.entries(statusStats).map(
-                      ([status, count]) => ({
-                        name: status,
-                        value: count,
-                      })
-                    )}
+                    data={Object.entries(statusStats).map(([status, count]) => ({
+                      name: status === "Approved For Conduct" ? "Approved" : status,
+                      value: count,
+                    }))}
                     cx="50%"
                     cy="50%"
                     outerRadius={70}
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} (${(percent * 100).toFixed(0)}%)`
-                    }
+                    label={renderWrappedPieLabel}
+                    style={{ fontSize: "10px" }}
                   >
                     {Object.entries(statusStats).map(([status], idx) => {
                       const colors = {
@@ -225,13 +254,15 @@ export function StudentLeaderProposal({ orgData }) {
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Budget Overview Bar Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Budget Overview
-              </h3>
+          {/* Budget Overview Bar Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Budget Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart
                   data={[
@@ -248,13 +279,15 @@ export function StudentLeaderProposal({ orgData }) {
                   <Bar dataKey="value" fill="#3B82F6" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Monthly Activity Area Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Monthly Activity
-              </h3>
+          {/* Monthly Activity Area Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Monthly Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={Object.entries(monthlyStats).map(([month, count]) => ({
@@ -276,68 +309,53 @@ export function StudentLeaderProposal({ orgData }) {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Enhanced Table Container */}
-      <div className="flex-1 flex flex-col px-4">
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          {/* Table Header */}
-          <div className="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200/70">
-            <h3 className="text-lg font-semibold text-gray-800">Proposals</h3>
-          </div>
-
-          {/* Enhanced Table */}
-          <div className="flex flex-col overflow-hidden">
-            <table className="">
-              <thead className="">
+      {/* Proposals Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Proposals</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
                     Title
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
                     Proposed Date
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
                     Budget
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
                     Venue
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
                     Created
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200/70 overflow-auto">
+              <tbody className="divide-y divide-border">
                 {proposalsConduct.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-16 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-500">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                          <svg
-                            className="w-8 h-8 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                          <FileText className="w-8 h-8 text-muted-foreground" />
                         </div>
                         <p className="text-lg font-medium mb-2">
                           No proposals yet
                         </p>
-                        <p className="text-sm">
+                        <p className="text-sm text-muted-foreground">
                           Create your first proposal to get started
                         </p>
                       </div>
@@ -347,81 +365,68 @@ export function StudentLeaderProposal({ orgData }) {
                   proposalsConduct.map((item, index) => (
                     <tr
                       key={item._id}
-                      className="group  cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.001]"
+                      className="hover:bg-muted/50 cursor-pointer transition-colors"
                       onClick={() => setSelectedProposal(item)}
                     >
                       <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 capitalize group-hover:text-blue-700 transition-colors">
-                            {item.ProposedIndividualActionPlan.activityTitle}
-                          </p>
-                        </div>
+                        <p className="text-sm font-medium capitalize">
+                          {item.ProposedIndividualActionPlan.activityTitle}
+                        </p>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
                         {formatProposedDate(
                           item.ProposedIndividualActionPlan.proposedDate
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-sm font-medium">
                         {formatCurrency(
                           item.ProposedIndividualActionPlan
                             .budgetaryRequirements
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700 capitalize">
-                        <div className="flex items-center">
-                          <MapPin size={16} className="mr-2" />
+                      <td className="px-6 py-4 text-sm text-muted-foreground capitalize">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={16} />
                           {item.ProposedIndividualActionPlan.venue}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-3 py-2 rounded-xl text-xs font-bold shadow-md ${
+                        <Badge
+                          variant={
                             item.overallStatus === "Approved For Conduct"
-                              ? "bg-emerald-100"
+                              ? "approved"
                               : item.overallStatus === "Pending"
-                              ? "bg-amber-100"
-                              : item.overallStatus ===
-                                "Ready For Accomplishments"
-                              ? "bg-blue-100"
-                              : "bg-gray-100"
-                          } `}
+                              ? "pending"
+                              : item.overallStatus === "Ready For Accomplishments"
+                              ? "secondary"
+                              : "default"
+                          }
+                          className="text-white whitespace-nowrap"
                         >
-                          <div
-                            className={`w-2 h-2 rounded-full mr-2 ${
-                              item.overallStatus === "Approved For Conduct"
-                                ? "bg-emerald-500"
-                                : item.overallStatus === "Pending"
-                                ? "bg-amber-500"
-                                : item.overallStatus ===
-                                  "Ready For Accomplishments"
-                                ? "bg-blue-500"
-                                : "bg-gray-500"
-                            }`}
-                          ></div>
                           {item.overallStatus}
-                        </span>
+                        </Badge>
                       </td>
-                      <td className="px-6 py-4 text-sm flex items-center justify-between text-gray-600">
-                        {formatDate(item.createdAt)}
-                        <div className="flex gap-4 items-center justify-center">
-                          <Pencil
-                            size={16}
-                            className="text-yellow-600 cursor-pointer hover:scale-125"
-                            onClick={(e) => {
-                              e.stopPropagation(); // prevent row click
-                              setProposalToEdit(item); // open edit modal separately
-                            }}
-                          />
-
-                          <Trash
-                            size={16}
-                            className="text-red-600 cursor-pointer transition-transform duration-500 hover:scale-130"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(item._id);
-                            }}
-                          />
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        <div className="flex items-center justify-between">
+                          <span>{formatDate(item.createdAt)}</span>
+                          <div className="flex gap-3">
+                            <Pencil
+                              size={16}
+                              className="text-yellow-600 cursor-pointer hover:scale-125 transition-transform"
+                              onClick={(e) => {
+                                e.stopPropagation(); // prevent row click
+                                setProposalToEdit(item); // open edit modal separately
+                              }}
+                            />
+                            <Trash
+                              size={16}
+                              className="text-red-600 cursor-pointer hover:scale-125 transition-transform"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(item._id);
+                              }}
+                            />
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -430,8 +435,8 @@ export function StudentLeaderProposal({ orgData }) {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {showAddFormChoice && (
         <ProposalChoiceModal
@@ -482,30 +487,32 @@ export function StudentLeaderProposal({ orgData }) {
 
 function ProposalChoiceModal({ onClose, onSelect }) {
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg p-6 w-80 text-center">
-        <h2 className="text-lg font-bold mb-4">Choose Proposal Type</h2>
-        <div className="flex flex-col gap-3">
-          <button
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-center">Choose Proposal Type</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3 py-4">
+          <Button
             onClick={() => onSelect("occurring")}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             Occurring Proposal
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onSelect("new")}
-            className="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             New Proposal
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition"
+            variant="outline"
           >
             Cancel
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

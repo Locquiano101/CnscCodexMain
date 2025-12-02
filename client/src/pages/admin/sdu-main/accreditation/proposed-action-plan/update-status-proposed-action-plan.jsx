@@ -206,9 +206,9 @@ export function ViewProposalModal({
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[95vh] overflow-hidden border">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden border">
         {/* Header */}
-        <div className="border-b p-6">
+        <div className="border-b p-6 flex-shrink-0">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-semibold mb-1">Proposal Review</h2>
@@ -226,7 +226,7 @@ export function ViewProposalModal({
         </div>
 
         {/* Content */}
-        <div className="p-4 overflow-y-auto h-fit">
+        <div className="p-6 overflow-y-auto flex-1">
           {/* Quick Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="bg-gray-50 p-4 rounded border">
@@ -345,7 +345,7 @@ export function ViewProposalModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-gray-50 px-6 py-4 border-t ">
+        <div className="bg-gray-50 px-6 py-4 border-t flex-shrink-0">
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleRevision}

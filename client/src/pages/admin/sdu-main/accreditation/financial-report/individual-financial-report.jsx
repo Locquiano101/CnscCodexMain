@@ -64,31 +64,41 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
     months.forEach((month) => {
       monthlyStats[month] = {
         month,
-        reimbursements: 0,
-        disbursements: 0,
+        cashInflow: 0,
+        cashOutflow: 0,
         balance: currentBalance,
       };
     });
 
+    // Add collections to cash inflow
+    financialReport.collections?.forEach((item) => {
+      const date = new Date(item.date);
+      const monthIndex = date.getMonth();
+      const monthName = months[monthIndex];
+      monthlyStats[monthName].cashInflow += item.amount;
+    });
+
+    // Add reimbursements to cash inflow
     financialReport.reimbursements.forEach((item) => {
       const date = new Date(item.date);
       const monthIndex = date.getMonth();
       const monthName = months[monthIndex];
-      monthlyStats[monthName].reimbursements += item.amount;
+      monthlyStats[monthName].cashInflow += item.amount;
     });
 
+    // Add disbursements to cash outflow
     financialReport.disbursements.forEach((item) => {
       const date = new Date(item.date);
       const monthIndex = date.getMonth();
       const monthName = months[monthIndex];
-      monthlyStats[monthName].disbursements += item.amount;
+      monthlyStats[monthName].cashOutflow += item.amount;
     });
 
     let runningBalance = currentBalance;
     return months.map((month) => {
       const data = monthlyStats[month];
       runningBalance =
-        runningBalance - data.disbursements + data.reimbursements;
+        runningBalance + data.cashInflow - data.cashOutflow;
       return {
         ...data,
         balance: runningBalance,
@@ -162,10 +172,18 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
     );
   }
 
+  const totalCollections = financialReport.collections?.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  ) || 0;
+
   const totalReimbursements = financialReport.reimbursements.reduce(
     (sum, item) => sum + item.amount,
     0
   );
+
+  const totalCashInflow = totalCollections + totalReimbursements;
+
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,
     0
@@ -233,12 +251,12 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full w-full pt-4 bg-gray-200 p-4 flex gap-4 overflow-auto">
-      <div className="bg-white shadow-lg flex flex-col flex-1 p-6 border border-gray-100 overflow-hidden">
+    <div className="h-full w-full p-6 flex gap-4 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
+      <div className="bg-white shadow-lg flex flex-col flex-1 p-6 rounded-lg border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-blue-100 rounded w-10 flex justify-center">
+            <div className="p-2 bg-blue-100 rounded-lg w-10 flex justify-center">
               <span className="text-blue-600 text-2xl font-bold">₱</span>
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">
@@ -246,45 +264,32 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
             </h2>
           </div>
 
-          <button className="bg-amber-500 text-white px-5 py-2.5 font-semibold ">
+          <button className="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 font-semibold rounded-lg">
             Summarize Report
           </button>
         </div>
 
         {/* Summary Cards */}
         <div className="flex flex-wrap gap-4">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 flex-1 min-w-[200px] p-4 border border-blue-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-600 font-medium">
-                  Current Balance
-                </p>
-                <p className="text-2xl font-bold text-blue-800">
-                  {formatCurrency(currentBalance)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] p-4 border border-green-200 shadow-sm">
+          <div className="bg-gradient-to-r from-green-50 to-green-100 flex-1 min-w-[200px] p-4 rounded-lg border border-green-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-green-600 font-medium">
-                  Total Reimbursements
+                  Cash Inflow
                 </p>
                 <p className="text-2xl font-bold text-green-800">
-                  {formatCurrency(totalReimbursements)}
+                  {formatCurrency(totalCashInflow)}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] p-4 border border-red-200 shadow-sm">
+          <div className="bg-gradient-to-r from-red-50 to-red-100 flex-1 min-w-[200px] p-4 rounded-lg border border-red-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-red-600 font-medium">
-                  Total Disbursements
+                  Cash Outflow
                 </p>
                 <p className="text-2xl font-bold text-red-800">
                   {formatCurrency(totalDisbursements)}
@@ -293,11 +298,27 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
               <TrendingDown className="w-8 h-8 text-red-600" />
             </div>
           </div>
+
+          <div className="bg-amber-100 flex-1 min-w-[200px] p-4 rounded-lg border border-amber-200 shadow-sm mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-amber-600 font-medium">
+                  Current Balance
+                </p>
+                <p className="text-2xl font-bold text-amber-800">
+                  {formatCurrency(currentBalance)}
+                </p>
+              </div>
+              <div className="w-8 h-8 flex items-center justify-center">
+                <span className="text-amber-600 text-2xl font-bold">₱</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Charts Section */}
         <div className="flex flex-col gap-6 overflow-auto max-h-[600px]">
-          <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Monthly Comparison
             </h3>
@@ -310,14 +331,14 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
                   <Bar
-                    dataKey="reimbursements"
+                    dataKey="cashInflow"
                     fill="#22c55e"
-                    name="Reimbursements"
+                    name="Cash Inflow"
                   />
                   <Bar
-                    dataKey="disbursements"
+                    dataKey="cashOutflow"
                     fill="#ef4444"
-                    name="Disbursements"
+                    name="Cash Outflow"
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -325,7 +346,7 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
           </div>
 
           {expenseBreakdown.length > 0 && (
-            <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
+            <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <DollarSign className="w-5 h-5 text-purple-600" />
@@ -362,30 +383,30 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
       </div>
 
       {/* Right Panel (Transactions) */}
-      <div className="flex flex-col flex-1 gap-4 h-full overflow-hidden">
-        {/* Reimbursements */}
-        <div className="bg-white shadow-lg overflow-hidden flex-1 flex flex-col">
-          <div className="sticky top-0 bg-white p-6 border-b border-gray-400 flex items-center gap-3 justify-between">
+      <div className="flex flex-col flex-1 gap-6 h-full overflow-hidden">
+        {/* Cash Inflow */}
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden flex-1 flex flex-col border border-gray-100">
+          <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex items-center gap-3 justify-between">
             <div className="flex gap-2 items-center">
               <div className="p-2.5 bg-green-100 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <h2 className="text-xl font-bold text-gray-800">
-                Reimbursements
+                Cash Inflow
               </h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
             {financialReport.reimbursements.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No reimbursements found
+                No cash inflow found
               </div>
             ) : (
               financialReport.reimbursements.map((item, index) => (
                 <div
                   key={`reimbursement-${index}`}
                   onClick={() => handleTransactionClick(item, "Reimbursement")}
-                  className="bg-green-50 p-4 border border-green-200 cursor-pointer"
+                  className="bg-green-50 p-4 rounded-md border border-green-200 cursor-pointer hover:bg-green-100 transition-colors"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium text-gray-800">
@@ -404,26 +425,26 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
           </div>
         </div>
 
-        {/* Disbursements */}
-        <div className="bg-white shadow-lg flex-1 flex flex-col overflow-hidden">
-          <div className="sticky top-0 bg-white p-4 border-b border-gray-400 flex items-center justify-between">
+        {/* Cash Outflow */}
+        <div className="bg-white shadow-lg flex-1 flex flex-col overflow-hidden border border-gray-100 rounded-lg">
+          <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex items-center justify-between rounded-lg">
             <div className="flex items-center gap-2">
               <div className="p-2.5 bg-red-100 rounded-lg">
                 <TrendingDown className="w-5 h-5 text-red-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800">Disbursements</h2>
+              <h2 className="text-xl font-bold text-gray-800">Cash Outflow</h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">
             {financialReport.disbursements.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No disbursements found
+                No cash outflow found
               </div>
             ) : (
               financialReport.disbursements.map((item, index) => (
                 <div
                   key={`disbursement-${index}`}
-                  className="bg-red-50 p-4 border border-red-200 cursor-pointer"
+                  className="bg-red-50 p-4 rounded-md border border-red-200 cursor-pointer hover:bg-red-100 transition-colors"
                   onClick={() => handleTransactionClick(item, "Disbursement")}
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -485,6 +506,108 @@ export function SduMainFinancialReport({ selectedOrg, user }) {
               </div>
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ViewTransactionModal({
+  isOpen,
+  onClose,
+  transaction,
+  type,
+  onInquire,
+}) {
+  if (!isOpen || !transaction) return null;
+
+  const isReimbursement = type === "reimbursement";
+
+  // Build file URL (adjust base path if needed for your backend)
+  const fileUrl = transaction?.document?.fileName
+    ? `${DOCU_API_ROUTER}/${transaction.organizationProfile}/${transaction.document.fileName}`
+    : transaction?.file;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white flex flex-col w-1/2 h-9/10 shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div
+          className={`px-6 py-4 ${
+            isReimbursement ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-white">
+              {isReimbursement
+                ? "Cash Inflow Details"
+                : "Cash Outflow Details"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex h-full overflow-y-auto">
+          <div className="flex w-1/4 p-4 flex-col gap-4">
+            <p className="text-sm font-semibold text-gray-600">Description</p>
+            <p className="text-gray-900">{transaction.description}</p>
+            <p className="text-sm font-semibold text-gray-600">Amount</p>
+            <p
+              className={`text-lg font-bold ${
+                isReimbursement ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(transaction.amount)}
+            </p>
+            <p className="text-sm font-semibold text-gray-600">Date</p>
+            <p className="text-gray-900">
+              {new Date(transaction.date).toLocaleDateString()}
+            </p>
+            <p className="text-sm font-semibold text-gray-600">Expense Type</p>
+            <p className="text-gray-900">
+              {transaction.expenseType || "Uncategorized"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-gray-900">{transaction.name}</p>
+          </div>
+
+          {fileUrl && (
+            <iframe
+              key={fileUrl}
+              src={fileUrl}
+              className="w-full full border"
+              title="Transaction Document"
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-gray-50 border-t flex justify-end gap-4">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 transition"
+          >
+            Close
+          </button>
+          <button
+            onClick={() => {
+              onInquire();
+            }}
+            className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            Submit Inquiry
+          </button>
         </div>
       </div>
     </div>

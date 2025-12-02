@@ -200,9 +200,9 @@ export function DeanAccreditationDocument({ selectedOrg }) {
   }
 
   return (
-    <div className="w-full  p-4 gap-4 flex flex-col h-full bg-gray-200">
+    <div className="h-full overflow-auto flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
       {/* Summary Stats */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Accreditation Summary
         </h2>

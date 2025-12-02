@@ -13,7 +13,7 @@ import {
 } from "react-router-dom";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
-import Logo from "../../../assets/cnsc-codex.svg";
+import Logo from "../../../assets/cnsc-codex-2.svg";
 import {
   OrgHome,
   OrgAccreditation,
@@ -165,66 +165,62 @@ function OrgLayout({ orgs, onClose }) {
   }
 
   return (
-    <div className="h-full w-full grid grid-cols-[18%_1fr]">
+    <div className="h-full w-full flex overflow-hidden">
       {/* Sidebar */}
-      <div className="bg-cnsc-primary-color text-white pt-4 pb-1 flex flex-col border-r border-gray-400 px-2 gap-y-2">
-        <div className="w-full h-fit mb-1 bg-cnsc-primary-color flex p-2 gap-x-2 items-center border-b border-gray-400">
-          {displayOrg?.orgLogo && (
-            <img
-              key={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
-              src={`${DOCU_API_ROUTER}/${displayOrg._id}/${displayOrg.orgLogo}`}
-              alt={displayOrg.orgAcronym}
-              className="min-w-11 h-11 object-contain"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = Logo;
-              }}
-            />
-          )}
-          <div className="w-full h-fit flex flex-col">
-            <span className="text-gray-500 text-md">Welcome!</span>
-            <span className="text-lg font-bold leading-3">
-              {displayOrg?.orgName}
-            </span>
-            <span className="text-xs leading-4">{displayOrg?.orgAcronym}</span>
+      <div className="w-64 flex-shrink-0 bg-background border-r flex flex-col">
+        {/* Logo and Brand Header */}
+        <div className="h-18 border-b flex items-center px-6 gap-3">
+          <img src={Logo} alt="CNSC Codex" className="w-10 h-10" />
+          <div className="flex flex-col">
+            <h1 className="font-bold text-lg leading-tight">CNSC Codex</h1>
+            <p className="text-xs text-muted-foreground">Dean</p>
           </div>
         </div>
 
-        {[
-          { to: `/dean/${orgAcronym}/home`, label: "Home" },
-          { to: `/dean/${orgAcronym}/accreditation`, label: "Accreditation" },
-          { to: `/dean/${orgAcronym}/activities`, label: "Proposals" },
-          { to: `/dean/${orgAcronym}/financial`, label: "Financial Statement" },
-          {
-            to: `/dean/${orgAcronym}/accomplishment`,
-            label: "Accomplishments",
-          },
-        ].map(({ to, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `flex items-center py-4 px-6 rounded-xl text-base font-medium transition-all duration-300 shadow-sm ${
-                isActive
-                  ? "bg-white text-cnsc-primary-color shadow-md"
-                  : "text-white hover:bg-gray-100 hover:text-cnsc-primary-color"
-              }`
-            }
-          >
-            {label}
-          </NavLink>
-        ))}
+        
 
-        <button
-          onClick={onClose}
-          className="mt-auto px-4 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition"
-        >
-          Close
-        </button>
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {[
+            { to: `/dean/${orgAcronym}/home`, label: "Home" },
+            { to: `/dean/${orgAcronym}/accreditation`, label: "Accreditation" },
+            { to: `/dean/${orgAcronym}/activities`, label: "Proposals" },
+            { to: `/dean/${orgAcronym}/financial`, label: "Financial Statement" },
+            {
+              to: `/dean/${orgAcronym}/accomplishment`,
+              label: "Accomplishments",
+            },
+          ].map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center h-11 px-3 rounded-md cursor-pointer transition-colors text-sm font-medium ${
+                  isActive
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "text-foreground hover:bg-muted"
+                }`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Close Button */}
+        <div className="p-3 border-t">
+          <button
+            onClick={onClose}
+            className="w-full flex items-center justify-center gap-2 h-11 px-3 rounded-md bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
+          >
+            <X className="w-4 h-4" />
+            Close
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
-      <div className="w-full h-full">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Routes>
           <Route index element={<Navigate to="home" replace />} />
           <Route
@@ -385,16 +381,7 @@ export function DeanPage() {
   );
 
   return (
-    <div className="w-screen h-screen grid grid-cols-1 grid-rows-[4rem_1fr] gap-0">
-      {/* Header */}
-      <div className="bg-cnsc-secondary-color w-full h-full flex items-center justify-between px-5">
-        <div className="flex gap-x-3 items-center">
-          <img src={Logo} alt="CNSC Logo" className="w-15 h-15" />
-          <h1 className="text-3xl text-white">Welcome, Dean</h1>
-        </div>
-        <LogoutButton />
-      </div>
-
+    <div className="w-screen h-screen flex overflow-hidden bg-gray-50">
       {/* Content */}
       <div className="w-full h-full flex flex-col">
         <Routes>
@@ -404,7 +391,7 @@ export function DeanPage() {
               <DeanDashboard
                 organizationSummary={organizationSummary}
                 orgs={orgs}
-                loading={loading} // 👈 pass it here
+                loading={loading}
                 onSelectOrg={(org) => navigate(`/dean/${org.orgAcronym}/home`)}
               />
             }
@@ -690,25 +677,25 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-gray-50">
       {/* Enhanced Navigation Header */}
-      <div className="bg-white border-b border-gray-500">
-        <div className="px-4 py-2">
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-4">
           {/* Dropdown Navigation */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`group w-85 border max-w-md px-4 py-3 flex items-center justify-between
-      ${isDropdownOpen ? "rounded-t-xl" : "rounded-xl"}`}
+              className={`group w-85 border border-gray-200 max-w-md px-4 py-3 flex items-center justify-between hover:border-gray-300 transition-colors
+      ${isDropdownOpen ? "rounded-t-lg" : "rounded-lg"}`}
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg`}>{activeItem.icon}</div>
+                <div className="p-2 rounded-lg bg-gray-50">{activeItem.icon}</div>
                 <div className="text-left">
-                  <div className="font-semibold text-lg ">
+                  <div className="font-semibold text-base text-gray-900">
                     {activeItem.label}
                   </div>
                 </div>
               </div>
               <ChevronDown
-                className={`w-5 h-5 transition-transform duration-200 ${
+                className={`w-5 h-5 text-gray-600 transition-transform duration-200 ${
                   isDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -716,21 +703,21 @@ export function DeanAccreditationNavigationSubRoute({ selectedOrg }) {
             {/* Dropdown Menu */}
             {isDropdownOpen && (
               <div
-                className={`absolute w-85 top-full left-0 right-0 rounded-b-xl border border-gray-500 bg-white  z-50 overflow-hidden max-w-md`}
+                className="absolute w-85 top-full left-0 right-0 rounded-b-lg border border-t-0 border-gray-200 bg-white shadow-lg z-50 overflow-hidden max-w-md"
               >
-                <div className="py-2">
+                <div className="py-1">
                   {navigationItems.map((item) => (
                     <button
                       key={item.key}
                       onClick={() => handleNavigate(item)}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors duration-150 flex items-center gap-4 group `}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 flex items-center gap-4 group"
                     >
-                      <div className={` rounded-lg`}>{item.icon}</div>
+                      <div className="p-1 rounded-lg">{item.icon}</div>
                       <div className="flex-1 min-w-0">
                         <div
-                          className={`text-lg ${
+                          className={`text-sm font-medium ${
                             activeItem.key === item.key
-                              ? "text-blue-700"
+                              ? "text-blue-600"
                               : "text-gray-900"
                           }`}
                         >
