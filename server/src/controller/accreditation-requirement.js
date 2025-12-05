@@ -1,10 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import {
-  AccreditationRequirement,
-  Document,
-} from "../models/index.js";
+import { AccreditationRequirement, Document } from "../models/index.js";
 import { logAction } from "../middleware/audit.js";
 import { invalidateRequirementsCache } from "../middleware/requirement-gating.js";
 import { RequirementSubmission } from "../models/index.js";
@@ -13,8 +10,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const UPLOAD_ROOT = path.join(__dirname, "../../uploads/requirements");
 // 25MB default limit (previously 10MB); override via env REQUIREMENT_MAX_FILE_MB
-const MAX_FILE_BYTES = (parseInt(process.env.REQUIREMENT_MAX_FILE_MB, 10) || 25) * 1024 * 1024;
-const ALLOWED_MIME = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/webp"];
+const MAX_FILE_BYTES =
+  (parseInt(process.env.REQUIREMENT_MAX_FILE_MB, 10) || 25) * 1024 * 1024;
+const ALLOWED_MIME = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+];
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -34,8 +38,8 @@ export async function listVisibleRequirements(req, res) {
     const rows = await AccreditationRequirement.find({ enabled: true }).select(
       "key title type"
     );
-    console.log("📋 listVisibleRequirements returning:", rows.length, "requirements");
-    console.log("   Types:", rows.map(r => `${r.type}:${r.key}`).join(", "));
+    // console.log("📋 listVisibleRequirements returning:", rows.length, "requirements");
+    // console.log("   Types:", rows.map(r => `${r.type}:${r.key}`).join(", "));
     return res.json(rows);
   } catch (err) {
     console.error("listVisibleRequirements error", err);
@@ -50,7 +54,10 @@ export async function listAllRequirements(req, res) {
     const filter = {};
     if (type) filter.type = type;
     if (!includeDisabled) filter.enabled = { $ne: false }; // show both true & undefined but not false
-    const rows = await AccreditationRequirement.find(filter).sort({ type: 1, key: 1 });
+    const rows = await AccreditationRequirement.find(filter).sort({
+      type: 1,
+      key: 1,
+    });
     return res.json({ items: rows });
   } catch (err) {
     console.error("listAllRequirements error", err);
@@ -62,27 +69,49 @@ export async function listAllRequirements(req, res) {
 export async function createCustomRequirement(req, res) {
   try {
     const { title, description } = req.body;
-    if (!title) return res.status(400).json({ success: false, message: "Title required" });
+    if (!title)
+      return res
+        .status(400)
+        .json({ success: false, message: "Title required" });
     const key = slugify(title);
     // ensure unique
     const existing = await AccreditationRequirement.findOne({ key });
     if (existing)
-      return res.status(409).json({ success: false, message: "Requirement key already exists" });
+      return res
+        .status(409)
+        .json({ success: false, message: "Requirement key already exists" });
 
     let documentId = null;
     let storedName = null;
     if (req.file) {
       if (req.file.size > MAX_FILE_BYTES) {
-        return res.status(413).json({ success: false, message: `File too large. Max ${(MAX_FILE_BYTES/1024/1024).toFixed(0)}MB` });
+        return res
+          .status(413)
+          .json({
+            success: false,
+            message: `File too large. Max ${(
+              MAX_FILE_BYTES /
+              1024 /
+              1024
+            ).toFixed(0)}MB`,
+          });
       }
       if (!ALLOWED_MIME.includes(req.file.mimetype)) {
-        return res.status(415).json({ success: false, message: `Unsupported file type: ${req.file.mimetype}` });
+        return res
+          .status(415)
+          .json({
+            success: false,
+            message: `Unsupported file type: ${req.file.mimetype}`,
+          });
       }
       ensureDir(UPLOAD_ROOT);
       const requirementFolder = path.join(UPLOAD_ROOT, key);
       ensureDir(requirementFolder);
       storedName = `${Date.now()}_${req.file.originalname}`;
-      fs.writeFileSync(path.join(requirementFolder, storedName), req.file.buffer);
+      fs.writeFileSync(
+        path.join(requirementFolder, storedName),
+        req.file.buffer
+      );
       const doc = await Document.create({
         label: "Accreditation Custom Requirement",
         fileName: storedName,
@@ -144,15 +173,23 @@ export async function updateRequirement(req, res) {
     const { id } = req.params;
     const { title, description } = req.body;
     const requirement = await AccreditationRequirement.findById(id);
-    if (!requirement) return res.status(404).json({ success: false, message: "Not found" });
+    if (!requirement)
+      return res.status(404).json({ success: false, message: "Not found" });
     const changed = [];
     if (title && title !== requirement.title) {
       // Optional uniqueness check: do not allow title change that would collide on slug with another requirement's key
       const newSlug = slugify(title);
       if (requirement.type === "custom" && newSlug !== requirement.key) {
-        const collision = await AccreditationRequirement.findOne({ key: newSlug });
+        const collision = await AccreditationRequirement.findOne({
+          key: newSlug,
+        });
         if (collision) {
-          return res.status(409).json({ success: false, message: "Another requirement with similar title exists" });
+          return res
+            .status(409)
+            .json({
+              success: false,
+              message: "Another requirement with similar title exists",
+            });
         }
         // Keep original key stable to avoid breaking stored file structure; we only update title.
       }
@@ -166,17 +203,34 @@ export async function updateRequirement(req, res) {
 
     if (req.file) {
       if (req.file.size > MAX_FILE_BYTES) {
-        return res.status(413).json({ success: false, message: `File too large. Max ${(MAX_FILE_BYTES/1024/1024).toFixed(0)}MB` });
+        return res
+          .status(413)
+          .json({
+            success: false,
+            message: `File too large. Max ${(
+              MAX_FILE_BYTES /
+              1024 /
+              1024
+            ).toFixed(0)}MB`,
+          });
       }
       if (!ALLOWED_MIME.includes(req.file.mimetype)) {
-        return res.status(415).json({ success: false, message: `Unsupported file type: ${req.file.mimetype}` });
+        return res
+          .status(415)
+          .json({
+            success: false,
+            message: `Unsupported file type: ${req.file.mimetype}`,
+          });
       }
       // replace file
       ensureDir(UPLOAD_ROOT);
       const requirementFolder = path.join(UPLOAD_ROOT, requirement.key);
       ensureDir(requirementFolder);
       const storedName = `${Date.now()}_${req.file.originalname}`;
-      fs.writeFileSync(path.join(requirementFolder, storedName), req.file.buffer);
+      fs.writeFileSync(
+        path.join(requirementFolder, storedName),
+        req.file.buffer
+      );
       const doc = await Document.create({
         label: "Accreditation Custom Requirement",
         fileName: storedName,
@@ -228,9 +282,12 @@ export async function toggleRequirement(req, res) {
     const { id } = req.params;
     const { enabled } = req.body;
     if (typeof enabled !== "boolean")
-      return res.status(400).json({ success: false, message: "enabled boolean required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "enabled boolean required" });
     const requirement = await AccreditationRequirement.findById(id);
-    if (!requirement) return res.status(404).json({ success: false, message: "Not found" });
+    if (!requirement)
+      return res.status(404).json({ success: false, message: "Not found" });
     const previousEnabled = requirement.enabled;
     requirement.enabled = enabled;
     await requirement.save(); // simple optimistic save
@@ -255,9 +312,12 @@ export async function deleteRequirement(req, res) {
   try {
     const { id } = req.params;
     const requirement = await AccreditationRequirement.findById(id);
-    if (!requirement) return res.status(404).json({ success: false, message: "Not found" });
+    if (!requirement)
+      return res.status(404).json({ success: false, message: "Not found" });
     if (!requirement.removable || requirement.type !== "custom") {
-      return res.status(400).json({ success: false, message: "Cannot delete this requirement" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Cannot delete this requirement" });
     }
     // Attempt file cleanup
     const requirementFolder = path.join(UPLOAD_ROOT, requirement.key);
@@ -291,8 +351,13 @@ export async function deleteRequirement(req, res) {
 export async function gatingStatus(req, res) {
   try {
     const enabledFlag = process.env.ENABLE_REQUIREMENT_GATING === "true";
-    const rows = await AccreditationRequirement.find({ enabled: true }).select("key title");
-    return res.json({ gatingEnabled: enabledFlag, enabledKeys: rows.map(r => r.key) });
+    const rows = await AccreditationRequirement.find({ enabled: true }).select(
+      "key title"
+    );
+    return res.json({
+      gatingEnabled: enabledFlag,
+      enabledKeys: rows.map((r) => r.key),
+    });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
@@ -305,29 +370,56 @@ export async function submitRequirement(req, res) {
     const { key } = req.params;
     const { organizationProfile } = req.body; // org profile id
     if (!organizationProfile) {
-      return res.status(400).json({ success: false, message: "organizationProfile required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "organizationProfile required" });
     }
-    const requirement = await AccreditationRequirement.findOne({ key, enabled: true });
+    const requirement = await AccreditationRequirement.findOne({
+      key,
+      enabled: true,
+    });
     if (!requirement) {
-      return res.status(404).json({ success: false, message: "Requirement not found or disabled" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Requirement not found or disabled" });
     }
     if (!req.file) {
       return res.status(400).json({ success: false, message: "File required" });
     }
     if (req.file.size > MAX_FILE_BYTES) {
-      return res.status(413).json({ success: false, message: `File too large. Max ${(MAX_FILE_BYTES/1024/1024).toFixed(0)}MB` });
+      return res
+        .status(413)
+        .json({
+          success: false,
+          message: `File too large. Max ${(
+            MAX_FILE_BYTES /
+            1024 /
+            1024
+          ).toFixed(0)}MB`,
+        });
     }
     if (!ALLOWED_MIME.includes(req.file.mimetype)) {
-      return res.status(415).json({ success: false, message: `Unsupported file type: ${req.file.mimetype}` });
+      return res
+        .status(415)
+        .json({
+          success: false,
+          message: `Unsupported file type: ${req.file.mimetype}`,
+        });
     }
     // Ensure unique submission (one active submission per org+requirement). Allow overwrite by replacing.
-  let submission = await RequirementSubmission.findOne({ requirementKey: key, organizationProfile });
-  // New flat storage pattern: /uploads/<organizationProfile>/<storedName>
-  // Previous pattern (nested): /uploads/requirements-submissions/<org>/<key>/<storedName>
-  const flatFolder = path.join(__dirname, `../../uploads/${organizationProfile}`);
-  ensureDir(flatFolder);
-  const storedName = `req_${key}_${Date.now()}_${req.file.originalname}`;
-  fs.writeFileSync(path.join(flatFolder, storedName), req.file.buffer);
+    let submission = await RequirementSubmission.findOne({
+      requirementKey: key,
+      organizationProfile,
+    });
+    // New flat storage pattern: /uploads/<organizationProfile>/<storedName>
+    // Previous pattern (nested): /uploads/requirements-submissions/<org>/<key>/<storedName>
+    const flatFolder = path.join(
+      __dirname,
+      `../../uploads/${organizationProfile}`
+    );
+    ensureDir(flatFolder);
+    const storedName = `req_${key}_${Date.now()}_${req.file.originalname}`;
+    fs.writeFileSync(path.join(flatFolder, storedName), req.file.buffer);
     const doc = await Document.create({
       label: `Requirement Submission: ${key}`,
       fileName: storedName,
@@ -352,10 +444,13 @@ export async function submitRequirement(req, res) {
     } else {
       // Attempt migration of old nested file (if any) to flat folder (best-effort, non-blocking)
       try {
-        const oldFolder = path.join(__dirname, `../../uploads/requirements-submissions/${organizationProfile}/${key}`);
+        const oldFolder = path.join(
+          __dirname,
+          `../../uploads/requirements-submissions/${organizationProfile}/${key}`
+        );
         if (fs.existsSync(oldFolder)) {
           const oldFiles = fs.readdirSync(oldFolder);
-          oldFiles.forEach(f => {
+          oldFiles.forEach((f) => {
             const oldPath = path.join(oldFolder, f);
             const newPath = path.join(flatFolder, f);
             if (!fs.existsSync(newPath)) {
@@ -364,7 +459,10 @@ export async function submitRequirement(req, res) {
           });
         }
       } catch (migrateErr) {
-        console.warn("submitRequirement: migration of old nested files failed", migrateErr.message);
+        console.warn(
+          "submitRequirement: migration of old nested files failed",
+          migrateErr.message
+        );
       }
       submission.document = doc._id;
       submission.status = "Pending"; // reset status on re-upload
@@ -374,15 +472,26 @@ export async function submitRequirement(req, res) {
       await submission.save();
     }
     logAction(req, {
-      action: submission.logs.length === 1 ? "requirement.submission.create" : "requirement.submission.replace",
+      action:
+        submission.logs.length === 1
+          ? "requirement.submission.create"
+          : "requirement.submission.replace",
       targetType: "RequirementSubmission",
       targetId: submission._id,
-      meta: { key, fileName: storedName, size: req.file.size, mimeType: req.file.mimetype },
+      meta: {
+        key,
+        fileName: storedName,
+        size: req.file.size,
+        mimeType: req.file.mimetype,
+      },
     });
     // Build accessibleUrl (flat path) if file exists there
     let accessibleUrl = null;
     try {
-      const flatPath = path.join(__dirname, `../../uploads/${organizationProfile}/${storedName}`);
+      const flatPath = path.join(
+        __dirname,
+        `../../uploads/${organizationProfile}/${storedName}`
+      );
       if (fs.existsSync(flatPath)) {
         accessibleUrl = `/uploads/${organizationProfile}/${storedName}`;
       }
@@ -398,17 +507,28 @@ export async function submitRequirement(req, res) {
 export async function getRequirementSubmission(req, res) {
   try {
     const { key, orgId } = req.params;
-    const requirement = await AccreditationRequirement.findOne({ key, enabled: true });
+    const requirement = await AccreditationRequirement.findOne({
+      key,
+      enabled: true,
+    });
     if (!requirement) {
-      return res.status(404).json({ success: false, message: "Requirement not found or disabled" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Requirement not found or disabled" });
     }
-    const submission = await RequirementSubmission.findOne({ requirementKey: key, organizationProfile: orgId }).populate("document");
+    const submission = await RequirementSubmission.findOne({
+      requirementKey: key,
+      organizationProfile: orgId,
+    }).populate("document");
     if (!submission) return res.json({ success: true, submission: null });
     // Determine accessibleUrl: prefer flat path but fall back to legacy nested
     let accessibleUrl = null;
     try {
       if (submission.document?.fileName) {
-        const flatCandidate = path.join(__dirname, `../../uploads/${orgId}/${submission.document.fileName}`);
+        const flatCandidate = path.join(
+          __dirname,
+          `../../uploads/${orgId}/${submission.document.fileName}`
+        );
         if (fs.existsSync(flatCandidate)) {
           accessibleUrl = `/uploads/${orgId}/${submission.document.fileName}`;
         } else {
@@ -416,9 +536,9 @@ export async function getRequirementSubmission(req, res) {
             __dirname,
             `../../uploads/requirements-submissions/${orgId}/${key}/${submission.document.fileName}`
           );
-            if (fs.existsSync(legacyCandidate)) {
-              accessibleUrl = `/uploads/requirements-submissions/${orgId}/${key}/${submission.document.fileName}`;
-            }
+          if (fs.existsSync(legacyCandidate)) {
+            accessibleUrl = `/uploads/requirements-submissions/${orgId}/${key}/${submission.document.fileName}`;
+          }
         }
       }
     } catch {}
@@ -433,7 +553,9 @@ export async function getRequirementSubmission(req, res) {
 export async function listRequirementSubmissions(req, res) {
   try {
     const { key } = req.params;
-    const submissions = await RequirementSubmission.find({ requirementKey: key })
+    const submissions = await RequirementSubmission.find({
+      requirementKey: key,
+    })
       .populate("document")
       .populate("organizationProfile");
     const items = submissions.map((sub) => {
@@ -458,7 +580,10 @@ export async function listRequirementSubmissions(req, res) {
         id: sub._id,
         requirementKey: sub.requirementKey,
         organizationProfile: orgId,
-        organizationName: sub.organizationProfile?.organizationName || sub.organizationProfile?.organization || null,
+        organizationName:
+          sub.organizationProfile?.organizationName ||
+          sub.organizationProfile?.organization ||
+          null,
         status: sub.status,
         fileName,
         accessibleUrl,
@@ -480,13 +605,29 @@ export async function updateRequirementSubmissionStatus(req, res) {
   try {
     const { key, submissionId } = req.params;
     const { status, note } = req.body || {};
-    const allowed = ["Pending", "AdviserApproved", "DeanApproved", "Approved", "RevisionRequested", "Rejected"];
+    const allowed = [
+      "Pending",
+      "AdviserApproved",
+      "DeanApproved",
+      "Approved",
+      "RevisionRequested",
+      "Rejected",
+    ];
     if (!allowed.includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status" });
     }
-    const submission = await RequirementSubmission.findOne({ _id: submissionId, requirementKey: key }).populate("document").populate("organizationProfile");
+    const submission = await RequirementSubmission.findOne({
+      _id: submissionId,
+      requirementKey: key,
+    })
+      .populate("document")
+      .populate("organizationProfile");
     if (!submission) {
-      return res.status(404).json({ success: false, message: "Submission not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Submission not found" });
     }
     const actorRole = String(req.session?.user?.position || "").toLowerCase();
     const sduRoles = ["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main"];
@@ -494,36 +635,73 @@ export async function updateRequirementSubmissionStatus(req, res) {
 
     // Disallow manual setting back to Pending (only via re-upload)
     if (status === "Pending" && current !== "Pending") {
-      return res.status(409).json({ success: false, message: "Cannot revert to Pending manually; re-upload required." });
+      return res
+        .status(409)
+        .json({
+          success: false,
+          message: "Cannot revert to Pending manually; re-upload required.",
+        });
     }
 
     // Transition validation
     let valid = false;
     if (actorRole === "adviser") {
-      if (current === "Pending" && ["AdviserApproved", "RevisionRequested", "Rejected"].includes(status)) valid = true;
+      if (
+        current === "Pending" &&
+        ["AdviserApproved", "RevisionRequested", "Rejected"].includes(status)
+      )
+        valid = true;
     } else if (actorRole === "dean") {
-      if (current === "AdviserApproved" && ["DeanApproved", "RevisionRequested", "Rejected"].includes(status)) valid = true;
+      if (
+        current === "AdviserApproved" &&
+        ["DeanApproved", "RevisionRequested", "Rejected"].includes(status)
+      )
+        valid = true;
     } else if (sduRoles.includes(actorRole)) {
-      if (current === "DeanApproved" && ["Approved", "RevisionRequested", "Rejected"].includes(status)) valid = true;
+      if (
+        current === "DeanApproved" &&
+        ["Approved", "RevisionRequested", "Rejected"].includes(status)
+      )
+        valid = true;
     } else {
       // Other roles (student-leader etc.) cannot change status
-      return res.status(403).json({ success: false, message: "Role not permitted to change submission status" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Role not permitted to change submission status",
+        });
     }
 
     // Allow repeated setting of RevisionRequested or Rejected at same stage (e.g. add note)
-    if (!valid && ["RevisionRequested", "Rejected"].includes(status) && current === status) {
+    if (
+      !valid &&
+      ["RevisionRequested", "Rejected"].includes(status) &&
+      current === status
+    ) {
       valid = true; // allow log append
     }
 
     if (!valid) {
-      return res.status(409).json({ success: false, message: `Invalid transition from ${current} to ${status} for role ${actorRole}` });
+      return res
+        .status(409)
+        .json({
+          success: false,
+          message: `Invalid transition from ${current} to ${status} for role ${actorRole}`,
+        });
     }
     // Update status & push log
     submission.status = status;
-    const actor = req.session?.user?.fullName || req.session?.user?.name || req.session?.user?.email || "system";
+    const actor =
+      req.session?.user?.fullName ||
+      req.session?.user?.name ||
+      req.session?.user?.email ||
+      "system";
     const ts = new Date().toISOString();
     submission.logs = submission.logs || [];
-    submission.logs.push(`[${ts}] Status set to ${status} by ${actor}${note ? ` - ${note}` : ""}`);
+    submission.logs.push(
+      `[${ts}] Status set to ${status} by ${actor}${note ? ` - ${note}` : ""}`
+    );
     await submission.save();
 
     // Build accessibleUrl similar to listing logic
@@ -561,7 +739,10 @@ export async function updateRequirementSubmissionStatus(req, res) {
         id: submission._id,
         requirementKey: submission.requirementKey,
         organizationProfile: orgId,
-        organizationName: submission.organizationProfile?.organizationName || submission.organizationProfile?.organization || null,
+        organizationName:
+          submission.organizationProfile?.organizationName ||
+          submission.organizationProfile?.organization ||
+          null,
         status: submission.status,
         fileName,
         accessibleUrl,

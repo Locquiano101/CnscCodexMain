@@ -18,7 +18,12 @@ import {
   subAccomplishmentSchema,
 } from "./accomplishment.js";
 import { presidentProfileSchema } from "./president_profile.js";
-import { ReceiptSchema, financialReportSchema } from "./financial_report.js";
+import {
+  ReceiptSchema,
+  cashInflowSchema,
+  collectibleFeeSchema,
+  financialReportSchema,
+} from "./financial_report.js";
 import { postSchema } from "./post.js";
 import { notificationSchema } from "./notification.js";
 import { auditLogSchema } from "./audit_log.js";
@@ -56,7 +61,9 @@ const Logs = mongoose.model("Logs", LogsSchema);
 const RosterMember = mongoose.model("RosterMembers", rosterMembersSchema);
 const Organization = mongoose.model("Organizations", organizationSchema);
 const Accreditation = mongoose.model("Accreditations", accreditationSchema);
+const collectibleFee = mongoose.model("CollectibleFee", collectibleFeeSchema);
 const Accomplishment = mongoose.model("Accomplishments", accomplishmentSchema);
+const cashInflows = mongoose.model("CashInflow", cashInflowSchema);
 const Post = mongoose.model("Posts", postSchema);
 const SubAccomplishment = mongoose.model(
   "SubAccomplishment",
@@ -93,12 +100,14 @@ export {
   Document,
   Roster,
   RosterMember,
+  cashInflows,
   Organization,
   ProposalConduct,
   Accreditation,
   Accomplishment,
   SubAccomplishment,
   ProposedActionPlan,
+  collectibleFee,
   FinancialReport,
   PresidentProfile,
   OrganizationProfile,

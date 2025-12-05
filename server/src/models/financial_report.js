@@ -19,6 +19,39 @@ export const ReceiptSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+export const collectibleFeeSchema = new mongoose.Schema({
+  organizationProfile: {
+    type: Schema.Types.ObjectId,
+    ref: "OrganizationProfile", // ✅ exact match
+  },
+  amount: Number,
+  title: String,
+  description: String,
+  isCollected: { type: Boolean, default: false },
+  status: {
+    type: String,
+    default: "UNCHECKED",
+  },
+});
+
+export const cashInflowSchema = new mongoose.Schema({
+  organizationProfile: {
+    type: Schema.Types.ObjectId,
+    ref: "OrganizationProfile", // ✅ exact match
+  },
+  collectibleFee: {
+    type: Schema.Types.ObjectId,
+    ref: "CollectibleFee",
+  },
+  paidRosterMembers: Number,
+  amount: Number,
+  date: { type: Date, default: Date.now },
+  status: {
+    type: String,
+    default: "UNCHECKED",
+  },
+});
+
 export const financialReportSchema = new mongoose.Schema(
   {
     organizationProfile: {
@@ -37,6 +70,26 @@ export const financialReportSchema = new mongoose.Schema(
     isActive: Boolean,
 
     collections: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Receipts",
+      },
+    ],
+
+    collectibleFees: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "CollectibleFee",
+      },
+    ],
+
+    cashInflows: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "CashInflow",
+      },
+    ],
+    cashoutflows: [
       {
         type: Schema.Types.ObjectId,
         ref: "Receipts",

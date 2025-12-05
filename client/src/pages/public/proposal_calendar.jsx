@@ -21,7 +21,7 @@ export function CalendarComponent() {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          `${API_ROUTER}/getAllProposalConduct/`,
+          `${API_ROUTER}/getAllProposalConduct`,
           { withCredentials: true }
         );
 
@@ -203,267 +203,364 @@ export function CalendarComponent() {
     return days;
   };
 
-  return (
-    <div className="w-full max-w-3/4 ">
-      {/* CNSC CODEX Title */}
-      <div className="flex flex-wrap items-center justify-center text-center mb-2">
-        <h1 className="text-xl md:text-3xl font-extrabold tracking-wide">
-          <span className="text-[#500000] drop-shadow-[1px_1px_0_white]">
-            CNSC{" "}
-          </span>
-          <span className="text-[#ee8f00] mr-2 drop-shadow-[1px_1px_0_white]">
-            CODEX{" "}
-          </span>
-          <span className="text-white drop-shadow-[1px_1px_0_#ee8f00]">
-            EVENT CALENDAR
-          </span>
+ return (
+    <div className="w-full min-h-full my-auto  bg-transparent">
+      {/* Title */}
+      <div className="flex flex-wrap items-center justify-center text-center mb-4 sm:mb-6">
+        <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold tracking-wide px-2">
+          <span className="text-[#500000] drop-shadow-[1px_1px_0_white]">CNSC </span>
+          <span className="text-[#ee8f00] mr-2 drop-shadow-[1px_1px_0_white]">CODEX </span>
+          <span className="text-white drop-shadow-[1px_1px_0_#ee8f00]">EVENT CALENDAR</span>
         </h1>
       </div>
 
-      <div className="w-full mx-auto flex gap-3 p-2">
-        {/* Calendar Section */}
-        <div className="bg-white flex-1 rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-cnsc-primary-color text-white p-3 flex justify-between items-center">
-            <button
-              onClick={() => navigateMonth(-1)}
-              className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <h3 className="text-lg font-bold">
-              {currentDate.toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-              })}
-            </h3>
-            <button
-              onClick={() => navigateMonth(1)}
-              className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-7 gap-0">{renderCalendarGrid()}</div>
-        </div>
-
-        {/* Multiple Events View */}
-        {selectedDayEvents && !selectedEvent && (
-          <div className="flex flex-col bg-white rounded-lg shadow-md w-80">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-cnsc-primary-color text-white rounded-t-lg">
-              <h3 className="text-md font-bold">
-                Events on {selectedDayEvents.date}
+      <div className="max-w-7xl   m-auto">
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
+          {/* Calendar Section */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1">
+            <div className="bg-[#500000] text-white p-3 sm:p-4 flex justify-between items-center">
+              <button
+                onClick={() => navigateMonth(-1)}
+                className="p-1 sm:p-2 hover:bg-[#ee8f00] rounded-full transition-colors"
+              >
+                <ChevronLeft size={18} className="sm:w-6 sm:h-6" />
+              </button>
+              <h3 className="text-base sm:text-lg md:text-xl font-bold">
+                {currentDate.toLocaleDateString('en-US', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
               </h3>
               <button
-                onClick={closePanel}
-                className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
+                onClick={() => navigateMonth(1)}
+                className="p-1 sm:p-2 hover:bg-[#ee8f00] rounded-full transition-colors"
               >
-                <X size={18} />
+                <ChevronRight size={18} className="sm:w-6 sm:h-6" />
               </button>
             </div>
 
-            <div className="overflow-y-auto p-3 space-y-3">
-              {selectedDayEvents.events.map((event) => (
-                <div
-                  key={event?._id || Math.random()}
-                  className="border border-gray-200 rounded p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => selectEventFromDay(event)}
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-bold text-cnsc-primary-color text-sm leading-tight">
-                      {event?.ProposedIndividualActionPlan?.activityTitle ||
-                        "Untitled"}
-                    </h4>
-                    <span
-                      className={`px-2 py-1 rounded text-xs text-white ml-1 ${getStatusColor(
-                        event?.overallStatus
-                      )}`}
+            <div className="grid grid-cols-7 gap-0">{renderCalendarGrid()}</div>
+          </div>
+
+          {/* Desktop Side Panel */}
+          <div className="hidden lg:block lg:w-80 xl:w-96">
+            {selectedDayEvents && !selectedEvent && (
+              <div className="flex flex-col bg-white rounded-lg shadow-md h-full">
+                <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-[#500000] text-white rounded-t-lg">
+                  <h3 className="text-md font-bold">Events on {selectedDayEvents.date}</h3>
+                  <button
+                    onClick={closePanel}
+                    className="p-1 hover:bg-[#ee8f00] rounded-full transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto p-3 space-y-3">
+                  {selectedDayEvents.events.map((event) => (
+                    <div
+                      key={event?._id || Math.random()}
+                      className="border border-gray-200 rounded p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => selectEventFromDay(event)}
                     >
-                      {event?.overallStatus || "No Status"}
-                    </span>
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-[#500000] text-sm leading-tight flex-1">
+                          {event?.ProposedIndividualActionPlan?.activityTitle || 'Untitled'}
+                        </h4>
+                        <span
+                          className={`px-2 py-1 rounded text-xs text-white ml-1 ${getStatusColor(
+                            event?.overallStatus
+                          )}`}
+                        >
+                          {event?.overallStatus || 'No Status'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <MapPin size={12} className="text-[#ee8f00]" />
+                          <span>{event?.ProposedIndividualActionPlan?.venue || 'No Venue'}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium text-[#500000]">Budget:</span>
+                          <span className="text-[#ee8f00] font-medium">
+                            ₱
+                            {event?.ProposedIndividualActionPlan?.budgetaryRequirements
+                              ? event.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
+                              : '0'}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 mt-1 line-clamp-2 text-xs">
+                          {event?.ProposedIndividualActionPlan?.briefDetails || 'No details provided.'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedEvent && (
+              <div className="flex flex-col bg-white shadow-md rounded-lg h-full">
+                <div className="flex items-center justify-between p-4 border-b border-gray-300 bg-[#500000] text-white rounded-t-lg">
+                  <div className="flex items-center gap-2">
+                    {selectedDayEvents && (
+                      <button
+                        onClick={goBackToDayEvents}
+                        className="p-1 hover:bg-[#ee8f00] rounded-full transition-colors"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
+                    )}
+                    <h2 className="text-md font-semibold leading-tight">Event Details</h2>
+                  </div>
+                  <button
+                    onClick={closePanel}
+                    className="p-1 hover:bg-[#ee8f00] rounded-full transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#500000] leading-tight">
+                      {selectedEvent?.ProposedIndividualActionPlan?.activityTitle || 'Untitled'}
+                    </h3>
                   </div>
 
-                  <div className="space-y-1 text-xs text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <MapPin size={12} className="text-cnsc-secondary-color" />
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Proponent Organization</p>
+                    <p className="font-medium text-[#500000] text-sm">
+                      {selectedEvent?.organizationProfile?.orgName || 'Unknown Organization'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <Calendar size={14} className="text-[#ee8f00]" />
                       <span>
-                        {event?.ProposedIndividualActionPlan?.venue ||
-                          "No Venue"}
+                        {formatDateForDisplay(selectedEvent?.ProposedIndividualActionPlan?.proposedDate)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium text-cnsc-primary-color">
-                        Budget:
-                      </span>
-                      <span className="text-cnsc-secondary-color font-medium">
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <MapPin size={14} className="text-[#ee8f00]" />
+                      <span>{selectedEvent?.ProposedIndividualActionPlan?.venue || 'No Venue'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <span className="font-medium text-[#500000]">Budget:</span>
+                      <span className="text-[#ee8f00] font-medium">
                         ₱
-                        {event?.ProposedIndividualActionPlan
-                          ?.budgetaryRequirements
-                          ? event.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
-                          : "0"}
+                        {selectedEvent?.ProposedIndividualActionPlan?.budgetaryRequirements
+                          ? selectedEvent.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
+                          : '0'}
                       </span>
                     </div>
-                    <p className="text-gray-600 mt-1 line-clamp-2 text-xs">
-                      {event?.ProposedIndividualActionPlan?.briefDetails ||
-                        "No details provided."}
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <span className="font-medium text-[#500000]">Status:</span>
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-medium text-white ${getStatusColor(
+                          selectedEvent?.overallStatus
+                        )}`}
+                      >
+                        {selectedEvent?.overallStatus || 'No Status'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-[#500000] mb-1 text-sm">Aligned SDGs</p>
+                    <div className="flex flex-wrap gap-1">
+                      {(selectedEvent?.ProposedIndividualActionPlan?.alignedSDG || []).map((sdg, index) => (
+                        <span
+                          key={index}
+                          className="rounded bg-[#ee8f00] bg-opacity-10 px-2 py-1 text-xs text-[#500000] border border-[#ee8f00] border-opacity-20"
+                        >
+                          {sdg || 'N/A'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-[#500000] mb-1 text-sm">Brief Details</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      {selectedEvent?.ProposedIndividualActionPlan?.briefDetails || 'No details provided.'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-[#500000] mb-1 text-sm">Aligned Objective</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      {selectedEvent?.ProposedIndividualActionPlan?.AlignedObjective || 'No objective provided.'}
                     </p>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Single Event View */}
-        {selectedEvent && (
-          <div className="flex flex-col bg-white shadow-md rounded-lg w-80">
-            <div className="flex items-center justify-between p-4 border-b border-gray-300 bg-cnsc-primary-color text-white rounded-t-lg">
-              <div className="flex items-center gap-2">
-                {selectedDayEvents && (
-                  <button
-                    onClick={goBackToDayEvents}
-                    className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
-                )}
-                <h2 className="text-md font-semibold leading-tight">
-                  Event Details
-                </h2>
-              </div>
-              <button
-                onClick={closePanel}
-                className="p-1 hover:bg-cnsc-secondary-color rounded-full transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <div>
-                <h3 className="text-lg font-bold text-cnsc-primary-color leading-tight">
-                  {selectedEvent?.ProposedIndividualActionPlan?.activityTitle ||
-                    "Untitled"}
-                </h3>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 mb-1">
-                  Proponent Organization
-                </p>
-                <p className="font-medium text-cnsc-primary-color text-sm">
-                  {selectedEvent?.organizationProfile?.orgName ||
-                    "Unknown Organization"}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-gray-700 text-sm">
-                  <Calendar size={14} className="text-cnsc-secondary-color" />
-                  <span>
-                    {formatDateForDisplay(
-                      selectedEvent?.ProposedIndividualActionPlan?.proposedDate
-                    )}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-700 text-sm">
-                  <MapPin size={14} className="text-cnsc-secondary-color" />
-                  <span>
-                    {selectedEvent?.ProposedIndividualActionPlan?.venue ||
-                      "No Venue"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-700 text-sm">
-                  <span className="font-medium text-cnsc-primary-color">
-                    Budget:
-                  </span>
-                  <span className="text-cnsc-secondary-color font-medium">
-                    ₱
-                    {selectedEvent?.ProposedIndividualActionPlan
-                      ?.budgetaryRequirements
-                      ? selectedEvent.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
-                      : "0"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-700 text-sm">
-                  <span className="font-medium text-cnsc-primary-color">
-                    Status:
-                  </span>
-                  <span
-                    className={`rounded px-2 py-1 text-xs font-medium text-white ${getStatusColor(
-                      selectedEvent?.overallStatus
-                    )}`}
-                  >
-                    {selectedEvent?.overallStatus || "No Status"}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <p className="font-medium text-cnsc-primary-color mb-1 text-sm">
-                  Aligned SDGs
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {(
-                    selectedEvent?.ProposedIndividualActionPlan?.alignedSDG ||
-                    []
-                  ).map((sdg, index) => {
-                    try {
-                      if (typeof sdg === "string" && sdg.startsWith("[")) {
-                        const parsed = JSON.parse(sdg);
-                        return parsed.map((parsedSdg, subIndex) => (
-                          <span
-                            key={`${index}-${subIndex}`}
-                            className="rounded bg-cnsc-secondary-color bg-opacity-10 px-2 py-1 text-xs text-cnsc-primary-color border border-cnsc-secondary-color border-opacity-20"
-                          >
-                            {parsedSdg}
-                          </span>
-                        ));
-                      }
-                    } catch {
-                      // fallback to raw
-                    }
-                    return (
-                      <span
-                        key={index}
-                        className="rounded bg-cnsc-secondary-color bg-opacity-10 px-2 py-1 text-xs text-cnsc-primary-color border border-cnsc-secondary-color border-opacity-20"
-                      >
-                        {sdg || "N/A"}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <p className="font-medium text-cnsc-primary-color mb-1 text-sm">
-                  Brief Details
-                </p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  {selectedEvent?.ProposedIndividualActionPlan?.briefDetails ||
-                    "No details provided."}
-                </p>
-              </div>
-
-              <div>
-                <p className="font-medium text-cnsc-primary-color mb-1 text-sm">
-                  Aligned Objective
-                </p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  {selectedEvent?.ProposedIndividualActionPlan
-                    ?.AlignedObjective || "No objective provided."}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
+      {/* Mobile Bottom Sheet */}
       {panelOpen && (
         <div
-          className="bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={closePanel}
-        />
+            className="fixed inset-0 bg-black/50 z-100 lg:hidden flex justify-center items-center"
+            onClick={closePanel}>
+          <div className=" bg-white rounded-2xl shadow-2xl z-50 lg:hidden max-h-[80vh] flex flex-col">
+            {selectedDayEvents && !selectedEvent && (
+              <>
+                <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-[#500000] text-white rounded-t-2xl">
+                  <h3 className="text-md font-bold">Events on {selectedDayEvents.date}</h3>
+                  <button
+                    onClick={closePanel}
+                    className="p-1 hover:bg-[#ee8f00] rounded-full transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto p-4 space-y-3">
+                  {selectedDayEvents.events.map((event) => (
+                    <div
+                      key={event?._id || Math.random()}
+                      className="border border-gray-200 rounded p-3 active:bg-gray-50 transition-colors"
+                      onClick={() => selectEventFromDay(event)}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-[#500000] text-sm leading-tight flex-1">
+                          {event?.ProposedIndividualActionPlan?.activityTitle || 'Untitled'}
+                        </h4>
+                        <span
+                          className={`px-2 py-1 rounded text-xs text-white ml-2 ${getStatusColor(
+                            event?.overallStatus
+                          )}`}
+                        >
+                          {event?.overallStatus || 'No Status'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <MapPin size={12} className="text-[#ee8f00]" />
+                          <span>{event?.ProposedIndividualActionPlan?.venue || 'No Venue'}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium text-[#500000]">Budget:</span>
+                          <span className="text-[#ee8f00] font-medium">
+                            ₱
+                            {event?.ProposedIndividualActionPlan?.budgetaryRequirements
+                              ? event.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
+                              : '0'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {selectedEvent && (
+              <>
+                <div className="flex items-center justify-between p-4 border-b border-gray-300 bg-[#500000] text-white rounded-t-2xl">
+                  <div className="flex items-center gap-2">
+                    {selectedDayEvents && (
+                      <button
+                        onClick={goBackToDayEvents}
+                        className="p-1 hover:bg-[#ee8f00] rounded-full transition-colors"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
+                    )}
+                    <h2 className="text-md font-semibold leading-tight">Event Details</h2>
+                  </div>
+                  <button
+                    onClick={closePanel}
+                    className="p-1 hover:bg-[#ee8f00] rounded-full transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto p-4 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#500000] leading-tight">
+                      {selectedEvent?.ProposedIndividualActionPlan?.activityTitle || 'Untitled'}
+                    </h3>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Proponent Organization</p>
+                    <p className="font-medium text-[#500000] text-sm">
+                      {selectedEvent?.organizationProfile?.orgName || 'Unknown Organization'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <Calendar size={14} className="text-[#ee8f00]" />
+                      <span>
+                        {formatDateForDisplay(selectedEvent?.ProposedIndividualActionPlan?.proposedDate)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <MapPin size={14} className="text-[#ee8f00]" />
+                      <span>{selectedEvent?.ProposedIndividualActionPlan?.venue || 'No Venue'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <span className="font-medium text-[#500000]">Budget:</span>
+                      <span className="text-[#ee8f00] font-medium">
+                        ₱
+                        {selectedEvent?.ProposedIndividualActionPlan?.budgetaryRequirements
+                          ? selectedEvent.ProposedIndividualActionPlan.budgetaryRequirements.toLocaleString()
+                          : '0'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                      <span className="font-medium text-[#500000]">Status:</span>
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-medium text-white ${getStatusColor(
+                          selectedEvent?.overallStatus
+                        )}`}
+                      >
+                        {selectedEvent?.overallStatus || 'No Status'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-[#500000] mb-1 text-sm">Aligned SDGs</p>
+                    <div className="flex flex-wrap gap-1">
+                      {(selectedEvent?.ProposedIndividualActionPlan?.alignedSDG || []).map((sdg, index) => (
+                        <span
+                          key={index}
+                          className="rounded bg-[#ee8f00] bg-opacity-10 px-2 py-1 text-xs text-[#500000] border border-[#ee8f00] border-opacity-20"
+                        >
+                          {sdg || 'N/A'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-[#500000] mb-1 text-sm">Brief Details</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      {selectedEvent?.ProposedIndividualActionPlan?.briefDetails || 'No details provided.'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-[#500000] mb-1 text-sm">Aligned Objective</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      {selectedEvent?.ProposedIndividualActionPlan?.AlignedObjective || 'No objective provided.'}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

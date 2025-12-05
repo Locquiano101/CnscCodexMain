@@ -419,3 +419,37 @@ export const GetRosterMemberByOrganization = async (req, res) => {
     });
   }
 };
+// GET /api/roster/member-count/:orgProfileId
+export const GetRosterMemberCount = async (req, res) => {
+  const { orgProfileId } = req.params;
+
+  try {
+    // 1️⃣ Find the roster for this organization
+    const roster = await Roster.findOne({ organizationProfile: orgProfileId });
+
+    if (!roster) {
+      return res.status(404).json({
+        success: false,
+        message: "Roster not found for this organization.",
+        count: 0,
+      });
+    }
+
+    // 2️⃣ Count the members for this roster
+    const memberCount = await RosterMember.countDocuments({
+      roster: roster._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: memberCount, // only the count
+    });
+  } catch (error) {
+    console.error("Error fetching roster member count:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};

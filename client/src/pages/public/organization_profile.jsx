@@ -70,154 +70,152 @@ export function OrganizationComponent() {
     );
   }
 
+
   return (
-    <div className="max-w-7xl w-full flex flex-col justify-between min-h-7/10 py-6  px-4 mx-auto relative h-fit bg-cnsc-primary-color/25 border-2 border-white/50  rounded-xl shadow-md">
-      {/* Header */}
-      <div className="text-center ">
-        {/* CNSC CODEX Title */}
-        <div className="flex flex-wrap items-center justify-center text-center">
-          <h1 className="text-xl md:text-4xl font-extrabold tracking-wide">
-            <span className="text-[#500000] drop-shadow-[1px_1px_0_white]">
+    <div className="max-w-7xl sm:px-6 py-6 sm:py-8">
+      <div className="bg-gradient-to-br from-[#500000]/30 to-[#ee8f00]/20 backdrop-blur-sm border-2 border-white/50 rounded-2xl shadow-2xl overflow-hidden">
+        
+        {/* Header */}
+        <div className="text-center px-4 py-6 sm:py-8 bg-gradient-to-b from-black/10 to-transparent">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide">
+            <span className="text-[#500000] drop-shadow-[2px_2px_0_white]">
               CNSC{" "}
             </span>
-            <span className="text-[#ee8f00] mr-2 drop-shadow-[1px_1px_0_white]">
+            <span className="text-[#ee8f00] drop-shadow-[2px_2px_0_white]">
               CODEX{" "}
             </span>
-            <span className="text-white drop-shadow-[1px_1px_0_#ee8f00]">
+            <span className="block sm:inline text-white drop-shadow-[2px_2px_0_#ee8f00] mt-2 sm:mt-0">
               STUDENT ORGANIZATIONS
             </span>
           </h1>
         </div>
-      </div>
 
-      {/* Organizations Grid */}
-      <div className="h-full py-4">
-        <div className="grid grid-cols-4 gap-6">
-          {currentOrgs.length === 0 ? (
-            <div className="col-span-4 text-center py-12">
-              <Building2 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">No organizations available</p>
-            </div>
-          ) : (
-            currentOrgs.map((org) => (
-              console.log(
-                      `${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`
-              ),
-              <div
-                key={org?._id || Math.random()}
-                onClick={() => handleOrgClick(org)}
-                className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer"
-              >
-                {/* Logo Section */}
-                <div className="h-40 bg-gray-200 relative overflow-hidden flex items-center justify-center">
-                  {org?.orgLogo ? (
-                    <img
-                      src={`${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`}
-                      alt={`${org?.orgName || "Organization"} Logo`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.parentNode.innerHTML =
-                          '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center"><svg class="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div>';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
-                      <Building2 className="w-8 h-8 text-gray-500" />
-                    </div>
-                  )}
-                </div>
+        {/* Organizations Grid */}
+        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            {currentOrgs.length === 0 ? (
+              <div className="col-span-full text-center py-16">
+                <Building2 className="w-16 h-16 mx-auto text-white/40 mb-4" />
+                <p className="text-white/70 text-lg">No organizations available</p>
+              </div>
+            ) : (
+              currentOrgs.map((org) => (
+                <div
+                  key={org?._id}
+                  onClick={() => handleOrgClick(org)}
+                  className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 overflow-hidden"
+                >
+                  {/* Logo Section */}
+                  <div className="h-40 sm:h-44 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                    {org?.orgLogo ? (
+                      <img
+                                              src={`${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`}
 
-                {/* Footer Section */}
-                <div className="h-16 bg-gray-300 p-4 flex items-center">
-                  <div className="flex items-center space-x-3 w-full">
-                    {/* Acronym */}
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-gray-600">
-                        {org?.orgAcronym ||
-                          org?.orgName?.substring(0, 3).toUpperCase() ||
-                          "ORG"}
-                      </span>
-                    </div>
+                        alt={`${org?.orgName || "Organization"} Logo`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                        <Building2 className="w-10 h-10 text-white" />
+                      </div>
+                    )}
+                    
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-[#500000]/0 group-hover:bg-[#500000]/10 transition-colors duration-300" />
+                  </div>
 
-                    {/* Org name & department */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-700 truncate">
-                        {org?.orgName || "Unnamed Organization"}
-                      </p>
-                      <p className="text-xs text-gray-600 truncate">
-                        {org?.orgDepartment || "No Department"}
-                      </p>
-                    </div>
+                  {/* Footer Section */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 border-t-2 border-gray-200">
+                    <div className="flex items-start gap-3">
+                      {/* Acronym Circle */}
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#500000] to-[#ee8f00] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                        <span className="text-xs font-bold text-white">
+                          {org?.orgAcronym ||
+                            org?.orgName?.substring(0, 3).toUpperCase() ||
+                            "ORG"}
+                        </span>
+                      </div>
 
-                    {/* Status badge */}
-                    <div className="flex-shrink-0">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          org?.orgClass === "System-wide"
-                            ? "bg-amber-100 text-amber-700"
-                            : org?.orgClass === "Local"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        {org?.orgClass || "Unknown"}
-                      </span>
+                      {/* Org Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm sm:text-base font-bold text-gray-800 truncate mb-1">
+                          {org?.orgName || "Unnamed Organization"}
+                        </p>
+                        <p className="text-xs text-gray-600 truncate mb-2">
+                          {org?.orgDepartment || "No Department"}
+                        </p>
+
+                        {/* Status Badge */}
+                        <span
+                          className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                            org?.orgClass === "System-wide"
+                              ? "bg-amber-100 text-amber-800 border border-amber-200"
+                              : org?.orgClass === "Local"
+                              ? "bg-red-100 text-red-800 border border-red-200"
+                              : "bg-green-100 text-green-800 border border-green-200"
+                          }`}
+                        >
+                          {org?.orgClass || "Unknown"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Circular Indicators with Chevrons */}
-      {totalSections > 1 && (
-        <div className="flex justify-center items-center gap-4 ">
-          {/* Left Chevron */}
-          <button
-            onClick={goToPrevious}
-            disabled={currentSection === 0}
-            className={`p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 transition-all duration-300 ${
-              currentSection === 0
-                ? "opacity-30 cursor-not-allowed"
-                : "opacity-70 hover:opacity-100 hover:bg-white/20"
-            }`}
-          >
-            <ChevronLeft className="w-6 h-6 text-white" />
-          </button>
-
-          {/* Indicators */}
-          <div className="flex gap-3">
-            {Array.from({ length: totalSections }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSection(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  currentSection === index
-                    ? "bg-yellow-300 w-8"
-                    : "bg-white/40 hover:bg-white/60"
-                }`}
-                aria-label={`Go to section ${index + 1}`}
-              />
-            ))}
+              ))
+            )}
           </div>
-
-          {/* Right Chevron */}
-          <button
-            onClick={goToNext}
-            disabled={currentSection === totalSections - 1}
-            className={`p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 transition-all duration-300 ${
-              currentSection === totalSections - 1
-                ? "opacity-30 cursor-not-allowed"
-                : "opacity-70 hover:opacity-100 hover:bg-white/20"
-            }`}
-          >
-            <ChevronRight className="w-6 h-6 text-white" />
-          </button>
         </div>
-      )}
+
+        {/* Pagination Controls */}
+        {totalSections > 1 && (
+          <div className="flex justify-center items-center gap-3 sm:gap-6 px-4 py-6 sm:py-8 bg-gradient-to-t from-black/10 to-transparent">
+            {/* Left Chevron */}
+            <button
+              onClick={goToPrevious}
+              disabled={currentSection === 0}
+              className={`p-2 sm:p-3 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/30 transition-all duration-300 shadow-lg ${
+                currentSection === 0
+                  ? "opacity-30 cursor-not-allowed"
+                  : "opacity-80 hover:opacity-100 hover:bg-white/30 hover:scale-110 active:scale-95"
+              }`}
+              aria-label="Previous section"
+            >
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-md" />
+            </button>
+
+            {/* Indicators */}
+            <div className="flex gap-2 sm:gap-3">
+              {Array.from({ length: totalSections }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSection(index)}
+                  className={`rounded-full transition-all duration-300 shadow-md ${
+                    currentSection === index
+                      ? "bg-[#ee8f00] w-8 sm:w-10 h-3 sm:h-4 shadow-lg"
+                      : "bg-white/50 hover:bg-white/70 w-3 sm:w-4 h-3 sm:h-4"
+                  }`}
+                  aria-label={`Go to section ${index + 1}`}
+                  aria-current={currentSection === index ? "true" : "false"}
+                />
+              ))}
+            </div>
+
+            {/* Right Chevron */}
+            <button
+              onClick={goToNext}
+              disabled={currentSection === totalSections - 1}
+              className={`p-2 sm:p-3 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/30 transition-all duration-300 shadow-lg ${
+                currentSection === totalSections - 1
+                  ? "opacity-30 cursor-not-allowed"
+                  : "opacity-80 hover:opacity-100 hover:bg-white/30 hover:scale-110 active:scale-95"
+              }`}
+              aria-label="Next section"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-md" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

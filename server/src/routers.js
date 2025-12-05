@@ -91,6 +91,7 @@ router.get(
 
 /* ---------- ADVISER ACCREDITATION ---------- */
 router.get("/getAdviserProposals/:orgId", Controller.getAdviserProposal);
+router.post("/addCashInflow", Controller.addCashInflow);
 
 /* ---------- COLLABORATION & FINANCIAL ---------- */
 router.get(
@@ -205,20 +206,33 @@ router.get(
   "/admin/accreditation/requirements/:key/submissions",
   ensureAuthenticated,
   // Allow adviser to view submissions for oversight of own org
-  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main", "adviser"]),
+  requireRoles([
+    "sdu",
+    "sdu coordinator",
+    "sdu-coordinator",
+    "sdu-main",
+    "adviser",
+  ]),
   Controller.listRequirementSubmissions
 );
 router.patch(
   "/admin/accreditation/requirements/:key/submissions/:submissionId/status",
   ensureAuthenticated,
   // Extend status update capability to adviser
-  requireRoles(["sdu", "sdu coordinator", "sdu-coordinator", "sdu-main", "adviser"]),
+  requireRoles([
+    "sdu",
+    "sdu coordinator",
+    "sdu-coordinator",
+    "sdu-main",
+    "adviser",
+  ]),
   Controller.updateRequirementSubmissionStatus
 );
 
 /* ---------- ROOMS / LOCATIONS ---------- */
 // Public read (authenticated): active rooms filtered by optional campus
 router.get("/rooms", ensureAuthenticated, Controller.listRooms);
+
 // Admin management (SDU roles)
 router.get(
   "/admin/rooms",
@@ -305,6 +319,7 @@ router.post(
   "/updateStatusAccomplishment/:accomplishmentId",
   Controller.updateAccomplishmentStatus
 );
+router.post("/AddCollectibleFees/", Controller.createCollectibleFee);
 
 router.post("/sendVerification", Controller.SendRegistrationConfirmationCode);
 router.post(
@@ -346,10 +361,7 @@ router.post(
   "/sendAccreditationConfirmationEmail/:orgProfileId",
   Controller.SendAccreditationCompletionEmail
 );
-router.post(
-  "/systemResetAccreditation",
-  Controller.SystemResetAccreditation
-);
+router.post("/systemResetAccreditation", Controller.SystemResetAccreditation);
 
 /* ---------- STUDENT DEVELOPMENT PRESIDENT ---------- */
 router.post(
@@ -408,7 +420,15 @@ router.post(
   enforceRequirement("financial-report"),
   Controller.SendFinancialEmailInquiry
 );
+router.get("/getCollectibleFees", Controller.getCollectibleFees);
 
+router.get("/getCollectibleFees/:orgId", Controller.getCollectibleFeesByOrg);
+
+router.get(
+  "/getRosterMemberNumbers/:orgProfileId",
+  ensureAuthenticated,
+  Controller.GetRosterMemberCount
+);
 /* ---------- STUDENT LEADER ACCREDITATION ---------- */
 router.post(
   "/addAccreditationDocument",

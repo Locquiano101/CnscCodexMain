@@ -1,23 +1,213 @@
-import { Receipt, FinancialReport, Accreditation } from "../models/index.js";
+import {
+  Receipt,
+  FinancialReport,
+  Accreditation,
+  collectibleFee,
+  cashInflows,
+} from "../models/index.js";
 import { logAction } from "../middleware/audit.js";
+
+export const addCashInflow = async (req, res) => {
+  try {
+    const {
+      organizationProfile,
+      collectibleFee,
+      paidRosterMembers,
+      amount, // amount per head
+      date,
+      financialReportId,
+    } = req.body;
+
+    if (
+      !organizationProfile ||
+      !collectibleFee ||
+      !amount ||
+      !paidRosterMembers
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // 1️⃣ Calculate total amount (amount per head * paidRosterMembers)
+    const totalAmount = parseFloat(amount) * parseInt(paidRosterMembers, 10);
+
+    // 2️⃣ Create CashInflow document
+    const newCashInflow = new cashInflows({
+      organizationProfile,
+      collectibleFee,
+      paidRosterMembers,
+      amount: totalAmount,
+      date,
+      status: "UNCHECKED",
+    });
+
+    await newCashInflow.save();
+
+    const updatedReport = await FinancialReport.findByIdAndUpdate(
+      financialReportId,
+      {
+        $inc: { initialBalance: totalAmount },
+        $push: { cashInflows: newCashInflow._id },
+      },
+      { new: true } // returns the updated document
+    );
+
+    if (!updatedReport) {
+      throw new Error("Financial report not found");
+    }
+
+    if (!updatedReport) {
+      return res.status(404).json({ error: "Financial report not found." });
+    }
+
+    // 4️⃣ Audit log
+    logAction(req, {
+      action: "cashinflow.add",
+      targetType: "CashInflow",
+      targetId: newCashInflow._id,
+      organizationProfile,
+      meta: { collectibleFee, paidRosterMembers, totalAmount },
+    });
+
+    return res.status(201).json({
+      message: "Cash inflow added successfully.",
+      cashInflow: newCashInflow,
+      financialReport: updatedReport,
+    });
+  } catch (err) {
+    console.error("❌ Error adding cash inflow:", err);
+    return res.status(500).json({ error: "Failed to add cash inflow." });
+  }
+};
+
+export const createCollectibleFee = async (req, res) => {
+  try {
+    const {
+      organizationProfile,
+      amount, // amount per member
+      paidRosterMembers, // number of members who paid
+      title,
+      description,
+      date,
+      financialReportId,
+    } = req.body;
+
+    // 1️⃣ First, get the current financial report to access the initialBalance
+    const financialReport = await FinancialReport.findById(financialReportId);
+
+    if (!financialReport) {
+      return res.status(404).json({ error: "Financial report not found." });
+    }
+
+    // 2️⃣ Calculate total amount (amount per head * paidRosterMembers)
+
+    // 3️⃣ Calculate new initial balance
+    const currentBalance = parseFloat(financialReport.initialBalance) || 0;
+    const newInitialBalance = currentBalance + amount;
+
+    // 4️⃣ Create CollectibleFee document
+    const newCollectibleFee = new collectibleFee({
+      organizationProfile,
+      amount,
+      title,
+      description,
+      paidRosterMembers,
+      date,
+      status: "UNCHECKED",
+      isCollected: false,
+    });
+
+    await newCollectibleFee.save();
+
+    // 5️⃣ Update Financial Report with new calculated balance
+    const updatedReport = await FinancialReport.findByIdAndUpdate(
+      financialReportId,
+      {
+        $set: { initialBalance: newInitialBalance }, // Set the new calculated balance
+        $push: { collectibleFees: newCollectibleFee._id },
+      },
+      { new: true } // returns the updated document
+    );
+
+    // 6️⃣ Audit log
+    logAction(req, {
+      action: "collectiblefee.add",
+      targetType: "CollectibleFee",
+      targetId: newCollectibleFee._id,
+      organizationProfile,
+      meta: {
+        title,
+        description,
+        amountPerHead: amount,
+        paidRosterMembers,
+        amount,
+        previousBalance: currentBalance,
+        newBalance: newInitialBalance,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Collectible fee added successfully.",
+      collectibleFee: newCollectibleFee,
+      financialReport: updatedReport,
+      balanceUpdate: {
+        previous: currentBalance,
+        added: amount,
+        new: newInitialBalance,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Error creating collectible fee:", err);
+    return res.status(500).json({ error: "Failed to create collectible fee." });
+  }
+};
+
+export const getCollectibleFees = async (req, res) => {
+  try {
+    const fees = await CollectibleFee.find().populate("organizationProfile");
+    res.status(200).json(fees);
+  } catch (err) {
+    console.error("Error fetching collectible fees:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const getCollectibleFeesByOrg = async (req, res) => {
+  const { orgId } = req.params;
+  try {
+    const fees = await collectibleFee.find({ organizationProfile: orgId });
+    res.status(200).json(fees);
+  } catch (err) {
+    console.error("Error fetching fees for organization:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 export const getFinancialReportAll = async (req, res) => {
   try {
-    // 1️⃣ Fetch all Financial Reports with nested population
     const reports = await FinancialReport.find()
+      // populate organization profile
+      .populate("organizationProfile")
+      // populate reimbursements and their documents
       .populate({
         path: "reimbursements",
-        populate: { path: "document" }, // populate document inside reimbursements
+        populate: { path: "document" },
       })
+      // populate disbursements and their documents
       .populate({
         path: "disbursements",
-        populate: { path: "document" }, // populate document inside disbursements
+        populate: { path: "document" },
       })
+      // populate collections and their documents
       .populate({
         path: "collections",
-        populate: { path: "document" }, // populate document inside collections
+        populate: { path: "document" },
       })
-      .populate("organizationProfile");
+      // populate collectibleFees
+      .populate("collectibleFees")
+      // populate cash inflows
+      .populate("cashInflows")
+      // populate cash outflows
+      .populate("cashoutflows");
 
     return res.status(200).json(reports);
   } catch (error) {
@@ -40,18 +230,32 @@ export const getFinancialReportByOrg = async (req, res) => {
     let report = await FinancialReport.findOne({
       organizationProfile: OrgProfileId,
     })
+      // populate organization profile
+      .populate("organizationProfile")
+      // populate reimbursements and their documents
       .populate({
         path: "reimbursements",
-        populate: { path: "document" }, // populate document inside reimbursements
+        populate: { path: "document" },
       })
+      // populate disbursements and their documents
       .populate({
         path: "disbursements",
-        populate: { path: "document" }, // populate document inside disbursements
+        populate: { path: "document" },
       })
+      // populate collections and their documents
       .populate({
         path: "collections",
-        populate: { path: "document" }, // populate document inside disbursements
-      });
+        populate: { path: "document" },
+      })
+      // populate collectibleFees
+      .populate("collectibleFees")
+      // populate cash inflows
+      .populate({
+        path: "cashInflows",
+        populate: { path: "collectibleFee" }, // ✅ nested populate
+      })
+      // populate cash outflows
+      .populate("cashoutflows");
 
     if (!report) {
       report = new FinancialReport({
@@ -181,7 +385,10 @@ export const AddReceipt = async (req, res) => {
       action: "financial-report.add",
       targetType: "FinancialReport",
       targetId: updatedFinancialReport?._id || null,
-      organizationProfile: organizationProfile || updatedFinancialReport?.organizationProfile || null,
+      organizationProfile:
+        organizationProfile ||
+        updatedFinancialReport?.organizationProfile ||
+        null,
       organizationName: null,
       meta: { type, amount, description, name },
     });

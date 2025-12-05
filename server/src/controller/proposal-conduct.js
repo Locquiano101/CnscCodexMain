@@ -476,7 +476,10 @@ export const getAllProposalConduct = async (req, res) => {
   try {
     const doneConducts = await ProposalConduct.find({})
       .populate("document") // include uploaded document(s)
-      .populate("organizationProfile") // include uploaded document(s)
+      .populate({
+        path: "organizationProfile",
+        populate: { path: "orgPresident", select: "name" } // only get the name
+      })      
       .populate("ProposedIndividualActionPlan"); // optional for extra details
 
     if (!doneConducts || doneConducts.length === 0) {

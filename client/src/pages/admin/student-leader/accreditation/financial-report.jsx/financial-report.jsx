@@ -15,17 +15,17 @@ import {
 } from "recharts";
 import { API_ROUTER } from "../../../../../App";
 import axios from "axios";
-import { StudentDisbursement } from "./disbursement";
-import { StudentReimbursement } from "./reimbursements";
-import { TransactionModal, ViewTransactionModal } from "./view-transaction";
+import { StudentCashOutflow } from "./cash-out-flow";
+import { StudentCashInflow } from "./cash-in-flow";
+import { ViewTransactionModal } from "./view-transaction";
 import { AddCollectionFees } from "./collection-fees";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TransactionModal } from "./add-transaction";
 
 export default function FinancialReport({ orgData }) {
   const [financialReport, setFinancialReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentBalance, setCurrentBalance] = useState("");
-
   const [modalOpen, setModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState(null);
 
@@ -105,10 +105,7 @@ export default function FinancialReport({ orgData }) {
     let runningBalance = Number(financialReport.initialBalance) || 0;
     return months.map((month) => {
       const data = monthlyStats[month];
-      runningBalance =
-        runningBalance +
-        data.cashInflow -
-        data.cashOutflow;
+      runningBalance = runningBalance + data.cashInflow - data.cashOutflow;
       return { ...data, balance: runningBalance };
     });
   };
@@ -157,7 +154,9 @@ export default function FinancialReport({ orgData }) {
       <div className="h-full w-full pt-4 bg-transparent rounded-2xl flex items-center justify-center">
         <Card className="bg-white">
           <CardContent className="p-8 text-center">
-            <div className="text-lg text-gray-600">Loading financial report...</div>
+            <div className="text-lg text-gray-600">
+              Loading financial report...
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -246,7 +245,10 @@ export default function FinancialReport({ orgData }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="w-full p-6 flex gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="w-full p-6 flex gap-6"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <Card className="bg-white flex flex-col flex-1 gap-6">
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -349,7 +351,9 @@ export default function FinancialReport({ orgData }) {
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-100 rounded w-10 flex justify-center">
-                      <span className="text-amber-600 font-bold text-xl">₱</span>
+                      <span className="text-amber-600 font-bold text-xl">
+                        ₱
+                      </span>
                     </div>
                     <CardTitle className="text-lg">Expense Breakdown</CardTitle>
                   </div>
@@ -391,18 +395,21 @@ export default function FinancialReport({ orgData }) {
           handleAddClick={handleAddClick}
           setSelectedTransaction={setSelectedTransaction}
           setSelectedType={setSelectedType}
+          orgData={orgData}
+          collectibleFees={financialReport.collectibleFees}
           setViewModalOpen={setViewModalOpen}
           formatCurrency={formatCurrency}
         />
-        <StudentReimbursement
+
+        <StudentCashInflow
           financialReport={financialReport}
-          handleAddClick={handleAddClick}
+          orgData={orgData}
+          cashInFlow={financialReport.cashInflows}
           setSelectedTransaction={setSelectedTransaction}
-          setSelectedType={setSelectedType}
-          setViewModalOpen={setViewModalOpen}
           formatCurrency={formatCurrency}
         />
-        <StudentDisbursement
+
+        <StudentCashOutflow
           financialReport={financialReport}
           handleAddClick={handleAddClick}
           setSelectedTransaction={setSelectedTransaction}

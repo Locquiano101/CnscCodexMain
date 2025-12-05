@@ -2,7 +2,7 @@ import { TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export function StudentDisbursement({
+export function StudentCashOutflow({
   financialReport,
   handleAddClick,
   setSelectedTransaction,
