@@ -82,15 +82,8 @@ export default function FinancialReport({ orgData }) {
         balance: 0,
       };
     });
-
-    // 🟩 Add Collections to Cash Inflow
-    financialReport.collections?.forEach((item) => {
-      const month = months[new Date(item.date).getMonth()];
-      monthlyStats[month].cashInflow += Number(item.amount) || 0;
-    });
-
-    // 🟢 Add Reimbursements to Cash Inflow
-    financialReport.reimbursements?.forEach((item) => {
+    // 🟩 Add Cash Inflows (STUDENTS PAYING)
+    financialReport.cashInflows?.forEach((item) => {
       const month = months[new Date(item.date).getMonth()];
       monthlyStats[month].cashInflow += Number(item.amount) || 0;
     });
@@ -177,17 +170,10 @@ export default function FinancialReport({ orgData }) {
     );
   }
 
-  const totalCollections = financialReport.collections.reduce(
+  const totalCashInflow = financialReport.cashInflows.reduce(
     (sum, item) => sum + item.amount,
     0
   );
-
-  const totalReimbursements = financialReport.reimbursements.reduce(
-    (sum, item) => sum + item.amount,
-    0
-  );
-
-  const totalCashInflow = totalCollections + totalReimbursements;
 
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,

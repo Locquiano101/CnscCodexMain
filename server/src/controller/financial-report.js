@@ -28,7 +28,7 @@ export const addCashInflow = async (req, res) => {
     }
 
     // 1️⃣ Calculate total amount (amount per head * paidRosterMembers)
-    const totalAmount = parseFloat(amount) * parseInt(paidRosterMembers, 10);
+    const totalAmount = parseFloat(amount) * parseInt(paidRosterMembers);
 
     // 2️⃣ Create CashInflow document
     const newCashInflow = new cashInflows({
@@ -98,12 +98,6 @@ export const createCollectibleFee = async (req, res) => {
       return res.status(404).json({ error: "Financial report not found." });
     }
 
-    // 2️⃣ Calculate total amount (amount per head * paidRosterMembers)
-
-    // 3️⃣ Calculate new initial balance
-    const currentBalance = parseFloat(financialReport.initialBalance) || 0;
-    const newInitialBalance = currentBalance + amount;
-
     // 4️⃣ Create CollectibleFee document
     const newCollectibleFee = new collectibleFee({
       organizationProfile,
@@ -122,7 +116,6 @@ export const createCollectibleFee = async (req, res) => {
     const updatedReport = await FinancialReport.findByIdAndUpdate(
       financialReportId,
       {
-        $set: { initialBalance: newInitialBalance }, // Set the new calculated balance
         $push: { collectibleFees: newCollectibleFee._id },
       },
       { new: true } // returns the updated document
@@ -140,8 +133,6 @@ export const createCollectibleFee = async (req, res) => {
         amountPerHead: amount,
         paidRosterMembers,
         amount,
-        previousBalance: currentBalance,
-        newBalance: newInitialBalance,
       },
     });
 
@@ -149,11 +140,6 @@ export const createCollectibleFee = async (req, res) => {
       message: "Collectible fee added successfully.",
       collectibleFee: newCollectibleFee,
       financialReport: updatedReport,
-      balanceUpdate: {
-        previous: currentBalance,
-        added: amount,
-        new: newInitialBalance,
-      },
     });
   } catch (err) {
     console.error("❌ Error creating collectible fee:", err);

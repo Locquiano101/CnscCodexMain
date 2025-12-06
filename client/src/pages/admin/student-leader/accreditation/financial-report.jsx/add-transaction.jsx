@@ -675,7 +675,7 @@ export function AddCollectionFeeModal({
         description: formData.description,
         amount: numericAmount,
         isCollected: false, // default
-        financialReport: financialReportId,
+        financialReportId,
         status: "UNCHECKED", // default
       };
       console.log("asdsa", payload);
