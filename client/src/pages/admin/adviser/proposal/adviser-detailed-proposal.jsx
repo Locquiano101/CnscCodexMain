@@ -1,10 +1,13 @@
 import { DOCU_API_ROUTER } from "../../../../App";
 import { useState } from "react";
 import { UpdateStatusProposal } from "../../../../components/update-status-proposal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export function ShowAdviserDetailedProposal({
   proposal,
@@ -16,6 +19,20 @@ export function ShowAdviserDetailedProposal({
 
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
+
+  // If statusModal is open, show only UpdateStatusProposal
+  if (statusModal) {
+    return (
+      <UpdateStatusProposal
+        statusModal={statusModal}
+        setStatusModal={setStatusModal}
+        orgData={orgData}
+        proposal={proposal}
+        user={user}
+        onClose={() => setStatusModal(null)} // Add this prop
+      />
+    );
+  }
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -283,12 +300,13 @@ export function ShowAdviserDetailedProposal({
 
             {/* Send Revision button - opens alert modal */}
             <button
-              onClick={() =>
+              onClick={() => {
+                console.log("revision");
                 setStatusModal({
                   type: "alert",
                   status: "Revision from Adviser",
-                })
-              }
+                });
+              }}
               className="px-4 py-2 text-white bg-amber-700 hover:bg-amber-800 rounded-md"
             >
               Send Revision
@@ -296,12 +314,13 @@ export function ShowAdviserDetailedProposal({
 
             {/* Approve button - opens approval modal */}
             <button
-              onClick={() =>
+              onClick={() => {
+                console.log("approval");
                 setStatusModal({
                   type: "approval",
                   status: "Approved by the Adviser",
-                })
-              }
+                });
+              }}
               className="px-4 py-2 text-white bg-green-700 hover:bg-green-800 rounded-md"
             >
               Approve
@@ -309,15 +328,6 @@ export function ShowAdviserDetailedProposal({
           </div>
         </div>
       </DialogContent>
-
-      {/* Modal Component */}
-      <UpdateStatusProposal
-        statusModal={statusModal}
-        setStatusModal={setStatusModal}
-        orgData={orgData}
-        proposal={proposal}
-        user={user}
-      />
     </Dialog>
   );
 }

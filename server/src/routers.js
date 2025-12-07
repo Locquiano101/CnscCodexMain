@@ -24,6 +24,7 @@ router.get("/documents/:id", Controller.getDocumentById);
 
 /* ---------- USERS ---------- */
 router.get("/getAllUser", Controller.GetUsers);
+router.get("/rqatReport", Controller.getOrganizationSummary);
 
 /* ---------- STUDENT DEVELOPMENT ORGANIZATION ---------- */
 router.get("/getAllOrganizationProfile", Controller.GetAllOrganizationProfile);
@@ -102,6 +103,11 @@ router.get(
   "/getFinancialReport",
   enforceRequirement("financial-report"),
   Controller.getFinancialReportAll
+);
+router.get(
+  "/getFinancialReportWithRosterMembers",
+  enforceRequirement("financial-report"),
+  Controller.getFinancialReportAllwithRosterMembers
 );
 router.get(
   "/getFinancialReport/:OrgProfileId",

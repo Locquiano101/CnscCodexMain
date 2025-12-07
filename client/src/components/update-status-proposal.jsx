@@ -57,7 +57,7 @@ export function UpdateStatusProposal({
   if (!statusModal) return null;
 
   return (
-    <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-10">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-[99999]">
       <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
         <button
           onClick={closeModal}

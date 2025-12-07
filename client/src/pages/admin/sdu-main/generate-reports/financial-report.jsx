@@ -29,9 +29,12 @@ export function FinancialReportsView() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_ROUTER}/getFinancialReport`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${API_ROUTER}/getFinancialReportWithRosterMembers`,
+          {
+            withCredentials: true,
+          }
+        );
 
         console.log("Fetched data:", response.data);
         // Ensure we always set an array
@@ -53,7 +56,7 @@ export function FinancialReportsView() {
   const processedData = useMemo(() => {
     return data.map((org) => {
       const totalCollectible = (org.collectibleFees || []).reduce(
-        (sum, fee) => sum + (fee.amount || 0),
+        (sum, fee) => sum + (fee.amount || 0) * (org.memberCount || 0),
         0
       );
       const totalCollected = (org.cashInflows || []).reduce(
@@ -192,7 +195,7 @@ export function FinancialReportsView() {
   }
 
   return (
-    <div className="space-y-4 w-full p-6 bg-gray-50 min-h-screen">
+    <div className="space-y-4 w-full bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

@@ -4,6 +4,8 @@ import {
   Accreditation,
   collectibleFee,
   cashInflows,
+  Roster,
+  RosterMember,
 } from "../models/index.js";
 import { logAction } from "../middleware/audit.js";
 
@@ -196,6 +198,64 @@ export const getFinancialReportAll = async (req, res) => {
       .populate("cashoutflows");
 
     return res.status(200).json(reports);
+  } catch (error) {
+    console.error("❌ Error fetching financial reports:", error);
+    return res.status(500).json({
+      error: "Failed to retrieve financial reports.",
+    });
+  }
+};
+
+export const getFinancialReportAllwithRosterMembers = async (req, res) => {
+  try {
+    const reports = await FinancialReport.find()
+      .populate("organizationProfile")
+      .populate({
+        path: "reimbursements",
+        populate: { path: "document" },
+      })
+      .populate({
+        path: "disbursements",
+        populate: { path: "document" },
+      })
+      .populate({
+        path: "collections",
+        populate: { path: "document" },
+      })
+      .populate("collectibleFees")
+      .populate("cashInflows")
+      .populate("cashoutflows");
+
+    // 🔹 Add roster member count for each report
+    const reportsWithCounts = await Promise.all(
+      reports.map(async (report) => {
+        const orgId = report.organizationProfile?._id;
+
+        let memberCount = 0;
+
+        if (orgId) {
+          // find roster
+          const roster = await Roster.findOne({
+            organizationProfile: orgId,
+          });
+
+          // count members if roster exists
+          if (roster) {
+            memberCount = await RosterMember.countDocuments({
+              roster: roster._id,
+            });
+          }
+        }
+
+        // attach to returned JSON (no schema changes)
+        return {
+          ...report.toObject(),
+          memberCount,
+        };
+      })
+    );
+
+    return res.status(200).json(reportsWithCounts);
   } catch (error) {
     console.error("❌ Error fetching financial reports:", error);
     return res.status(500).json({

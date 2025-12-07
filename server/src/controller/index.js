@@ -15,3 +15,4 @@ export * from "./notification.js";
 export * from "./audit-logs.js";
 export * from "./room-location.js";
 export * from "./accreditation-requirement.js";
+export * from "./RQAT.js";

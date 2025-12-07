@@ -4,10 +4,11 @@ import { AccreditationReportsView } from "./accreditation-reports.jsx";
 import { AccomplishmentReportsView } from "./accomplishment-reports.jsx";
 import { CalendarReportsView } from "./calendar-reports.jsx";
 import { FinancialReportsView } from "./financial-report.jsx";
+import { RQATReportView } from "./RQAT-reports.jsx";
 
 export function SduGenerateReports() {
   // Make Accomplishment the default active tab
-  const [activeTab, setActiveTab] = useState("financial");
+  const [activeTab, setActiveTab] = useState("rqat");
 
   // Enable both Accreditation and Accomplishment reports in tabs
   const tabs = [
@@ -29,6 +30,11 @@ export function SduGenerateReports() {
     {
       id: "financial",
       label: "Financial Reports",
+      icon: <Calendar className="w-4 h-4" />,
+    },
+    {
+      id: "rqat",
+      label: "RQAT Reports",
       icon: <Calendar className="w-4 h-4" />,
     },
   ];
@@ -67,6 +73,7 @@ export function SduGenerateReports() {
         {activeTab === "accomplishment" && <AccreditationReportsView />}
         {activeTab === "calendar" && <CalendarReportsView />}
         {activeTab === "financial" && <FinancialReportsView />}
+        {activeTab === "rqat" && <RQATReportView />}
       </div>
     </div>
   );

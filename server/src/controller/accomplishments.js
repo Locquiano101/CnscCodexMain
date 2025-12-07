@@ -5,10 +5,11 @@ import {
   User,
 } from "../models/index.js";
 import { logAction } from "../middleware/audit.js";
+import { NodeEmail } from "../middleware/emailer.js";
 
 export const getAccomplishmentReportAll = async (req, res) => {
   try {
-  const report = await Accomplishment.find()
+    const report = await Accomplishment.find()
       .populate({
         path: "organizationProfile",
         populate: [
@@ -25,7 +26,9 @@ export const getAccomplishmentReportAll = async (req, res) => {
           select: "label fileName status",
         },
       })
-  .select("accomplishments grandTotal organizationProfile createdAt updatedAt");
+      .select(
+        "accomplishments grandTotal organizationProfile createdAt updatedAt"
+      );
 
     // Collect all organizationProfile IDs for roster/member counts
     const orgProfileIds = report
@@ -42,7 +45,9 @@ export const getAccomplishmentReportAll = async (req, res) => {
       const { Roster, RosterMember } = await import("../models/index.js");
 
       // Fetch rosters for these organization profiles
-      const rosters = await Roster.find({ organizationProfile: { $in: orgProfileIds } })
+      const rosters = await Roster.find({
+        organizationProfile: { $in: orgProfileIds },
+      })
         .select("_id organizationProfile")
         .lean();
       rosters.forEach((r) => {
@@ -51,7 +56,9 @@ export const getAccomplishmentReportAll = async (req, res) => {
 
       const rosterIds = rosters.map((r) => r._id);
       if (rosterIds.length) {
-        const rosterMembers = await RosterMember.find({ roster: { $in: rosterIds } })
+        const rosterMembers = await RosterMember.find({
+          roster: { $in: rosterIds },
+        })
           .select("roster position")
           .lean();
 
@@ -73,7 +80,7 @@ export const getAccomplishmentReportAll = async (req, res) => {
             return p !== "member"; // everything else considered officer/leadership
           }).length;
           memberCountsByOrg[orgId] = totalMembers;
-            officerCountsByOrg[orgId] = totalOfficers;
+          officerCountsByOrg[orgId] = totalOfficers;
         });
       }
     } catch (e) {
@@ -109,8 +116,10 @@ export const getAccomplishmentReportAll = async (req, res) => {
         grandTotal: item.grandTotal,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
-        totalMembers: memberCountsByOrg[item.organizationProfile?._id?.toString()] ?? null,
-        totalOfficers: officerCountsByOrg[item.organizationProfile?._id?.toString()] ?? null,
+        totalMembers:
+          memberCountsByOrg[item.organizationProfile?._id?.toString()] ?? null,
+        totalOfficers:
+          officerCountsByOrg[item.organizationProfile?._id?.toString()] ?? null,
         adviserName: item.organizationProfile?.adviser?.name || null,
         presidentName: item.organizationProfile?.orgPresident?.name || null,
       };
@@ -257,7 +266,8 @@ export const updateAccomplishmentStatus = async (req, res) => {
       action: "accomplishment.status.update",
       targetType: "SubAccomplishment",
       targetId: accomplishment._id,
-      organizationProfile: orgProfileId || accomplishment.organizationProfile || null,
+      organizationProfile:
+        orgProfileId || accomplishment.organizationProfile || null,
       organizationName: orgName || null,
       meta: {
         overallStatus: accomplishment.overallStatus || overallStatus,
@@ -418,7 +428,8 @@ export const addAccomplishment = async (req, res) => {
       action: "accomplishment.add",
       targetType: "SubAccomplishment",
       targetId: subAcc._id,
-      organizationProfile: organizationProfile || report.organizationProfile || null,
+      organizationProfile:
+        organizationProfile || report.organizationProfile || null,
       organizationName: organization || null,
       meta: { category, title },
     });
@@ -444,7 +455,9 @@ export const AddDocumentToSubAccomplishment = async (req, res) => {
         .json({ error: "Missing subAccomplishmentId in request body." });
     }
 
-    const subAcc = await SubAccomplishment.findById(subAccomplishmentId).populate({
+    const subAcc = await SubAccomplishment.findById(
+      subAccomplishmentId
+    ).populate({
       path: "organizationProfile",
       select: "orgName",
     });
@@ -459,9 +472,16 @@ export const AddDocumentToSubAccomplishment = async (req, res) => {
     // Optionally load document info for better meta readability
     let docMeta = { documentId };
     try {
-      const doc = await Document.findById(documentId).select("fileName label status");
+      const doc = await Document.findById(documentId).select(
+        "fileName label status"
+      );
       if (doc) {
-        docMeta = { documentId, fileName: doc.fileName, label: doc.label, status: doc.status };
+        docMeta = {
+          documentId,
+          fileName: doc.fileName,
+          label: doc.label,
+          status: doc.status,
+        };
       }
     } catch (_e) {}
 
@@ -546,17 +566,25 @@ export const resetAccomplishmentGradesForOrg = async (req, res) => {
     const { resetBy, reason } = req.body || {};
 
     if (!OrgProfileId) {
-      return res.status(400).json({ success: false, message: "Missing organization profile id" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing organization profile id" });
     }
 
     // Find parent report
-    const report = await Accomplishment.findOne({ organizationProfile: OrgProfileId });
+    const report = await Accomplishment.findOne({
+      organizationProfile: OrgProfileId,
+    });
     if (!report) {
-      return res.status(404).json({ success: false, message: "Accomplishment report not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Accomplishment report not found" });
     }
 
     // Load all sub accomplishments
-    const subs = await SubAccomplishment.find({ _id: { $in: report.accomplishments } });
+    const subs = await SubAccomplishment.find({
+      _id: { $in: report.accomplishments },
+    });
 
     let modifiedCount = 0;
     for (const sub of subs) {
@@ -564,7 +592,8 @@ export const resetAccomplishmentGradesForOrg = async (req, res) => {
       const prevGrading = sub.grading || {};
 
       // Only snapshot when there is something to preserve
-      const hadPointsOrGrading = prevAwarded > 0 || (prevGrading && (prevGrading.totalPoints || 0) > 0);
+      const hadPointsOrGrading =
+        prevAwarded > 0 || (prevGrading && (prevGrading.totalPoints || 0) > 0);
       if (hadPointsOrGrading) {
         sub.gradingHistory = sub.gradingHistory || [];
         sub.gradingHistory.push({
@@ -603,6 +632,8 @@ export const resetAccomplishmentGradesForOrg = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error resetting accomplishment grades:", err);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
