@@ -28,8 +28,6 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "../../../components/components";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert } from "@/components/ui/alert";
 import cnscLogo from "../../../assets/cnsc-codex-2.svg";
@@ -87,12 +85,16 @@ export function SduMainNavigation() {
       try {
         setRequirementsLoading(true);
         setRequirementsError(null);
-        const res = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        const res = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
         if (canceled) return;
-        const keys = new Set((res.data || []).map(r => r.key));
+        const keys = new Set((res.data || []).map((r) => r.key));
         setVisibleRequirements(keys);
       } catch (err) {
-        if (!canceled) setRequirementsError(err.response?.data?.message || err.message);
+        if (!canceled)
+          setRequirementsError(err.response?.data?.message || err.message);
       } finally {
         if (!canceled) setRequirementsLoading(false);
       }
@@ -161,7 +163,6 @@ export function SduMainNavigation() {
       path: "/SDU/logs",
     },
   ];
-
 
   // Map nav items to requirement keys; items without mapping always shown
   const subAccreditationItemsAll = [
@@ -232,18 +233,21 @@ export function SduMainNavigation() {
     let cancel = false;
     async function loadMeta() {
       try {
-        const res = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        const res = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true }
+        );
         if (cancel) return;
         setVisibleRequirementMeta(res.data || []);
-      } catch (_) {
+      } catch (e) {
         // ignore
       }
     }
     loadMeta();
   }, []);
 
-  const customMeta = visibleRequirementMeta.filter(r => r.type === 'custom');
-  customMeta.forEach(r => {
+  const customMeta = visibleRequirementMeta.filter((r) => r.type === "custom");
+  customMeta.forEach((r) => {
     // Create navigation entry if not already mapped
     dynamicCustomItems.push({
       key: `custom-${r.key}`,
@@ -255,14 +259,14 @@ export function SduMainNavigation() {
   });
 
   // Filter base (template) items by visibility, then inject custom items BEFORE 'settings'
-  const filteredBaseItems = subAccreditationItemsAll.filter(item => {
+  const filteredBaseItems = subAccreditationItemsAll.filter((item) => {
     const reqKey = requirementKeyMap[item.key];
     if (!reqKey) return true; // settings & requirements manager always shown
     return visibleRequirements.has(reqKey);
   });
   const subAccreditationItems = [];
-  filteredBaseItems.forEach(item => {
-    if (item.key === 'settings') {
+  filteredBaseItems.forEach((item) => {
+    if (item.key === "settings") {
       // Insert all dynamic custom requirement tabs before the settings item
       subAccreditationItems.push(...dynamicCustomItems);
     }
@@ -299,7 +303,7 @@ export function SduMainNavigation() {
               className={cn(
                 "w-full justify-start gap-3 h-11 px-3 text-sm font-medium transition-all rounded-lg cursor-pointer flex items-center",
                 activeKey === item.key ||
-                (item.key === "accreditations" && isAnySubAccreditationActive)
+                  (item.key === "accreditations" && isAnySubAccreditationActive)
                   ? "bg-primary text-white hover:bg-primary/90"
                   : "text-foreground hover:bg-muted"
               )}
@@ -335,7 +339,9 @@ export function SduMainNavigation() {
                 <div className="space-y-1 pt-2 pl-3">
                   {requirementsError && (
                     <Alert variant="destructive" className="text-xs py-2 mx-3">
-                      <AlertDescription>Failed to load requirements</AlertDescription>
+                      <AlertDescription>
+                        Failed to load requirements
+                      </AlertDescription>
                     </Alert>
                   )}
                   {requirementsLoading && (
@@ -361,7 +367,9 @@ export function SduMainNavigation() {
                       <span className="mr-2 w-4 h-4 flex items-center justify-center flex-shrink-0">
                         {subItem.icon}
                       </span>
-                      <span className="truncate text-left flex-1">{subItem.label}</span>
+                      <span className="truncate text-left flex-1">
+                        {subItem.label}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -371,13 +379,12 @@ export function SduMainNavigation() {
             {/* Proposals dropdown removed - now a regular navigation item */}
           </div>
         ))}
-    </nav>
+      </nav>
 
       {/* Bottom Section - Logout */}
       <div className="border-t p-3">
         <LogoutButton />
       </div>
     </div>
-);
-
+  );
 }

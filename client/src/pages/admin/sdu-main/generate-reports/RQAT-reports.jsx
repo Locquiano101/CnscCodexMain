@@ -3,7 +3,10 @@ import axios from "axios";
 import { API_ROUTER } from "../../../../config/api.js";
 import { FilterPanel } from "../../../../components/filter-panel.jsx";
 import { SortableTable } from "../../../../components/sortable-table.jsx";
-import { exportAccomplishmentToPDF } from "../../../../utils/export-reports.js";
+import {
+  exportAccomplishmentToPDF,
+  exportRQATToPDF,
+} from "../../../../utils/export-reports.js";
 import { FileDown } from "lucide-react";
 
 export function RQATReportView() {
@@ -16,6 +19,17 @@ export function RQATReportView() {
     specialization: "",
     dateFrom: "",
     dateTo: "",
+    organizationName: "",
+    adviser: "",
+    president: "",
+    minYearsOfExistence: "",
+    maxYearsOfExistence: "",
+    minFeeCollected: "",
+    maxFeeCollected: "",
+    minOfficers: "",
+    maxOfficers: "",
+    minPrograms: "",
+    maxPrograms: "",
   });
 
   // Sort state
@@ -36,6 +50,7 @@ export function RQATReportView() {
         setData(response.data || []);
 
         setData(response.data);
+        console.log(response.data);
         setError(null);
       } catch (err) {
         console.error("Error fetching accomplishment data:", err);
@@ -51,10 +66,18 @@ export function RQATReportView() {
   // Extract unique values for filter options
   const filterOptions = useMemo(() => {
     const specializations = new Set();
+    const advisers = new Set();
+    const presidents = new Set();
 
     data.forEach((item) => {
       if (item.specialization) {
         specializations.add(item.specialization);
+      }
+      if (item.adviserName) {
+        advisers.add(item.adviserName);
+      }
+      if (item.presidentName) {
+        presidents.add(item.presidentName);
       }
     });
 
@@ -63,12 +86,30 @@ export function RQATReportView() {
         value: s,
         label: s,
       })),
+      advisers: Array.from(advisers).map((a) => ({
+        value: a,
+        label: a,
+      })),
+      presidents: Array.from(presidents).map((p) => ({
+        value: p,
+        label: p,
+      })),
     };
   }, [data]);
 
   // Apply filters
   const filteredData = useMemo(() => {
     return data.filter((item) => {
+      // Organization name filter
+      if (
+        filters.organizationName &&
+        !item.organizationName
+          ?.toLowerCase()
+          .includes(filters.organizationName.toLowerCase())
+      ) {
+        return false;
+      }
+
       // Specialization filter
       if (
         filters.specialization &&
@@ -77,7 +118,57 @@ export function RQATReportView() {
         return false;
       }
 
-      // Date range filter (if you add createdAt/updatedAt fields later)
+      // Adviser filter
+      if (filters.adviser && item.adviserName !== filters.adviser) {
+        return false;
+      }
+
+      // President filter
+      if (filters.president && item.presidentName !== filters.president) {
+        return false;
+      }
+
+      // Years of existence filter
+      if (filters.minYearsOfExistence) {
+        const minYears = parseInt(filters.minYearsOfExistence);
+        if ((item.yearsOfExistence || 0) < minYears) return false;
+      }
+      if (filters.maxYearsOfExistence) {
+        const maxYears = parseInt(filters.maxYearsOfExistence);
+        if ((item.yearsOfExistence || 0) > maxYears) return false;
+      }
+
+      // Fee collected filter
+      if (filters.minFeeCollected) {
+        const minFee = parseFloat(filters.minFeeCollected);
+        if ((item.specializationFeeCollected || 0) < minFee) return false;
+      }
+      if (filters.maxFeeCollected) {
+        const maxFee = parseFloat(filters.maxFeeCollected);
+        if ((item.specializationFeeCollected || 0) > maxFee) return false;
+      }
+
+      // Officers count filter
+      if (filters.minOfficers) {
+        const minOff = parseInt(filters.minOfficers);
+        if ((item.officers?.length || 0) < minOff) return false;
+      }
+      if (filters.maxOfficers) {
+        const maxOff = parseInt(filters.maxOfficers);
+        if ((item.officers?.length || 0) > maxOff) return false;
+      }
+
+      // Programs count filter
+      if (filters.minPrograms) {
+        const minProg = parseInt(filters.minPrograms);
+        if ((item.programsUndertaken?.length || 0) < minProg) return false;
+      }
+      if (filters.maxPrograms) {
+        const maxProg = parseInt(filters.maxPrograms);
+        if ((item.programsUndertaken?.length || 0) > maxProg) return false;
+      }
+
+      // Date range filter
       if (filters.dateFrom || filters.dateTo) {
         const itemDate = new Date(item.createdAt || item.accreditedSince);
 
@@ -217,6 +308,17 @@ export function RQATReportView() {
       specialization: "",
       dateFrom: "",
       dateTo: "",
+      organizationName: "",
+      adviser: "",
+      president: "",
+      minYearsOfExistence: "",
+      maxYearsOfExistence: "",
+      minFeeCollected: "",
+      maxFeeCollected: "",
+      minOfficers: "",
+      maxOfficers: "",
+      minPrograms: "",
+      maxPrograms: "",
     });
   };
 
@@ -242,10 +344,6 @@ export function RQATReportView() {
     };
   }, [data]);
 
-  const exportToPDF = () => {
-    alert("PDF export functionality would be implemented here");
-  };
-
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -256,7 +354,7 @@ export function RQATReportView() {
   }
 
   return (
-    <div className="space-y-4 w-full p-6 bg-gray-50 min-h-screen">
+    <div className="space-y-4 w-full min-h-screen">
       {/* Header with Export Buttons */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">
@@ -264,7 +362,7 @@ export function RQATReportView() {
         </h2>
         <div className="flex gap-2">
           <button
-            onClick={exportToPDF}
+            onClick={() => exportRQATToPDF(sortedData, filters, "RQAT REPORT")}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             disabled={sortedData.length === 0}
           >
@@ -277,6 +375,8 @@ export function RQATReportView() {
       {/* Filters */}
       <FilterPanel
         specializationOptions={filterOptions.specializations}
+        adviserOptions={filterOptions.advisers}
+        presidentOptions={filterOptions.presidents}
         filters={filters}
         onFilterChange={setFilters}
         onClearFilters={handleClearFilters}

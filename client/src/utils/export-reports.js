@@ -996,6 +996,7 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  // Add official header
   let yPosition = addOfficialHeader(doc, "FINANCIAL REPORT");
 
   const formatAmount = (num) =>
@@ -1014,40 +1015,8 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
     row.status || "Pending",
   ]);
 
-  // if (
-  //   filters.status ||
-  //   filters.department ||
-  //   filters.dateFrom ||
-  //   filters.dateTo
-  // ) {
-  //   const filtersArray = [];
-  //   if (filters.status) filtersArray.push(`Status: ${filters.status}`);
-  //   if (filters.department)
-  //     filtersArray.push(`Department: ${filters.department}`);
-  //   if (filters.dateFrom || filters.dateTo) {
-  //     const from = filters.dateFrom
-  //       ? new Date(filters.dateFrom).toLocaleDateString("en-PH", {
-  //           year: "numeric",
-  //           month: "long",
-  //           day: "numeric",
-  //         })
-  //       : "Start";
-  //     const to = filters.dateTo
-  //       ? new Date(filters.dateTo).toLocaleDateString("en-PH", {
-  //           year: "numeric",
-  //           month: "long",
-  //           day: "numeric",
-  //         })
-  //       : "End";
-  //     filtersArray.push(`Date Range: ${from} to ${to}`);
-  //   }
-  //   doc.setFontSize(10);
-  //   doc.text("Filters Applied: " + filtersArray.join(" | "), 14, yPosition + 5);
-  //   yPosition += 8;
-  // }
-
   autoTable(doc, {
-    startY: yPosition + 8,
+    startY: yPosition,
     head: [
       [
         "Organization",
@@ -1061,21 +1030,33 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
     ],
     body: tableData,
     theme: "grid",
-    styles: { fontSize: 8, cellPadding: 2, halign: "center", valign: "middle" },
+    styles: {
+      font: "helvetica",
+      fontSize: 8,
+      cellPadding: 2,
+      halign: "center",
+      valign: "middle",
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0],
+      overflow: "linebreak",
+    },
     headStyles: {
       fillColor: [255, 255, 255],
       textColor: [0, 0, 0],
       fontStyle: "bold",
       halign: "center",
+      fontSize: 8,
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0],
     },
     columnStyles: {
-      0: { halign: "left" },
-      1: { halign: "left" },
-      2: { halign: "right" },
-      3: { halign: "right" },
-      4: { halign: "right" },
-      5: { halign: "center" },
-      6: { halign: "center" },
+      0: { halign: "left", cellWidth: "auto" },
+      1: { halign: "left", cellWidth: "auto" },
+      2: { halign: "right", cellWidth: "auto" },
+      3: { halign: "right", cellWidth: "auto" },
+      4: { halign: "right", cellWidth: "auto" },
+      5: { halign: "center", cellWidth: "auto" },
+      6: { halign: "center", cellWidth: "auto" },
     },
     alternateRowStyles: { fillColor: [248, 248, 248] },
     didParseCell: (data) => {
@@ -1089,9 +1070,13 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
       }
     },
     didDrawPage: (data) => {
+      // Add header for every page
       if (data.pageNumber > 1) addOfficialHeader(doc, "FINANCIAL REPORT");
+
+      // Page numbers
       const pageCount = doc.internal.getNumberOfPages();
       doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
       doc.text(
         `Page ${data.pageNumber} of ${pageCount}`,
         pageWidth - 14,
@@ -1100,8 +1085,144 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
       );
     },
     margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    tableWidth: "auto",
     showHead: "everyPage",
   });
 
-  doc.save(`Financial_Report_${new Date().toISOString().split("T")[0]}.pdf`);
+  const fileName = `Financial_Report_${
+    new Date().toISOString().split("T")[0]
+  }.pdf`;
+  doc.save(fileName);
+};
+
+export const exportRQATToPDF = (data) => {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Add official header
+  let yPosition = addOfficialHeader(doc, "RQAT REPORT");
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const d = new Date(dateString);
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  };
+
+  // Prepare table data
+  const tableData = data.map((org) => [
+    // Organization Name
+    org.organizationName || "-",
+    // Years of Existence
+    org.yearsOfExistence != null ? org.yearsOfExistence : "-",
+    // Accredited Since
+    org.accreditedSince ? formatDate(org.accreditedSince) : "-",
+    // Adviser Name
+    org.adviserName || "-",
+    // President Name
+    org.presidentName || "-",
+    // Officers
+    org.officers?.length
+      ? org.officers.map((o) => `• ${o.name} (${o.position})`).join("\n\n")
+      : "-",
+    // Specialization
+    org.specialization || "-",
+    // Specialization Fee
+    org.specializationFeeCollected != null
+      ? `Php ${org.specializationFeeCollected.toLocaleString("en-PH", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`
+      : "-",
+    // Programs Undertaken
+    org.programsUndertaken?.length
+      ? org.programsUndertaken.map((p) => `• ${p}`).join("\n\n")
+      : "-",
+  ]);
+
+  // Configure table to match accomplishment report style
+  autoTable(doc, {
+    startY: yPosition,
+    head: [
+      [
+        "ORGANIZATION NAME",
+        "YEARS OF EXISTENCE",
+        "ACCREDITED SINCE",
+        "ADVISER NAME",
+        "PRESIDENT NAME",
+        "OFFICERS",
+        "SPECIALIZATION",
+        "SPECIALIZATION FEE",
+        "PROGRAMS UNDERTAKEN",
+      ],
+    ],
+    body: tableData,
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 8,
+      cellPadding: 2,
+      halign: "center",
+      valign: "middle",
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0],
+      overflow: "linebreak",
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: "bold",
+      halign: "center",
+      fontSize: 8,
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0],
+    },
+    columnStyles: {
+      0: { cellWidth: "auto", halign: "left" }, // Organization Name
+      1: { cellWidth: "auto", halign: "center" }, // Years of Existence
+      2: { cellWidth: "auto", halign: "center" }, // Accredited Since
+      3: { cellWidth: "auto", halign: "left" }, // Adviser Name
+      4: { cellWidth: "auto", halign: "left" }, // President Name
+      5: { cellWidth: "auto", halign: "left" }, // Officers (multi-line)
+      6: { cellWidth: "auto", halign: "left" }, // Specialization
+      7: { cellWidth: "auto", halign: "right" }, // Specialization Fee
+      8: { cellWidth: "auto", halign: "left" }, // Programs Undertaken (multi-line)
+    },
+    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    tableWidth: "auto",
+    didDrawPage: (data) => {
+      // Add header for every page
+      if (data.pageNumber > 1) {
+        addOfficialHeader(doc, "RQAT REPORT");
+      }
+      // Page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.text(
+        `Page ${data.pageNumber} of ${pageCount}`,
+        pageWidth - 14,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: "right" }
+      );
+    },
+    showHead: "everyPage",
+  });
+
+  const fileName = `RQAT_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+  doc.save(fileName);
 };

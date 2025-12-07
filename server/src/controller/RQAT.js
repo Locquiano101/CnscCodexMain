@@ -41,6 +41,7 @@ export const getOrganizationSummary = async (req, res) => {
       );
 
       // ⭐ Fetch roster + officers
+      // ⭐ Fetch roster + officers
       const roster = await Roster.findOne({
         organizationProfile: profile._id,
       });
@@ -52,7 +53,12 @@ export const getOrganizationSummary = async (req, res) => {
         });
 
         officers = rosterMembers
-          .filter((m) => m.position && m.position.trim() !== "")
+          .filter(
+            (m) =>
+              m.position &&
+              m.position.trim() !== "" &&
+              m.position.toLowerCase() !== "member" // Exclude "Member"
+          )
           .map((m) => ({
             name: m.name,
             position: m.position,

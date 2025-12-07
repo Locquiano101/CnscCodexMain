@@ -22,7 +22,7 @@ import { AddCollectionFees } from "./collection-fees";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionModal } from "./add-transaction";
 
-export default function FinancialReport({ orgData }) {
+export default function StudentFinancialReport({ orgData }) {
   const [financialReport, setFinancialReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentBalance, setCurrentBalance] = useState("");
