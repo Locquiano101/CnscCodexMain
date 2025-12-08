@@ -71,7 +71,20 @@ export const getOrganizationSummary = async (req, res) => {
             profilePicture: m.profilePicture,
           }));
       }
-
+      // ⭐ Include President as an officer
+      if (profile.orgPresident) {
+        officers.unshift({
+          name: profile.orgPresident.name,
+          position: "President",
+          studentId: profile.orgPresident.studentId || null,
+          course: profile.orgPresident.course || null,
+          department: profile.orgPresident.department || null,
+          year: profile.orgPresident.year || null,
+          contactNumber: profile.orgPresident.contactNumber || null,
+          email: profile.orgPresident.email || null,
+          profilePicture: profile.orgPresident.profilePicture || null,
+        });
+      }
       // ⭐ NEW: Fetch collected fees titles
       const inflows = await cashInflows
         .find({

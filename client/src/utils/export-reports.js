@@ -1325,22 +1325,6 @@ export const exportRQATOfficersToPDF = (data) => {
   organizations.forEach((org) => {
     let officers = org.officers || [];
 
-    // If presidentName exists but not in officers array, add it
-    if (org.presidentName) {
-      const presidentExists = officers.some(
-        (o) =>
-          o.position?.toLowerCase() === "president" ||
-          o.name === org.presidentName
-      );
-      if (!presidentExists) {
-        officers.push({
-          name: org.presidentName,
-          position: "President",
-          contactNumber: "-", // no contact number available
-        });
-      }
-    }
-
     if (officers.length === 0) return;
 
     // Sort officers: president first
