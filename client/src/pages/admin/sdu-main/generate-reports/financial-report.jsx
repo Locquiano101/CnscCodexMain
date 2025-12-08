@@ -54,31 +54,24 @@ export function FinancialReportsView() {
 
   // Calculate collectible vs actual for each organization
   const processedData = useMemo(() => {
-    return data.map((org) => {
-      const totalCollectible = (org.collectibleFees || []).reduce(
-        (sum, fee) => sum + (fee.amount || 0) * (org.memberCount || 0),
-        0
-      );
-      const totalCollected = (org.cashInflows || []).reduce(
-        (sum, inflow) => sum + (inflow.amount || 0),
-        0
-      );
-      const variance = totalCollected - totalCollectible;
+    return data.map((item) => {
+      const expected = (item.approvedFee || 0) * (item.payees || 0);
+      const collected = item.collectedAmount || 0;
+      const variance = collected - expected;
+
+      const rate = expected > 0 ? (collected / expected) * 100 : 0;
 
       let status = "Equal";
       if (variance > 0) status = "Over";
       else if (variance < 0) status = "Under";
 
-      const collectionRate =
-        totalCollectible > 0 ? (totalCollected / totalCollectible) * 100 : 0;
-
       return {
-        ...org,
-        totalCollectible,
-        totalCollected,
+        ...item,
+        totalCollectible: expected,
+        totalCollected: collected,
         variance,
+        collectionRate: rate,
         status,
-        collectionRate,
       };
     });
   }, [data]);
@@ -99,7 +92,7 @@ export function FinancialReportsView() {
       if (filters.dateFrom || filters.dateTo) {
         // Assuming there's a date field in the data
         // You'll need to adjust this based on your actual data structure
-        const itemDate = new Date(item.createdAt || item.date);
+        const itemDate = item.date ? new Date(item.date) : null;
         if (filters.dateFrom && new Date(filters.dateFrom) > itemDate)
           return false;
         if (filters.dateTo && new Date(filters.dateTo) < itemDate) return false;
@@ -451,10 +444,13 @@ export function FinancialReportsView() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Organization
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Department
+                  President
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Expected Amount
@@ -490,14 +486,25 @@ export function FinancialReportsView() {
                   <tr key={org._id || org.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">
-                        {org.organizationProfile?.orgName || "N/A"}
+                        {org.date
+                          ? new Date(org.date).toLocaleDateString("en-US", {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            })
+                          : "-"}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900">
+                        {org.organization || "N/A"}
                       </div>
                       <div className="text-sm text-gray-500">
                         {org.organizationProfile?.orgAcronym || "-"}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center text-sm text-gray-900">
-                      {org.organizationProfile?.orgDepartment || "-"}
+                      {org.president || "???"}
                     </td>
                     <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
                       ₱

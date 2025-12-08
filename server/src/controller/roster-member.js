@@ -309,10 +309,14 @@ export const GetAllRostersWithMembers = async (req, res) => {
 export const AddNewRosterMember = async (req, res) => {
   const {
     organizationProfile,
+    organization, // make sure frontend sends this
     name,
     email,
     address,
     position,
+    department,
+    course,
+    year,
     birthDate,
     status,
     studentId,
@@ -321,45 +325,55 @@ export const AddNewRosterMember = async (req, res) => {
 
   const profilePicture = res.locals.fileName;
 
-  // Validate required fields
-  if (!organizationProfile || !name || !email) {
+  // Required fields validation
+  if (!organizationProfile || !organization || !name || !email) {
     return res.status(400).json({
-      message: "organizationProfile, name, and email are required.",
+      message:
+        "organizationProfile, organization, name, and email are required.",
     });
   }
 
   try {
-    // Step 1: Find or create the roster
+    // Step 1: Find or create roster
     let roster = await Roster.findOne({ organizationProfile });
 
     if (!roster) {
-      roster = new Roster({ organizationProfile });
+      roster = new Roster({
+        organizationProfile,
+        organization,
+        isComplete: false,
+        overAllStatus: "Pending",
+        revisionNotes: "",
+      });
+
       await roster.save();
     }
 
-    // Step 2: Create new roster member and assign roster ID
+    // Step 2: Create new roster member
     const newMember = new RosterMember({
       roster: roster._id,
       name,
       email,
       address,
       position,
+      department,
+      course,
+      year,
       birthDate,
       status,
-      profilePicture,
       studentId,
       contactNumber,
+      profilePicture,
     });
 
-    // Step 3: Save the new member
     const savedMember = await newMember.save();
 
-    // 📝 Audit log
+    // Audit log
     logAction(req, {
       action: "roster.member.add",
       targetType: "RosterMember",
       targetId: savedMember._id,
-      organizationProfile: organizationProfile,
+      organizationProfile,
       organizationName: null,
       meta: { name, email, position },
     });

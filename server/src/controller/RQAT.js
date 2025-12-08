@@ -64,6 +64,7 @@ export const getOrganizationSummary = async (req, res) => {
             position: m.position,
             studentId: m.studentId,
             course: m.course,
+            deparment: m.department,
             year: m.year,
             contactNumber: m.contactNumber,
             email: m.email,
@@ -71,20 +72,16 @@ export const getOrganizationSummary = async (req, res) => {
           }));
       }
 
-      // ⭐ NEW: Calculate total fees collected
-      const inflows = await cashInflows.find({
-        organizationProfile: profile._id,
-      });
+      // ⭐ NEW: Fetch collected fees titles
+      const inflows = await cashInflows
+        .find({
+          organizationProfile: profile._id,
+        })
+        .populate("collectibleFee");
 
-      const specializationFeeCollected = inflows.reduce(
-        (total, inflow) => total + (inflow.amount || 0),
-        0
-      );
-
-      // ⭐ NEW: Count collectible fees (optional)
-      const collectibleFees = await collectibleFee.find({
-        organizationProfile: profile._id,
-      });
+      const collectedFeeTitles = inflows
+        .filter((inflow) => inflow.collectibleFee) // make sure collectibleFee exists
+        .map((inflow) => inflow.collectibleFee.title);
 
       result.push({
         organizationName: profile.orgName || org.currentName,
@@ -97,7 +94,7 @@ export const getOrganizationSummary = async (req, res) => {
         officers,
 
         specialization: profile.orgSpecialization || null,
-        specializationFeeCollected,
+        collectedFeeTitles, // ✅ include fee titles here
 
         programsUndertaken: programs || [],
         createdAt: profile.createdAt,

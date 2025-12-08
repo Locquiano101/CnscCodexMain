@@ -206,61 +206,93 @@ export const getFinancialReportAll = async (req, res) => {
   }
 };
 
-export const getFinancialReportAllwithRosterMembers = async (req, res) => {
+export const getFinancialReportTable = async (req, res) => {
   try {
     const reports = await FinancialReport.find()
-      .populate("organizationProfile")
       .populate({
-        path: "reimbursements",
-        populate: { path: "document" },
-      })
-      .populate({
-        path: "disbursements",
-        populate: { path: "document" },
-      })
-      .populate({
-        path: "collections",
-        populate: { path: "document" },
+        path: "organizationProfile",
+        populate: {
+          path: "orgPresident",
+          model: "PresidentProfile",
+          select: "name", // Only get the president's name
+        },
       })
       .populate("collectibleFees")
-      .populate("cashInflows")
-      .populate("cashoutflows");
+      .populate("cashInflows");
 
-    // 🔹 Add roster member count for each report
-    const reportsWithCounts = await Promise.all(
-      reports.map(async (report) => {
-        const orgId = report.organizationProfile?._id;
+    const finalRows = [];
 
-        let memberCount = 0;
+    for (const report of reports) {
+      const org = report.organizationProfile;
 
-        if (orgId) {
-          // find roster
-          const roster = await Roster.findOne({
-            organizationProfile: orgId,
-          });
+      if (!org) {
+        console.warn(
+          "⚠️ Skipping report with missing organizationProfile:",
+          report._id
+        );
+        continue;
+      }
 
-          // count members if roster exists
-          if (roster) {
-            memberCount = await RosterMember.countDocuments({
-              roster: roster._id,
-            });
-          }
-        }
+      // Get member count
+      let memberCount = 0;
+      const roster = await Roster.findOne({ organizationProfile: org._id });
 
-        // attach to returned JSON (no schema changes)
-        return {
-          ...report.toObject(),
+      if (roster) {
+        memberCount = await RosterMember.countDocuments({ roster: roster._id });
+      }
+
+      // Helper for correct inflow date selection
+      const getInflowDate = (inflow) => {
+        if (!inflow) return null;
+        return inflow.updatedAt || inflow.createdAt || inflow.date || null;
+      };
+
+      for (const fee of report.collectibleFees) {
+        const inflows = report.cashInflows.filter(
+          (i) => i.collectibleFee?.toString() === fee._id.toString()
+        );
+
+        const collectedAmount = inflows.reduce((sum, i) => sum + i.amount, 0);
+        const payees = inflows.reduce((sum, i) => sum + i.paidRosterMembers, 0);
+
+        // Determine the most recent inflow date
+        const latestInflow =
+          inflows.length > 0
+            ? inflows.reduce((latest, curr) =>
+                getInflowDate(curr) > getInflowDate(latest) ? curr : latest
+              )
+            : null;
+
+        const latestDate = latestInflow ? getInflowDate(latestInflow) : null;
+
+        const calcRate =
+          memberCount > 0
+            ? ((payees / memberCount) * 100).toFixed(2) + "%"
+            : "0%";
+
+        const variance = memberCount - payees;
+
+        finalRows.push({
+          date: latestDate,
+          organization: org.orgName,
+          department: org.orgDepartment,
+          president: org.orgPresident?.name || "-", // Only the name
+          feeType: fee.title,
+          approvedFee: fee.amount,
+          collectedAmount,
+          payees,
           memberCount,
-        };
-      })
-    );
+          calcRate,
+          variance,
+          status: fee.status,
+        });
+      }
+    }
 
-    return res.status(200).json(reportsWithCounts);
+    return res.status(200).json(finalRows);
   } catch (error) {
-    console.error("❌ Error fetching financial reports:", error);
-    return res.status(500).json({
-      error: "Failed to retrieve financial reports.",
-    });
+    console.error("❌ Error building table:", error);
+    return res.status(500).json({ error: "Failed to generate table data." });
   }
 };
 

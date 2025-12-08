@@ -4,7 +4,7 @@ import { API_ROUTER } from "../../../../config/api.js";
 import { FilterPanel } from "../../../../components/filter-panel.jsx";
 import { SortableTable } from "../../../../components/sortable-table.jsx";
 import {
-  exportAccomplishmentToPDF,
+  exportRQATOfficersToPDF,
   exportRQATToPDF,
 } from "../../../../utils/export-reports.js";
 import { FileDown } from "lucide-react";
@@ -221,14 +221,6 @@ export function RQATReportView() {
   // Table columns (updated to match actual data structure)
   const columns = [
     {
-      key: "index",
-      label: "No.",
-      sortable: false,
-      className: "text-center font-medium",
-      headerClassName: "text-center",
-      render: (row, idx) => idx + 1,
-    },
-    {
       key: "organizationName",
       label: "Name of the Organization",
       render: (row) => (
@@ -236,13 +228,6 @@ export function RQATReportView() {
           {row.organizationName || "N/A"}
         </div>
       ),
-    },
-    {
-      key: "specialization",
-      label: "Specialization",
-      className: "text-center",
-      headerClassName: "text-center",
-      render: (row) => row.specialization || "-",
     },
     {
       key: "yearsOfExistence",
@@ -267,13 +252,6 @@ export function RQATReportView() {
       },
     },
     {
-      key: "officers",
-      label: "Total Officers",
-      className: "text-center",
-      headerClassName: "text-center",
-      render: (row) => row.officers?.length || 0,
-    },
-    {
       key: "adviserName",
       label: "Adviser",
       render: (row) => row.adviserName || "-",
@@ -284,15 +262,31 @@ export function RQATReportView() {
       render: (row) => row.presidentName || "-",
     },
     {
-      key: "specializationFeeCollected",
-      label: "Fee Collected",
+      key: "specialization",
+      label: "Specialization",
       className: "text-center",
       headerClassName: "text-center",
-      render: (row) => (
-        <span className="font-medium">
-          ₱{(row.specializationFeeCollected || 0).toLocaleString()}
-        </span>
-      ),
+      render: (row) => row.specialization || "-",
+    },
+    {
+      key: "officers",
+      label: "Total Officers",
+      className: "text-center",
+      headerClassName: "text-center",
+      render: (row) => row.officers?.length || 0,
+    },
+    {
+      key: "collectedFeeTitles",
+      label: "Collected Fees",
+      className: "text-center",
+      headerClassName: "text-center",
+      render: (row) => {
+        if (!row.collectedFeeTitles || row.collectedFeeTitles.length === 0)
+          return "-";
+
+        // Display as comma-separated
+        return row.collectedFeeTitles.length;
+      },
     },
     {
       key: "programsUndertaken",
@@ -361,13 +355,30 @@ export function RQATReportView() {
           Accreditation Report
         </h2>
         <div className="flex gap-2">
+          {/* Export Overall PDF */}
           <button
             onClick={() => exportRQATToPDF(sortedData, filters, "RQAT REPORT")}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             disabled={sortedData.length === 0}
           >
             <FileDown className="w-4 h-4" />
-            Export PDF
+            Export Overall PDF
+          </button>
+
+          {/* Export Officers Only PDF */}
+          <button
+            onClick={() =>
+              exportRQATOfficersToPDF(
+                sortedData,
+                filters,
+                "RQAT OFFICERS REPORT"
+              )
+            }
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+            disabled={sortedData.length === 0}
+          >
+            <FileDown className="w-4 h-4" />
+            Export PDF (Student Officers Only)
           </button>
         </div>
       </div>

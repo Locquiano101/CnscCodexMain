@@ -32,7 +32,6 @@ export const rosterMembersSchema = new Schema(
     course: String,
     year: String,
     birthDate: Date,
-    status: String,
     studentId: String,
     contactNumber: String,
     profilePicture: String,

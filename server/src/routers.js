@@ -107,7 +107,7 @@ router.get(
 router.get(
   "/getFinancialReportWithRosterMembers",
   enforceRequirement("financial-report"),
-  Controller.getFinancialReportAllwithRosterMembers
+  Controller.getFinancialReportTable
 );
 router.get(
   "/getFinancialReport/:OrgProfileId",

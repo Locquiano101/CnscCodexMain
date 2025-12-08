@@ -263,7 +263,7 @@ export const exportAccreditationToPDF = (data, fileLabel = "Accreditation") => {
   });
 
   // Save the PDF
-  const fileName = `${fileLabel}_Report_${
+  const fileName = `Accomplishment_Report_${
     new Date().toISOString().split("T")[0]
   }.pdf`;
   doc.save(fileName);
@@ -737,6 +737,38 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
     })}`;
   };
 
+  const computeStatus = (row) => {
+    const plan = row.actionPlan || row.ProposedIndividualActionPlan || {};
+    const date = plan.proposedDate ? new Date(plan.proposedDate) : null;
+    const today = new Date();
+
+    const approved = row.overallStatus?.toLowerCase() === "approved";
+    const cancelled =
+      row.overallStatus?.toLowerCase() === "cancelled" ||
+      row.overallStatus?.toLowerCase() === "rejected";
+
+    const hasReport = row.hasReport || false;
+
+    // CANCELLED
+    if (cancelled) return "CANCELLED";
+
+    if (!date) return "PENDING";
+
+    // FUTURE EVENTS
+    if (date > today) {
+      if (approved) return "APPROVED";
+      return "PENDING";
+    }
+
+    // PAST EVENTS
+    if (date < today) {
+      if (hasReport) return "CONCLUDED";
+      return "FOR REPORTING";
+    }
+
+    return "PENDING";
+  };
+
   // Prepare table data (similar structure to accomplishment)
   const tableData = data.map((row) => {
     const plan = row.actionPlan || row.ProposedIndividualActionPlan || {};
@@ -759,7 +791,7 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
       // 8 SDG
       getSDGs(row),
       // 9 Status
-      row.overallStatus || "Pending",
+      computeStatus(row),
     ];
   });
 
@@ -789,7 +821,7 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
 
   // Configure table (matching accomplishment style)
   autoTable(doc, {
-    startY: yPosition + 8,
+    startY: yPosition,
     head: [
       [
         "DATE",
@@ -831,7 +863,7 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
       3: { cellWidth: "auto", halign: "left" }, // Activity Title
       4: { cellWidth: "auto", halign: "left" }, // Venue
       5: { cellWidth: 30, halign: "left" }, // Budget
-      6: { cellWidth: "auto", halign: "left" }, // SDG
+      6: { cellWidth: 30, halign: "left" }, // SDG
       7: { cellWidth: "auto", halign: "center" }, // Status
     },
     // Alternate row colors like accomplishment
@@ -841,25 +873,22 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
     margin: { top: 10, right: 14, bottom: 10, left: 14 },
     tableWidth: "auto",
     didParseCell: (data) => {
-      // Ensure budget is right-aligned
-      if (data.column.index === 6) {
-        data.cell.styles.halign = "right";
-      }
-
       // STATUS COLORING (same color scheme as before but with accent colors)
-      if (data.column.index === 8 && data.section === "body") {
+      if (data.column.index === 7 && data.section === "body") {
         const status = String(data.cell.raw).toLowerCase();
 
-        if (status.includes("approved")) {
-          data.cell.styles.fillColor = [232, 246, 232]; // Light green
-        } else if (status.includes("reject") || status.includes("denied")) {
-          data.cell.styles.fillColor = [255, 235, 235]; // Light red
-        } else if (status.includes("pending")) {
-          data.cell.styles.fillColor = [255, 250, 205]; // Light yellow
-        } else if (status.includes("completed")) {
-          data.cell.styles.fillColor = [230, 240, 255]; // Light blue
+        if (status === "approved") {
+          data.cell.styles.fillColor = [232, 246, 232]; // green
+        } else if (status === "pending") {
+          data.cell.styles.fillColor = [255, 250, 205]; // yellow
+        } else if (status === "for reporting") {
+          data.cell.styles.fillColor = [255, 239, 200]; // orange
+        } else if (status === "concluded") {
+          data.cell.styles.fillColor = [230, 240, 255]; // blue
+        } else if (status === "cancelled") {
+          data.cell.styles.fillColor = [255, 220, 220]; // red
         } else {
-          data.cell.styles.fillColor = [245, 245, 245]; // Light gray
+          data.cell.styles.fillColor = [245, 245, 245]; // gray
         }
       }
     },
@@ -883,7 +912,7 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
     showHead: "everyPage",
   });
 
-  const fileName = `Action_Plan_Report_${
+  const fileName = `Activity_Calendar_Report_${
     new Date().toISOString().split("T")[0]
   }.pdf`;
   doc.save(fileName);
@@ -1005,23 +1034,43 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
       maximumFractionDigits: 2,
     })}`;
 
-  const tableData = data.map((row) => [
-    row.organizationProfile?.orgName || "N/A",
-    row.organizationProfile?.orgDepartment || "-",
-    formatAmount(row.totalCollectible),
-    formatAmount(row.totalCollected),
-    formatAmount(row.variance),
-    `${row.collectionRate?.toFixed(1) || 0}%`,
-    row.status || "Pending",
-  ]);
+  // Build table rows based on new data structure
+  const tableData = data.map((row) => {
+    const expected = (row.approvedFee || 0) * (row.payees || 0);
+    const collected = row.collectedAmount || 0;
+    const variance = collected - expected;
+    const rate = expected > 0 ? (collected / expected) * 100 : 0;
+
+    return [
+      row.date
+        ? new Date(row.date).toLocaleDateString("en-US", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })
+        : "-",
+      row.organization || "N/A",
+      row.president || "-", // No department in new data
+      row.feeType || "-", // No feeType in new data
+      formatAmount(expected),
+      row.payees || 0,
+      formatAmount(collected),
+      formatAmount(variance),
+      `${rate.toFixed(1)}%`,
+      row.status || "Pending",
+    ];
+  });
 
   autoTable(doc, {
     startY: yPosition,
     head: [
       [
+        "Date",
         "Organization",
-        "Department",
-        "Expected Amount",
+        "President",
+        "Fee Type",
+        "Approved Amount",
+        "Payees",
         "Collected Amount",
         "Variance",
         "Collection Rate",
@@ -1059,21 +1108,22 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
       6: { halign: "center", cellWidth: "auto" },
     },
     alternateRowStyles: { fillColor: [248, 248, 248] },
+
+    // Color logic for status column
     didParseCell: (data) => {
       if (data.column.index === 6 && data.section === "body") {
         const status = String(data.cell.raw).toLowerCase();
         if (status.includes("over"))
-          data.cell.styles.fillColor = [220, 248, 220];
+          data.cell.styles.fillColor = [220, 248, 220]; // green
         else if (status.includes("under"))
-          data.cell.styles.fillColor = [255, 230, 230];
-        else data.cell.styles.fillColor = [245, 245, 245];
+          data.cell.styles.fillColor = [255, 230, 230]; // red
+        else data.cell.styles.fillColor = [245, 245, 245]; // gray
       }
     },
+
     didDrawPage: (data) => {
-      // Add header for every page
       if (data.pageNumber > 1) addOfficialHeader(doc, "FINANCIAL REPORT");
 
-      // Page numbers
       const pageCount = doc.internal.getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(0, 0, 0);
@@ -1084,6 +1134,7 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
         { align: "right" }
       );
     },
+
     margin: { top: 10, right: 14, bottom: 10, left: 14 },
     tableWidth: "auto",
     showHead: "everyPage",
@@ -1099,8 +1150,21 @@ export const exportRQATToPDF = (data) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Add official header
-  let yPosition = addOfficialHeader(doc, "RQAT REPORT");
+  // Custom header text
+  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) _____`;
+
+  // Add official header (centered)
+  const yPosition = (() => {
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    const lines = doc.splitTextToSize(headerText, pageWidth - 28); // 14mm margin each side
+    let y = 14; // starting y position
+    lines.forEach((line, index) => {
+      doc.text(line, pageWidth / 2, y, { align: "center" });
+      y += 6; // line height
+    });
+    return y + 4; // space after header
+  })();
 
   // Format date
   const formatDate = (dateString) => {
@@ -1135,18 +1199,11 @@ export const exportRQATToPDF = (data) => {
     org.adviserName || "-",
     // President Name
     org.presidentName || "-",
-    // Officers
-    org.officers?.length
-      ? org.officers.map((o) => `• ${o.name} (${o.position})`).join("\n\n")
-      : "-",
     // Specialization
     org.specialization || "-",
-    // Specialization Fee
-    org.specializationFeeCollected != null
-      ? `Php ${org.specializationFeeCollected.toLocaleString("en-PH", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`
+    // Collected Fees Titles (updated)
+    org.collectedFeeTitles?.length
+      ? org.collectedFeeTitles.map((t) => `• ${t}`).join("\n\n")
       : "-",
     // Programs Undertaken
     org.programsUndertaken?.length
@@ -1162,12 +1219,11 @@ export const exportRQATToPDF = (data) => {
         "ORGANIZATION NAME",
         "YEARS OF EXISTENCE",
         "ACCREDITED SINCE",
-        "ADVISER NAME",
+        "NAME OF FACULTY ADVISER",
         "PRESIDENT NAME",
-        "OFFICERS",
         "SPECIALIZATION",
-        "SPECIALIZATION FEE",
-        "PROGRAMS UNDERTAKEN",
+        "FEES COLLECTED", // updated
+        "PROGRAMS/ACTIVITIES UNDERTAKEN",
       ],
     ],
     body: tableData,
@@ -1197,10 +1253,9 @@ export const exportRQATToPDF = (data) => {
       2: { cellWidth: "auto", halign: "center" }, // Accredited Since
       3: { cellWidth: "auto", halign: "left" }, // Adviser Name
       4: { cellWidth: "auto", halign: "left" }, // President Name
-      5: { cellWidth: "auto", halign: "left" }, // Officers (multi-line)
-      6: { cellWidth: "auto", halign: "left" }, // Specialization
-      7: { cellWidth: "auto", halign: "right" }, // Specialization Fee
-      8: { cellWidth: "auto", halign: "left" }, // Programs Undertaken (multi-line)
+      5: { cellWidth: "auto", halign: "left" }, // Specialization
+      6: { cellWidth: 30, halign: "left" }, //  Fee Collecetd
+      7: { cellWidth: 60, halign: "left" }, // Programs Undertaken (multi-line)
     },
     margin: { top: 10, right: 14, bottom: 10, left: 14 },
     tableWidth: "auto",
@@ -1224,5 +1279,147 @@ export const exportRQATToPDF = (data) => {
   });
 
   const fileName = `RQAT_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+  doc.save(fileName);
+};
+
+export const exportRQATOfficersToPDF = (data) => {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Custom header text
+  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) _____`;
+
+  // Add official header (centered)
+  const yPosition = (() => {
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    const lines = doc.splitTextToSize(headerText, pageWidth - 28); // 14mm margin each side
+    let y = 14; // starting y position
+    lines.forEach((line) => {
+      doc.text(line, pageWidth / 2, y, { align: "center" });
+      y += 6; // line height
+    });
+    return y + 4; // space after header
+  })();
+
+  // Prepare table rows
+  const tableData = [];
+
+  const organizations = Array.isArray(data) ? data : [data];
+
+  organizations.forEach((org) => {
+    let officers = org.officers || [];
+
+    // If presidentName exists but not in officers array, add it
+    if (org.presidentName) {
+      const presidentExists = officers.some(
+        (o) =>
+          o.position?.toLowerCase() === "president" ||
+          o.name === org.presidentName
+      );
+      if (!presidentExists) {
+        officers.push({
+          name: org.presidentName,
+          position: "President",
+          contactNumber: "-", // no contact number available
+        });
+      }
+    }
+
+    if (officers.length === 0) return;
+
+    // Sort officers: president first
+    const sortedOfficers = [...officers].sort((a, b) => {
+      if (a.position?.toLowerCase() === "president") return -1;
+      if (b.position?.toLowerCase() === "president") return 1;
+      return 0;
+    });
+
+    sortedOfficers.forEach((officer, idx) => {
+      const courseYear =
+        officer.course && officer.year
+          ? `${officer.course} (${officer.year})`
+          : "-";
+
+      tableData.push([
+        idx === 0 ? org.organizationName || "-" : "", // Organization Name only on first row
+        officer.position || "-", // Officer Position
+        officer.name || "-", // Officer Name
+        courseYear, // Course + Year
+        officer.contactNumber || "-", // Contact Number
+      ]);
+    });
+
+    // Add empty row for spacing after each organization
+    tableData.push(["", "", "", "", ""]);
+  });
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [
+      [
+        "Organization",
+        "Position",
+        "Officer Name",
+        "Course & Year",
+        "Contact Number",
+      ],
+    ],
+    body: tableData,
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 9,
+      cellPadding: 2,
+      valign: "middle",
+      overflow: "linebreak",
+      lineWidth: 0.1,
+      lineColor: [0, 0, 0],
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: "bold",
+      halign: "center",
+    },
+    columnStyles: {
+      0: { cellWidth: "auto" },
+      1: { cellWidth: "auto" },
+      2: { cellWidth: "auto" },
+      3: { cellWidth: "auto" },
+      4: { cellWidth: "auto" },
+    },
+    didParseCell: (data) => {
+      // Bold position and name if president
+      if (
+        data.section === "body" &&
+        data.row.cells[1].raw.toLowerCase() === "president"
+      ) {
+        data.cell.styles.fontStyle = "bold";
+      }
+    },
+    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    didDrawPage: (data) => {
+      // Header on every new page
+      if (data.pageNumber > 1) {
+        addOfficialHeader(doc, "RQAT OFFICERS REPORT");
+      }
+
+      // Page number footer
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.text(
+        `Page ${data.pageNumber} of ${pageCount}`,
+        pageWidth - 14,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: "right" }
+      );
+    },
+    showHead: "everyPage",
+  });
+
+  const fileName = `RQAT_Officers_Report_${
+    new Date().toISOString().split("T")[0]
+  }.pdf`;
   doc.save(fileName);
 };
