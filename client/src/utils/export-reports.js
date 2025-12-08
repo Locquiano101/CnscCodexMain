@@ -1146,12 +1146,27 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
   doc.save(fileName);
 };
 
+const getAcademicYear = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // getMonth() is 0-based
+
+  // If current month is August (8) or later, AY starts this year
+  if (month >= 8) {
+    return `${year}-${year + 1}`;
+  } else {
+    // Otherwise, AY started last year
+    return `${year - 1}-${year}`;
+  }
+};
+
 export const exportRQATToPDF = (data) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  const academicYear = getAcademicYear();
   // Custom header text
-  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) _____`;
+  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
 
   // Add official header (centered)
   const yPosition = (() => {
@@ -1285,9 +1300,9 @@ export const exportRQATToPDF = (data) => {
 export const exportRQATOfficersToPDF = (data) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
-
+  const academicYear = getAcademicYear();
   // Custom header text
-  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) _____`;
+  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
 
   // Add official header (centered)
   const yPosition = (() => {
