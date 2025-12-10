@@ -8,7 +8,7 @@ import { RQATReportView } from "./RQAT-reports.jsx";
 
 export function SduGenerateReports() {
   // Make Accomplishment the default active tab
-  const [activeTab, setActiveTab] = useState("rqat");
+  const [activeTab, setActiveTab] = useState("accomplishment");
 
   // Enable both Accreditation and Accomplishment reports in tabs
   const tabs = [

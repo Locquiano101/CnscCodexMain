@@ -1,6 +1,5 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 // Import logos
 import cnscLogo from "../assets/cnsc_logo.png";
 import isoLogo from "../assets/iso.jpg";
@@ -28,9 +27,21 @@ const formatDate = (date) => {
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 };
 
-/**
- * Add official header to PDF with logos
- */
+const getAcademicYear = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // getMonth() is 0-based
+
+  // If current month is August (8) or later, AY starts this year
+  if (month >= 8) {
+    return `${year}-${year + 1}`;
+  } else {
+    // Otherwise, AY started last year
+    return `${year - 1}-${year}`;
+  }
+};
+
+// Add official header to PDF with logos
 const addOfficialHeader = (doc, reportTitle) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPosition = 8;
@@ -119,10 +130,8 @@ const addOfficialHeader = (doc, reportTitle) => {
   return yPosition + 8; // Return next available Y position
 };
 
-/**
- * Export Accreditation Report to PDF
- */
-export const exportAccreditationToPDF = (data, fileLabel = "Accreditation") => {
+//Export Accreditation Report to PDF
+export const exportAccreditationToPDF = (data) => {
   const doc = new jsPDF({
     orientation: "landscape",
     unit: "mm",
@@ -238,7 +247,7 @@ export const exportAccreditationToPDF = (data, fileLabel = "Accreditation") => {
       9: { cellWidth: 18, halign: "center" }, // Total
       10: { cellWidth: 35, halign: "center" }, // Status of Accreditation
     },
-    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    margin: { top: yPosition, right: 14, bottom: 20, left: 14 },
     tableWidth: "auto",
     horizontalPageBreak: true,
     horizontalPageBreakRepeat: 0,
@@ -269,150 +278,6 @@ export const exportAccreditationToPDF = (data, fileLabel = "Accreditation") => {
   doc.save(fileName);
 };
 
-/**
- * Export Accreditation Report to Excel
- */
-export const exportAccreditationToExcel = (
-  data,
-  filters = {},
-  fileLabel = "Accreditation"
-) => {
-  // Create workbook and worksheet
-  const wb = XLSX.utils.book_new();
-
-  // Prepare header rows
-  const headerRow1 = [
-    "NO.",
-    "NAME OF THE ORGANIZATION",
-    "NATURE",
-    "STATUS",
-    "ADVISER/S",
-    "PRESIDENT",
-    "VALIDITY",
-    "APESOC RESULT 2024-25",
-    "",
-    "", // Merged cells
-    "STATUS OF ACCREDITATION",
-  ];
-
-  const headerRow2 = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // Empty cells for merged headers
-    "1ST SEM",
-    "2ND SEM",
-    "TOTAL",
-    "",
-  ];
-
-  // Prepare data rows
-  const dataRows = data.map((row, index) => {
-    const startDate = row.updatedAt ? new Date(row.updatedAt) : null;
-    const endDate = startDate
-      ? new Date(
-          startDate.getFullYear() + 1,
-          startDate.getMonth(),
-          startDate.getDate()
-        )
-      : null;
-
-    const validityText =
-      startDate && endDate
-        ? `${formatDate(startDate)} to ${formatDate(endDate)}`
-        : "N/A";
-
-    return [
-      index + 1,
-      row.organizationProfile?.orgName || "N/A",
-      row.organizationProfile?.orgClass || "-",
-      row.overallStatus || "Pending",
-      row.organizationProfile?.adviser?.name || "-",
-      row.PresidentProfile?.name || "-",
-      validityText,
-      row.accomplishmentData?.firstSemPoints || 0,
-      row.accomplishmentData?.secondSemPoints || 0,
-      row.accomplishmentData?.grandTotal || 0,
-      row.calculatedAccreditationStatus || "N/A",
-    ];
-  });
-
-  // Add title and info rows
-  const titleRow = ["ACCREDITATION REPORT"];
-  const academicYearRow = ["Academic Year 2024-2025"];
-  const emptyRow = [""];
-
-  // Combine all rows
-  const allRows = [titleRow, academicYearRow, emptyRow];
-
-  // Add filter info if applicable
-  if (
-    filters.status ||
-    filters.department ||
-    filters.dateFrom ||
-    filters.dateTo
-  ) {
-    allRows.push(["Filters Applied:"]);
-    if (filters.status) allRows.push([`Status: ${filters.status}`]);
-    if (filters.department) allRows.push([`Department: ${filters.department}`]);
-    if (filters.dateFrom || filters.dateTo) {
-      allRows.push([
-        `Date Range: ${filters.dateFrom || "Start"} to ${
-          filters.dateTo || "End"
-        }`,
-      ]);
-    }
-    allRows.push(emptyRow);
-  }
-
-  // Add headers and data
-  allRows.push(headerRow1, headerRow2, ...dataRows);
-
-  // Create worksheet
-  const ws = XLSX.utils.aoa_to_sheet(allRows);
-
-  // Set column widths
-  ws["!cols"] = [
-    { wch: 5 }, // NO.
-    { wch: 30 }, // Organization
-    { wch: 15 }, // Nature
-    { wch: 12 }, // Status
-    { wch: 20 }, // Adviser
-    { wch: 20 }, // President
-    { wch: 30 }, // Validity
-    { wch: 12 }, // 1st Sem
-    { wch: 12 }, // 2nd Sem
-    { wch: 12 }, // Total
-    { wch: 30 }, // Status of Accreditation
-  ];
-
-  // Merge cells for header
-  const headerRowIndex = allRows.length - dataRows.length - 2; // Position of headerRow1
-  ws["!merges"] = [
-    // Title merge
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
-    // Academic year merge
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 10 } },
-    // APESOC RESULT merge
-    { s: { r: headerRowIndex, c: 7 }, e: { r: headerRowIndex, c: 9 } },
-  ];
-
-  // Add worksheet to workbook
-  XLSX.utils.book_append_sheet(wb, ws, `${fileLabel} Report`);
-
-  // Generate Excel file
-  const fileName = `${fileLabel}_Report_${
-    new Date().toISOString().split("T")[0]
-  }.xlsx`;
-  XLSX.writeFile(wb, fileName);
-};
-
-/**
- * Export Accomplishment Report to PDF
- */
 export const exportAccomplishmentToPDF = (data) => {
   const doc = new jsPDF({
     orientation: "landscape",
@@ -456,7 +321,7 @@ export const exportAccomplishmentToPDF = (data) => {
   };
 
   // Prepare table data to match the on-screen table
-  const tableData = data.map((row, index) => {
+  const tableData = data.map((row) => {
     // Validity: start from updatedAt/orgProfile.updatedAt/createdAt; end = +1y
     const sourceDate =
       row.updatedAt ||
@@ -553,7 +418,7 @@ export const exportAccomplishmentToPDF = (data) => {
       9: { cellWidth: 24, halign: "center" }, // Date of Submission
       10: { cellWidth: 32, halign: "center" }, // Validity (multi-line)
     },
-    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    margin: { top: yPosition, right: 14, bottom: 20, left: 14 },
     tableWidth: "auto",
     didDrawPage: (data) => {
       if (data.pageNumber > 1) {
@@ -575,87 +440,6 @@ export const exportAccomplishmentToPDF = (data) => {
     new Date().toISOString().split("T")[0]
   }.pdf`;
   doc.save(fileName);
-};
-
-/**
- * Export Accomplishment Report to Excel
- */
-export const exportAccomplishmentToExcel = (data, filters = {}) => {
-  const wb = XLSX.utils.book_new();
-
-  const headerRow = [
-    "NO.",
-    "ORGANIZATION",
-    "NATURE",
-    "ACCOMPLISHMENT COUNT",
-    "TOTAL POINTS",
-    "ORGANIZATIONAL DEVELOPMENT",
-    "ORGANIZATIONAL PERFORMANCE",
-    "SERVICE TO COMMUNITY",
-  ];
-
-  const dataRows = data.map((row, index) => [
-    index + 1,
-    row.organizationProfile?.orgName || "N/A",
-    row.organizationProfile?.orgClass || "-",
-    row.accomplishments?.length || 0,
-    row.grandTotal || 0,
-    row.totalOrganizationalDevelopment || 0,
-    row.totalOrganizationalPerformance || 0,
-    row.totalServiceCommunity || 0,
-  ]);
-
-  const titleRow = ["ACCOMPLISHMENT REPORT"];
-  const academicYearRow = ["Academic Year 2024-2025"];
-  const emptyRow = [""];
-
-  const allRows = [titleRow, academicYearRow, emptyRow];
-
-  if (
-    filters.status ||
-    filters.department ||
-    filters.dateFrom ||
-    filters.dateTo
-  ) {
-    allRows.push(["Filters Applied:"]);
-    if (filters.status) allRows.push([`Status: ${filters.status}`]);
-    if (filters.department) allRows.push([`Department: ${filters.department}`]);
-    if (filters.dateFrom || filters.dateTo) {
-      allRows.push([
-        `Date Range: ${filters.dateFrom || "Start"} to ${
-          filters.dateTo || "End"
-        }`,
-      ]);
-    }
-    allRows.push(emptyRow);
-  }
-
-  allRows.push(headerRow, ...dataRows);
-
-  const ws = XLSX.utils.aoa_to_sheet(allRows);
-
-  ws["!cols"] = [
-    { wch: 5 },
-    { wch: 35 },
-    { wch: 15 },
-    { wch: 18 },
-    { wch: 15 },
-    { wch: 25 },
-    { wch: 25 },
-    { wch: 25 },
-  ];
-
-  ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
-  ];
-
-  XLSX.utils.book_append_sheet(wb, ws, "Accomplishment Report");
-
-  const fileName = `Accomplishment_Report_${
-    new Date().toISOString().split("T")[0]
-  }.xlsx`;
-  XLSX.writeFile(wb, fileName);
 };
 
 export const exportActionPlanToPDF = (data, filters = {}) => {
@@ -870,163 +654,46 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
     alternateRowStyles: {
       fillColor: [248, 248, 248],
     },
-    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    margin: { top: yPosition, right: 14, bottom: 20, left: 14 },
     tableWidth: "auto",
-    didParseCell: (data) => {
-      // STATUS COLORING (same color scheme as before but with accent colors)
-      if (data.column.index === 7 && data.section === "body") {
-        const status = String(data.cell.raw).toLowerCase();
 
-        if (status === "approved") {
-          data.cell.styles.fillColor = [232, 246, 232]; // green
-        } else if (status === "pending") {
-          data.cell.styles.fillColor = [255, 250, 205]; // yellow
-        } else if (status === "for reporting") {
-          data.cell.styles.fillColor = [255, 239, 200]; // orange
-        } else if (status === "concluded") {
-          data.cell.styles.fillColor = [230, 240, 255]; // blue
-        } else if (status === "cancelled") {
-          data.cell.styles.fillColor = [255, 220, 220]; // red
-        } else {
-          data.cell.styles.fillColor = [245, 245, 245]; // gray
-        }
-      }
-    },
     didDrawPage: (data) => {
       // Add header to every page
       if (data.pageNumber > 1) {
         addOfficialHeader(doc, "ACTIVITY CALENDAR REPORT");
       }
-      const pageCount = doc.internal.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.setTextColor(0, 0, 0);
-      doc.text(
-        `Page ${data.pageNumber} of ${pageCount}`,
-        pageWidth - 14,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
-      );
     },
     pageBreak: "auto",
     rowPageBreak: "avoid",
     showHead: "everyPage",
   });
 
+  // AFTER autoTable has finished
+  const pageCount = doc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+
+    doc.text(
+      `Page ${i} of ${pageCount}`,
+      pageWidth - 14,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: "right" }
+    );
+  }
+
   const fileName = `Activity_Calendar_Report_${
     new Date().toISOString().split("T")[0]
   }.pdf`;
   doc.save(fileName);
 };
-/*
- * Export Action Plan Report to Excel
- */
-export const exportActionPlanToExcel = (data, filters = {}) => {
-  const wb = XLSX.utils.book_new();
 
-  const headerRow = [
-    "NO.",
-    "ORGANIZATION",
-    "ACTIVITY TITLE",
-    "PROPOSED DATE",
-    "VENUE",
-    "BUDGET",
-    "OBJECTIVES",
-    "ALIGNED SDGs",
-    "STATUS",
-  ];
-
-  const dataRows = data.map((row, index) => [
-    index + 1,
-    row.organizationProfile?.orgName || "N/A",
-    row.actionPlan?.activityTitle ||
-      row.ProposedIndividualActionPlan?.activityTitle ||
-      "N/A",
-    row.actionPlan?.proposedDate ||
-    row.ProposedIndividualActionPlan?.proposedDate
-      ? new Date(
-          row.actionPlan?.proposedDate ||
-            row.ProposedIndividualActionPlan?.proposedDate
-        ).toLocaleDateString()
-      : "N/A",
-    row.actionPlan?.venue || row.ProposedIndividualActionPlan?.venue || "N/A",
-    row.actionPlan?.budgetaryRequirements ||
-    row.ProposedIndividualActionPlan?.budgetaryRequirements
-      ? `₱${(
-          row.actionPlan?.budgetaryRequirements ||
-          row.ProposedIndividualActionPlan?.budgetaryRequirements
-        ).toLocaleString()}`
-      : "₱0",
-    row.actionPlan?.alignedObjectives?.length ||
-      row.ProposedIndividualActionPlan?.AlignedObjective?.split("\r\n")
-        ?.length ||
-      0,
-    row.actionPlan?.alignedSDG?.length ||
-      JSON.parse(row.ProposedIndividualActionPlan?.alignedSDG?.[0] || "[]")
-        ?.length ||
-      0,
-    row.overallStatus || "Pending",
-  ]);
-
-  const titleRow = ["ACTION PLANS REPORT"];
-  const academicYearRow = ["Academic Year 2024-2025"];
-  const emptyRow = [""];
-
-  const allRows = [titleRow, academicYearRow, emptyRow];
-
-  if (
-    filters.status ||
-    filters.department ||
-    filters.dateFrom ||
-    filters.dateTo
-  ) {
-    allRows.push(["Filters Applied:"]);
-    if (filters.status) allRows.push([`Status: ${filters.status}`]);
-    if (filters.department) allRows.push([`Department: ${filters.department}`]);
-    if (filters.dateFrom || filters.dateTo) {
-      allRows.push([
-        `Date Range: ${filters.dateFrom || "Start"} to ${
-          filters.dateTo || "End"
-        }`,
-      ]);
-    }
-    allRows.push(emptyRow);
-  }
-
-  allRows.push(headerRow, ...dataRows);
-
-  const ws = XLSX.utils.aoa_to_sheet(allRows);
-
-  ws["!cols"] = [
-    { wch: 5 }, // NO.
-    { wch: 25 }, // ORGANIZATION
-    { wch: 40 }, // ACTIVITY TITLE
-    { wch: 15 }, // PROPOSED DATE
-    { wch: 20 }, // VENUE
-    { wch: 15 }, // BUDGET
-    { wch: 10 }, // OBJECTIVES COUNT
-    { wch: 10 }, // SDG COUNT
-    { wch: 15 }, // STATUS
-  ];
-
-  ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, // Title merge
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, // Academic Year merge
-  ];
-
-  XLSX.utils.book_append_sheet(wb, ws, "Action Plans Report");
-
-  const fileName = `Action_Plans_Report_${
-    new Date().toISOString().split("T")[0]
-  }.xlsx`;
-  XLSX.writeFile(wb, fileName);
-};
-
-export const exportFinancialReportToPDF = (data, filters = {}) => {
+export const exportFinancialReportToPDF = (data) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  const pageWidth = doc.internal.pageSize.getWidth();
-
   // Add official header
   let yPosition = addOfficialHeader(doc, "FINANCIAL REPORT");
+  const pageWidth = doc.internal.pageSize.getWidth();
 
   const formatAmount = (num) =>
     `Php ${Number(num || 0).toLocaleString("en-PH", {
@@ -1123,22 +790,27 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
 
     didDrawPage: (data) => {
       if (data.pageNumber > 1) addOfficialHeader(doc, "FINANCIAL REPORT");
-
-      const pageCount = doc.internal.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.setTextColor(0, 0, 0);
-      doc.text(
-        `Page ${data.pageNumber} of ${pageCount}`,
-        pageWidth - 14,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
-      );
     },
 
-    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    margin: { top: yPosition, right: 14, bottom: 20, left: 14 },
     tableWidth: "auto",
     showHead: "everyPage",
   });
+
+  // AFTER autoTable has finished
+  const pageCount = doc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+
+    doc.text(
+      `Page ${i} of ${pageCount}`,
+      pageWidth - 14,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: "right" }
+    );
+  }
 
   const fileName = `Financial_Report_${
     new Date().toISOString().split("T")[0]
@@ -1146,42 +818,32 @@ export const exportFinancialReportToPDF = (data, filters = {}) => {
   doc.save(fileName);
 };
 
-const getAcademicYear = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1; // getMonth() is 0-based
-
-  // If current month is August (8) or later, AY starts this year
-  if (month >= 8) {
-    return `${year}-${year + 1}`;
-  } else {
-    // Otherwise, AY started last year
-    return `${year - 1}-${year}`;
-  }
-};
-
 export const exportRQATToPDF = (data) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
 
   const academicYear = getAcademicYear();
-  // Custom header text
   const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
 
-  // Add official header (centered)
-  const yPosition = (() => {
+  // --- FUNCTION: DRAW HEADER ---
+  const drawHeader = () => {
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    const lines = doc.splitTextToSize(headerText, pageWidth - 28); // 14mm margin each side
-    let y = 14; // starting y position
-    lines.forEach((line, index) => {
-      doc.text(line, pageWidth / 2, y, { align: "center" });
-      y += 6; // line height
-    });
-    return y + 4; // space after header
-  })();
 
-  // Format date
+    const lines = doc.splitTextToSize(headerText, pageWidth - 28);
+    let y = 14;
+
+    lines.forEach((line) => {
+      doc.text(line, pageWidth / 2, y, { align: "center" });
+      y += 6;
+    });
+
+    return y + 4; // return the new Y position
+  };
+
+  // Draw the header on the first page
+  const headerBottomY = drawHeader();
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const d = new Date(dateString);
@@ -1202,33 +864,24 @@ export const exportRQATToPDF = (data) => {
     return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   };
 
-  // Prepare table data
+  // Prepare table rows
   const tableData = data.map((org) => [
-    // Organization Name
     org.organizationName || "-",
-    // Years of Existence
     org.yearsOfExistence != null ? org.yearsOfExistence : "-",
-    // Accredited Since
     org.accreditedSince ? formatDate(org.accreditedSince) : "-",
-    // Adviser Name
     org.adviserName || "-",
-    // President Name
     org.presidentName || "-",
-    // Specialization
     org.specialization || "-",
-    // Collected Fees Titles (updated)
     org.collectedFeeTitles?.length
       ? org.collectedFeeTitles.map((t) => `• ${t}`).join("\n\n")
       : "-",
-    // Programs Undertaken
     org.programsUndertaken?.length
       ? org.programsUndertaken.map((p) => `• ${p}`).join("\n\n")
       : "-",
   ]);
 
-  // Configure table to match accomplishment report style
   autoTable(doc, {
-    startY: yPosition,
+    startY: headerBottomY,
     head: [
       [
         "ORGANIZATION NAME",
@@ -1237,7 +890,7 @@ export const exportRQATToPDF = (data) => {
         "NAME OF FACULTY ADVISER",
         "PRESIDENT NAME",
         "SPECIALIZATION",
-        "FEES COLLECTED", // updated
+        "FEES COLLECTED",
         "PROGRAMS/ACTIVITIES UNDERTAKEN",
       ],
     ],
@@ -1250,7 +903,6 @@ export const exportRQATToPDF = (data) => {
       halign: "center",
       valign: "middle",
       lineWidth: 0.1,
-      lineColor: [0, 0, 0],
       overflow: "linebreak",
     },
     headStyles: {
@@ -1258,40 +910,42 @@ export const exportRQATToPDF = (data) => {
       textColor: [0, 0, 0],
       fontStyle: "bold",
       halign: "center",
-      fontSize: 8,
-      lineWidth: 0.1,
-      lineColor: [0, 0, 0],
     },
     columnStyles: {
-      0: { cellWidth: "auto", halign: "left" }, // Organization Name
-      1: { cellWidth: "auto", halign: "center" }, // Years of Existence
-      2: { cellWidth: "auto", halign: "center" }, // Accredited Since
-      3: { cellWidth: "auto", halign: "left" }, // Adviser Name
-      4: { cellWidth: "auto", halign: "left" }, // President Name
-      5: { cellWidth: "auto", halign: "left" }, // Specialization
-      6: { cellWidth: 30, halign: "left" }, //  Fee Collecetd
-      7: { cellWidth: 60, halign: "left" }, // Programs Undertaken (multi-line)
+      0: { halign: "left" },
+      1: { halign: "center" },
+      2: { halign: "center" },
+      3: { halign: "left" },
+      4: { halign: "left" },
+      5: { halign: "left" },
+      6: { cellWidth: 30, halign: "left" },
+      7: { cellWidth: 60, halign: "left" },
     },
-    margin: { top: 10, right: 14, bottom: 10, left: 14 },
-    tableWidth: "auto",
+    margin: { top: headerBottomY, left: 14, right: 14, bottom: 20 },
+
     didDrawPage: (data) => {
-      // Add header for every page
       if (data.pageNumber > 1) {
-        addOfficialHeader(doc, "RQAT REPORT");
+        drawHeader(); // draw the same centered header for every page
       }
-      // Page numbers
-      const pageCount = doc.internal.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.setTextColor(0, 0, 0);
-      doc.text(
-        `Page ${data.pageNumber} of ${pageCount}`,
-        pageWidth - 14,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
-      );
     },
+
     showHead: "everyPage",
   });
+
+  // AFTER autoTable has finished
+  const pageCount = doc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+
+    doc.text(
+      `Page ${i} of ${pageCount}`,
+      pageWidth - 14,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: "right" }
+    );
+  }
 
   const fileName = `RQAT_Report_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(fileName);
@@ -1304,6 +958,21 @@ export const exportRQATOfficersToPDF = (data) => {
   // Custom header text
   const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
 
+  // --- FUNCTION: DRAW HEADER ---
+  const drawHeader = () => {
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+
+    const lines = doc.splitTextToSize(headerText, pageWidth - 28);
+    let y = 14;
+
+    lines.forEach((line) => {
+      doc.text(line, pageWidth / 2, y, { align: "center" });
+      y += 6;
+    });
+
+    return y + 4; // return the new Y position
+  };
   // Add official header (centered)
   const yPosition = (() => {
     doc.setFontSize(12);
@@ -1397,25 +1066,30 @@ export const exportRQATOfficersToPDF = (data) => {
         data.cell.styles.fontStyle = "bold";
       }
     },
-    margin: { top: 10, right: 14, bottom: 10, left: 14 },
+    margin: { top: yPosition, right: 14, bottom: 20, left: 14 },
     didDrawPage: (data) => {
-      // Header on every new page
       if (data.pageNumber > 1) {
-        addOfficialHeader(doc, "RQAT OFFICERS REPORT");
+        drawHeader(); // draw the same centered header for every page
       }
-
-      // Page number footer
-      const pageCount = doc.internal.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.text(
-        `Page ${data.pageNumber} of ${pageCount}`,
-        pageWidth - 14,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
-      );
     },
+
     showHead: "everyPage",
   });
+
+  // AFTER autoTable has finished
+  const pageCount = doc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+
+    doc.text(
+      `Page ${i} of ${pageCount}`,
+      pageWidth - 14,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: "right" }
+    );
+  }
 
   const fileName = `RQAT_Officers_Report_${
     new Date().toISOString().split("T")[0]
