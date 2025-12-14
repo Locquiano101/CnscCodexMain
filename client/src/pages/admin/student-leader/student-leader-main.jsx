@@ -41,7 +41,13 @@ import { StudentPost } from "./posts/student-post";
 import { StudentLeaderNotification } from "./student-leader-notification";
 import DocumentUploader from "../../../components/document_uploader";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import cnscLogo from "../../../assets/cnsc-codex-2.svg";
 
@@ -60,7 +66,6 @@ export default function StudentLeaderMainPage() {
   // Loading and navigation states
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate();
   const isPosting = location.pathname === "/student-leader/post";
 
   // Update userId when user changes
@@ -79,7 +84,7 @@ export default function StudentLeaderMainPage() {
         const response = await axios.get(`${API_ROUTER}/userInfo/${userId}`, {
           withCredentials: true,
         });
-
+        console.log(response.data.organization);
         const userData = response.data.organization;
         setOrgData(userData);
 
@@ -153,7 +158,10 @@ export default function StudentLeaderMainPage() {
           {/* Topbar */}
           <StudentTopbar orgData={orgData} />
           {/* Page Content */}
-          <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#F5F5F9' }}>
+          <div
+            className="flex-1 overflow-y-auto"
+            style={{ backgroundColor: "#F5F5F9" }}
+          >
             <StudentRoutes
               orgData={orgData}
               accreditationData={accreditationData}
@@ -183,32 +191,48 @@ export default function StudentLeaderMainPage() {
 
 function StudentTopbar({ orgData }) {
   const location = useLocation();
-  
+
   // Map routes to page info
   const getPageInfo = () => {
     const path = location.pathname;
-    
+
     if (path === "/student-leader" || path === "/student-leader/") {
-      return { title: "Dashboard", description: "Manage your organization's activities" };
+      return {
+        title: "Dashboard",
+        description: "Manage your organization's activities",
+      };
     } else if (path.includes("/accreditation")) {
-      return { title: "Accreditation", description: "Track and manage accreditation requirements" };
+      return {
+        title: "Accreditation",
+        description: "Track and manage accreditation requirements",
+      };
     } else if (path.includes("/accomplishment")) {
-      return { title: "Accomplishments", description: "View and submit organizational accomplishments" };
+      return {
+        title: "Accomplishments",
+        description: "View and submit organizational accomplishments",
+      };
     } else if (path.includes("/proposal")) {
-      return { title: "Proposals", description: "Create and manage activity proposals" };
+      return {
+        title: "Proposals",
+        description: "Create and manage activity proposals",
+      };
     } else if (path.includes("/post")) {
       return { title: "Posts", description: "Share updates and announcements" };
     } else if (path.includes("/notifications")) {
-      return { title: "Notifications", description: "Stay updated with your organization" };
+      return {
+        title: "Notifications",
+        description: "Stay updated with your organization",
+      };
     }
-    
+
     return { title: "CNSC Codex", description: "Student Leader Portal" };
   };
 
   const { title, description } = getPageInfo();
-  const imageSrc = orgData._id && orgData.orgLogo
-    ? `${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`
-    : backgroundImage;
+  const imageSrc =
+    orgData._id && orgData.orgLogo
+      ? `${DOCU_API_ROUTER}/${orgData._id}/${orgData.orgLogo}`
+      : backgroundImage;
 
   return (
     <div className="h-18 border-b bg-background flex items-center justify-between px-6">
@@ -221,8 +245,12 @@ function StudentTopbar({ orgData }) {
       {/* Right: Org Picture & Name */}
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <p className="text-sm font-medium">{orgData.orgName || "Organization"}</p>
-          <p className="text-xs text-muted-foreground">{orgData.orgAcronym || ""}</p>
+          <p className="text-sm font-medium">
+            {orgData.orgName || "Organization"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {orgData.orgAcronym || ""}
+          </p>
         </div>
         <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
           <img
@@ -249,7 +277,10 @@ function StudentRoutes({ orgData, accreditationData, user }) {
         );
         if (!ignore) setVisibleRequirements(data || []);
       } catch (err) {
-        console.warn("StudentRoutes: failed to fetch visible requirements", err?.message);
+        console.warn(
+          "StudentRoutes: failed to fetch visible requirements",
+          err?.message
+        );
       }
     }
     fetchVisible();
@@ -264,12 +295,22 @@ function StudentRoutes({ orgData, accreditationData, user }) {
       <Route
         key={r.key}
         path={`custom-${r.key}`}
-        element={<StudentLeaderCustomRequirementViewer requirementKey={r.key} title={r.title} orgData={orgData} user={user} />}
+        element={
+          <StudentLeaderCustomRequirementViewer
+            requirementKey={r.key}
+            title={r.title}
+            orgData={orgData}
+            user={user}
+          />
+        }
       />
     ));
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="flex flex-col w-full h-full overflow-hidden"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <Routes>
         <Route
           index
@@ -365,7 +406,12 @@ function StudentRoutes({ orgData, accreditationData, user }) {
 
 // Lightweight viewer for custom accreditation requirements for student leaders.
 // Future enhancement: allow document upload per custom requirement.
-function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, user }) {
+function StudentLeaderCustomRequirementViewer({
+  requirementKey,
+  title,
+  orgData,
+  user,
+}) {
   const [submission, setSubmission] = useState(null); // { status, document { fileName } }
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState(null);
@@ -407,7 +453,10 @@ function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, 
       const { data } = await axios.post(
         `${API_ROUTER}/accreditation/requirements/${requirementKey}/submit`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" }, withCredentials: true }
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
       );
       setSubmission(data.submission);
       setFile(null);
@@ -424,26 +473,44 @@ function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, 
     Rejected: "bg-red-50 text-red-700 border border-red-200",
   };
   const pill = submission?.status ? (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[submission.status] || "bg-gray-100 text-gray-600 border"}`}>{submission.status}</span>
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium ${
+        statusStyles[submission.status] || "bg-gray-100 text-gray-600 border"
+      }`}
+    >
+      {submission.status}
+    </span>
   ) : null;
 
   return (
     <div className="p-6">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3 flex-wrap">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">{title} {pill}</h2>
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+            {title} {pill}
+          </h2>
         </div>
         <p className="text-sm text-gray-600">
-          Upload the document corresponding to <code>{requirementKey}</code>. Re-uploading will replace the previous file and reset status to Pending.
+          Upload the document corresponding to <code>{requirementKey}</code>.
+          Re-uploading will replace the previous file and reset status to
+          Pending.
         </p>
-        {loading && <div className="text-gray-500 text-sm">Loading submission info...</div>}
+        {loading && (
+          <div className="text-gray-500 text-sm">
+            Loading submission info...
+          </div>
+        )}
         <div className="flex flex-col lg:flex-row gap-6 overflow-hidden">
           {/* Left: Uploader + logs */}
           <div className="w-full lg:w-1/3 flex flex-col gap-4">
             <DocumentUploader
               onFileSelect={setFile}
               acceptedFormats="application/pdf"
-              title={submission ? "Select a document to replace" : "Select a document to upload"}
+              title={
+                submission
+                  ? "Select a document to replace"
+                  : "Select a document to upload"
+              }
               showReset={true}
               className="mb-2"
             />
@@ -465,7 +532,9 @@ function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, 
             </button>
             {submission?.logs && submission.logs.length > 0 && (
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Document Logs</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">
+                  Document Logs
+                </h4>
                 <ul className="space-y-1 text-sm text-gray-700 max-h-32 overflow-y-auto">
                   {submission.logs.map((log, i) => (
                     <li key={i} className="flex items-start gap-2">
@@ -492,10 +561,12 @@ function StudentLeaderCustomRequirementViewer({ requirementKey, title, orgData, 
                 {previewError && (
                   <div className="p-4 text-sm rounded-md bg-red-50 border border-red-200 text-red-700 flex flex-col gap-2">
                     <span>File not found at the expected path.</span>
-                    <span>It may be stored in a legacy folder. Use the fallback link or re-upload.</span>
+                    <span>
+                      It may be stored in a legacy folder. Use the fallback link
+                      or re-upload.
+                    </span>
                   </div>
                 )}
-                
               </div>
             ) : (
               !loading && (
@@ -696,10 +767,7 @@ function StudentNavigation({ orgData }) {
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleSubmitOrgLogo}
-                disabled={isUploading}
-              >
+              <Button onClick={handleSubmitOrgLogo} disabled={isUploading}>
                 {isUploading ? "Uploading..." : "Crop & Upload"}
               </Button>
             </DialogFooter>
@@ -754,7 +822,8 @@ function LogoutButton() {
 
           <div className="py-4">
             <p className="text-sm text-muted-foreground">
-              Are you sure you want to logout? You will need to sign in again to access your account.
+              Are you sure you want to logout? You will need to sign in again to
+              access your account.
             </p>
           </div>
 
@@ -793,7 +862,10 @@ function StudentAccreditationNavigationPage() {
         );
         if (!ignore) setVisibleRequirements(data || []);
       } catch (err) {
-        console.warn("StudentAccreditationNavigationPage: failed to fetch requirements", err?.message);
+        console.warn(
+          "StudentAccreditationNavigationPage: failed to fetch requirements",
+          err?.message
+        );
         setVisibleRequirements([]); // fallback show all templates by default below
       }
     }
@@ -805,9 +877,15 @@ function StudentAccreditationNavigationPage() {
 
   const templateMap = {
     "financial-report": { to: "financial-report", label: "Financial Report" },
-    "accreditation-documents": { to: "documents", label: "Accreditation Documents" },
+    "accreditation-documents": {
+      to: "documents",
+      label: "Accreditation Documents",
+    },
     roster: { to: "roster-of-members", label: "Roster of Members" },
-    "president-info": { to: "president-information", label: "President's Information Sheet" },
+    "president-info": {
+      to: "president-information",
+      label: "President's Information Sheet",
+    },
     "action-plan": { to: "PPA", label: "Proposed Action Plan" },
   };
   const orderedTemplateKeys = [
@@ -823,7 +901,9 @@ function StudentAccreditationNavigationPage() {
       if (visibleRequirements === null) return true; // optimistic show while loading
       const anyDisabledFallback = visibleRequirements.length === 0; // we treat empty as error fallback
       if (anyDisabledFallback) return true;
-      return visibleRequirements.some((r) => r.type === "template" && r.key === key);
+      return visibleRequirements.some(
+        (r) => r.type === "template" && r.key === key
+      );
     })
     .map((key) => templateMap[key]);
 
@@ -831,7 +911,11 @@ function StudentAccreditationNavigationPage() {
     .filter((r) => r.type === "custom")
     .map((r) => ({ to: `custom-${r.key}`, label: r.title }));
 
-  const tabs = [{ to: ".", label: "Overview", end: true }, ...enabledTemplateTabs, ...customTabs];
+  const tabs = [
+    { to: ".", label: "Overview", end: true },
+    ...enabledTemplateTabs,
+    ...customTabs,
+  ];
 
   return (
     <div className="h-full flex flex-col">

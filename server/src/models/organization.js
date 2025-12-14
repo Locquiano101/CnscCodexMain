@@ -14,7 +14,7 @@ export const organizationProfileSchema = new Schema(
     orgStatus: String, // Active, Inactive, Disqualified
     orgAcronym: String,
     orgDepartment: String,
-
+    accreditedSince: String,
     orgSpecialization: String,
     revisionNotes: String,
     isActive: { type: Boolean, default: true },
@@ -29,7 +29,7 @@ export const organizationSchema = new Schema(
     originalName: String,
     establishedDate: Date,
     currentName: String,
-
+    accreditedSince: String,
     organizationProfile: [
       {
         type: Schema.Types.ObjectId,

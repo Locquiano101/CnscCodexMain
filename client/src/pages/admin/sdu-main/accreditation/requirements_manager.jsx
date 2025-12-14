@@ -50,6 +50,7 @@ export default function SduAccreditationRequirementsManager() {
         if (statusFilter === "disabled") return item.enabled === false;
         return true;
       };
+
       let filteredTemplates = tpl.filter(filterFn);
       const filteredCustoms = cust.filter(filterFn);
       // Fallback: if no templates returned, query visible endpoint
@@ -68,17 +69,15 @@ export default function SduAccreditationRequirementsManager() {
               type: r.type || "template",
             }));
           }
-        } catch (_) {
-          // ignore fallback errors
+        } catch (e) {
+          console.log(e);
         }
       }
       setTemplates(filteredTemplates);
       setCustoms(filteredCustoms);
     } catch (e) {
       setError(
-        e.response?.data?.message ||
-          e.message ||
-          "Failed to load requirements."
+        e.response?.data?.message || e.message || "Failed to load requirements."
       );
       setTemplates([]);
       setCustoms([]);
@@ -113,7 +112,9 @@ export default function SduAccreditationRequirementsManager() {
   // Delete custom requirement
   async function deleteRequirement(req) {
     if (!req.removable) return;
-    if (!window.confirm(`Delete requirement "${req.title}"? This is permanent.`))
+    if (
+      !window.confirm(`Delete requirement "${req.title}"? This is permanent.`)
+    )
       return;
     try {
       await axios.delete(
@@ -141,17 +142,16 @@ export default function SduAccreditationRequirementsManager() {
     try {
       const fd = new FormData();
       fd.append("title", addTitle.trim());
-      if (addDescription.trim()) fd.append("description", addDescription.trim());
-  // No file append (SDU does not upload requirement documents)
-      await axios.post(
-        `${API_BASE}/admin/accreditation/requirements`,
-        fd,
-        { withCredentials: true }
-      );
+      if (addDescription.trim())
+        fd.append("description", addDescription.trim());
+      // No file append (SDU does not upload requirement documents)
+      await axios.post(`${API_BASE}/admin/accreditation/requirements`, fd, {
+        withCredentials: true,
+      });
       // Reset & close
       setAddTitle("");
       setAddDescription("");
-  // addFile reset removed
+      // addFile reset removed
       setShowAdd(false);
       fetchAll();
     } catch (e) {
@@ -168,7 +168,7 @@ export default function SduAccreditationRequirementsManager() {
     setEditingId(r._id);
     setEditTitle(r.title);
     setEditDescription(r.description || "");
-  // editFile state removed
+    // editFile state removed
     setUpdateError(null);
   }
 
@@ -182,7 +182,7 @@ export default function SduAccreditationRequirementsManager() {
       const fd = new FormData();
       fd.append("title", editTitle.trim());
       fd.append("description", editDescription.trim());
-  // No file append during update
+      // No file append during update
       await axios.patch(
         `${API_BASE}/admin/accreditation/requirements/${editingId}`,
         fd,
@@ -191,7 +191,7 @@ export default function SduAccreditationRequirementsManager() {
       setEditingId(null);
       setEditTitle("");
       setEditDescription("");
-  // editFile reset removed
+      // editFile reset removed
       fetchAll();
     } catch (e) {
       setUpdateError(
@@ -206,11 +206,11 @@ export default function SduAccreditationRequirementsManager() {
     setEditingId(null);
     setEditTitle("");
     setEditDescription("");
-  // editFile reset removed
+    // editFile reset removed
   }
 
   return (
-    <div className="p-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="p-6" style={{ backgroundColor: "#F5F5F9" }}>
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-4 sm:px-6 sm:py-5 bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -263,7 +263,7 @@ export default function SduAccreditationRequirementsManager() {
             </div>
           )}
 
-            {/* Templates */}
+          {/* Templates */}
           <section>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Core Templates

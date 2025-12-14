@@ -19,12 +19,23 @@ import { SduCoordinatorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main"
 import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
 import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  InitialRegistration,
+  ReRegistration,
+} from "./pages/admin/student-leader/initial-registration";
 
 const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
 export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
-export const DOCU_API_ROUTER =`${MAIN_API_ROUTER}/uploads`;
+export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
 
 // Ensure session cookies are sent for all API calls by default
 axios.defaults.withCredentials = true;
@@ -75,6 +86,7 @@ export default function App() {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/post/:orgName" element={<PublicPostFeed />} />
       <Route path="/profile/:orgName" element={<PublicProfile />} />
+      <Route path="/test/*" element={<ReRegistration />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
@@ -200,10 +212,14 @@ const SessionExpiredPopup = ({ isOpen, onClose, onRedirect }) => {
           </div>
         </DialogHeader>
         <DialogDescription className="text-gray-600">
-          Your session has expired for security reasons. Please log in again to continue.
+          Your session has expired for security reasons. Please log in again to
+          continue.
         </DialogDescription>
         <DialogFooter>
-          <Button onClick={onRedirect} className="w-full flex items-center justify-center space-x-2">
+          <Button
+            onClick={onRedirect}
+            className="w-full flex items-center justify-center space-x-2"
+          >
             <LogOut className="w-4 h-4" />
             <span>Sign In Again</span>
           </Button>

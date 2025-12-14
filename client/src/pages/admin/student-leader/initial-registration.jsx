@@ -11,13 +11,14 @@ export function InitialRegistration({ user, onComplete }) {
     adviserDepartment: "",
     orgName: "",
     orgAcronym: "",
-    orgEmail: user?.email,
+    orgEmail: user?.email || "locquianopatrickgreg@gmail.com",
     orgClass: "System-wide",
     orgDepartment: "",
     orgCourse: "",
     orgSpecialization: "",
     studentGovDepartment: "",
-    userId: user?.userId,
+    accreditedSince: "",
+    userId: user?.userId || "69284dc91aee2b7bca2c29c4",
   });
 
   const [errors, setErrors] = useState({});
@@ -90,7 +91,7 @@ export function InitialRegistration({ user, onComplete }) {
       newErrors.orgName = "Organization name is required";
     if (!formData.orgAcronym.trim())
       newErrors.orgAcronym = "Organization acronym is required";
-    if (!formData.orgClass)
+    if (!formData.orgClass.trim())
       newErrors.orgClass = "Organization class is required";
     if (!formData.orgEmail.trim())
       newErrors.orgEmail = "Organization email is required";
@@ -375,131 +376,159 @@ export function InitialRegistration({ user, onComplete }) {
                   )}
                 </div>
               </div>
+              <div className="flex gap-4 w-full">
+                {formData.orgClass === "Local" && (
+                  <div className="space-y-4 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Department <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="orgDepartment"
+                          value={formData.orgDepartment}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                            errors.orgDepartment
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <option value="">Select Department</option>
+                          {Object.keys(departments).map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.orgDepartment && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.orgDepartment}
+                          </p>
+                        )}
+                      </div>
 
-              {formData.orgClass === "Local" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Department <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="orgDepartment"
-                      value={formData.orgDepartment}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        errors.orgDepartment
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="">Select Department</option>
-                      {Object.keys(departments).map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.orgDepartment && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.orgDepartment}
-                      </p>
-                    )}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Course <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="orgCourse"
+                          value={formData.orgCourse}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                            errors.orgCourse
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          disabled={!formData.orgDepartment}
+                        >
+                          <option value="">Select Course</option>
+                          {formData.orgDepartment &&
+                            departments[formData.orgDepartment]?.map(
+                              (course) => (
+                                <option key={course} value={course}>
+                                  {course}
+                                </option>
+                              )
+                            )}
+                        </select>
+                        {errors.orgCourse && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.orgCourse}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Course <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="orgCourse"
-                      value={formData.orgCourse}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        errors.orgCourse ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={!formData.orgDepartment}
-                    >
-                      <option value="">Select Course</option>
-                      {formData.orgDepartment &&
-                        departments[formData.orgDepartment]?.map((course) => (
-                          <option key={course} value={course}>
-                            {course}
-                          </option>
-                        ))}
-                    </select>
-                    {errors.orgCourse && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.orgCourse}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {formData.orgClass === "System-wide" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Specialization <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="orgSpecialization"
-                      value={formData.orgSpecialization}
-                      onChange={handleSpecializationChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        errors.orgSpecialization
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="">Select Specialization</option>
-                      {orgSpecializations.map((spec) => (
-                        <option key={spec} value={spec}>
-                          {spec}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.orgSpecialization && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.orgSpecialization}
-                      </p>
-                    )}
-                  </div>
-
-                  {formData.orgSpecialization === "Student government" && (
+                )}
+                {formData.orgClass === "System-wide" && (
+                  <div className="space-y-4 w-full">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Department <span className="text-red-500">*</span>
+                        Specialization <span className="text-red-500">*</span>
                       </label>
                       <select
-                        name="studentGovDepartment"
-                        value={formData.studentGovDepartment}
-                        onChange={handleInputChange}
+                        name="orgSpecialization"
+                        value={formData.orgSpecialization}
+                        onChange={handleSpecializationChange}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                          errors.studentGovDepartment
+                          errors.orgSpecialization
                             ? "border-red-500"
                             : "border-gray-300"
                         }`}
                       >
-                        <option value="">Select Department</option>
-                        {Object.keys(departments).map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
+                        <option value="">Select Specialization</option>
+                        {orgSpecializations.map((spec) => (
+                          <option key={spec} value={spec}>
+                            {spec}
                           </option>
                         ))}
                       </select>
-                      {errors.studentGovDepartment && (
+                      {errors.orgSpecialization && (
                         <p className="text-red-500 text-sm mt-1">
-                          {errors.studentGovDepartment}
+                          {errors.orgSpecialization}
                         </p>
                       )}
-                      <p className="text-xs text-blue-600 mt-1">
-                        Select Department of the Student Government.
-                      </p>
                     </div>
+
+                    {formData.orgSpecialization === "Student government" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Department <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="studentGovDepartment"
+                          value={formData.studentGovDepartment}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                            errors.studentGovDepartment
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <option value="">Select Department</option>
+                          {Object.keys(departments).map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.studentGovDepartment && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.studentGovDepartment}
+                          </p>
+                        )}
+                        <p className="text-xs text-blue-600 mt-1">
+                          Select Department of the Student Government.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Accredited Since (Leave Blank if new Organization){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="month"
+                    name="accreditedSince"
+                    value={formData.accreditedSince || ""}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.accreditedSince
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {errors.accreditedSince && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.accreditedSince}
+                    </p>
                   )}
                 </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -742,21 +771,21 @@ export function InitialRegistration({ user, onComplete }) {
 export function ReRegistration({ OrgData, user, onComplete }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    adviserName: OrgData.adviserName,
-    adviserEmail: OrgData.adviserEmail,
-    adviserDepartment: OrgData.adviserDepartment,
-    orgName: OrgData.orgName,
-    orgAcronym: OrgData.orgAcronym,
-    orgEmail: user?.email,
-    orgClass: OrgData.orgClass,
-    orgDepartment: OrgData?.orgDepartment,
-    orgCourse: OrgData?.orgCourse,
-    orgSpecialization: OrgData?.orgSpecialization,
-    studentGovDepartment: OrgData?.orgDepartment,
-    userId: user?.userId,
+    adviserName: "John Paul Dino",
+    adviserEmail: "earlaurencereno@gmail.com",
+    adviserDepartment: "College of Arts and Sciences",
+    orgName: "Episteme Circle of Regal Union",
+    orgAcronym: "ECRU",
+    orgEmail: "elaurencecereno@gmail.com",
+    orgClass: "Local",
+    orgDepartment: "College of Arts and Sciences",
+    orgCourse: "Bachelor of Arts in Sociology",
+    orgSpecialization: "",
+    studentGovDepartment: "College of Arts and Sciences",
+    userId: "6928795e1aee2b7bca2c319f",
+    accreditedSince: new Date("2020-08-01T00:00:00"), // August 1, 2020 at 00:00:00
   });
 
-  console.log("tite", OrgData);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -846,7 +875,6 @@ export function ReRegistration({ OrgData, user, onComplete }) {
           newErrors.studentGovDepartment =
             "Department is required for student government";
         } else {
-          formData.orgSpecialization = formData.orgSpecialization;
           formData.orgDepartment = formData.studentGovDepartment;
         }
       }
@@ -926,7 +954,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
     }
   };
 
-  const StepIndicator = ({ stepNumber, title, isActive, isCompleted }) => (
+  const StepIndicator = ({ stepNumber, title, isActive }) => (
     <div className="flex items-center flex-1">
       <div className="flex items-center gap-3">
         <div
@@ -1075,134 +1103,160 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                   )}
                 </div>
               </div>
+              <div className="flex gap-4 w-full">
+                {formData.orgClass === "Local" && (
+                  <div className="space-y-4 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Department <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="orgDepartment"
+                          value={formData.orgDepartment}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                            errors.orgDepartment
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <option value="">Select Department</option>
+                          {Object.keys(departments).map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.orgDepartment && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.orgDepartment}
+                          </p>
+                        )}
+                      </div>
 
-              {formData.orgClass === "Local" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Department <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="orgDepartment"
-                      value={formData.orgDepartment}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        errors.orgDepartment
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="">Select Department</option>
-                      {Object.keys(departments).map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.orgDepartment && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.orgDepartment}
-                      </p>
-                    )}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Course <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="orgCourse"
+                          value={formData.orgCourse}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                            errors.orgCourse
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          disabled={!formData.orgDepartment}
+                        >
+                          <option value="">Select Course</option>
+                          {formData.orgDepartment &&
+                            departments[formData.orgDepartment]?.map(
+                              (course) => (
+                                <option key={course} value={course}>
+                                  {course}
+                                </option>
+                              )
+                            )}
+                        </select>
+                        {errors.orgCourse && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.orgCourse}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Course <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="orgCourse"
-                      value={formData.orgCourse}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        errors.orgCourse ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={!formData.orgDepartment}
-                    >
-                      <option value="">Select Course</option>
-                      {formData.orgDepartment &&
-                        departments[formData.orgDepartment]?.map((course) => (
-                          <option key={course} value={course}>
-                            {course}
-                          </option>
-                        ))}
-                    </select>
-                    {errors.orgCourse && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.orgCourse}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {formData.orgClass === "System-wide" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Specialization <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="orgSpecialization"
-                      value={formData.orgSpecialization}
-                      onChange={handleSpecializationChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        errors.orgSpecialization
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="">Select Specialization</option>
-                      {orgSpecializations.map((spec) => (
-                        <option key={spec} value={spec}>
-                          {spec}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.orgSpecialization && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.orgSpecialization}
-                      </p>
-                    )}
-                  </div>
-
-                  {formData.orgSpecialization === "Student government" && (
+                )}
+                {formData.orgClass === "System-wide" && (
+                  <div className="space-y-4 w-full">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Department <span className="text-red-500">*</span>
+                        Specialization <span className="text-red-500">*</span>
                       </label>
                       <select
-                        name="studentGovDepartment"
-                        value={formData.studentGovDepartment}
-                        onChange={handleInputChange}
+                        name="orgSpecialization"
+                        value={formData.orgSpecialization}
+                        onChange={handleSpecializationChange}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                          errors.studentGovDepartment
+                          errors.orgSpecialization
                             ? "border-red-500"
                             : "border-gray-300"
                         }`}
                       >
-                        <option value="">Select Department</option>
-                        {Object.keys(departments).map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
+                        <option value="">Select Specialization</option>
+                        {orgSpecializations.map((spec) => (
+                          <option key={spec} value={spec}>
+                            {spec}
                           </option>
                         ))}
                       </select>
-                      {errors.studentGovDepartment && (
+                      {errors.orgSpecialization && (
                         <p className="text-red-500 text-sm mt-1">
-                          {errors.studentGovDepartment}
+                          {errors.orgSpecialization}
                         </p>
                       )}
-                      <p className="text-xs text-blue-600 mt-1">
-                        Select Department of the Student Government.
-                      </p>
                     </div>
-                  )}
+
+                    {formData.orgSpecialization === "Student government" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Department <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="studentGovDepartment"
+                          value={formData.studentGovDepartment}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                            errors.studentGovDepartment
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <option value="">Select Department</option>
+                          {Object.keys(departments).map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.studentGovDepartment && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.studentGovDepartment}
+                          </p>
+                        )}
+                        <p className="text-xs text-blue-600 mt-1">
+                          Select Department of the Student Government.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Accredited Since (Leave Blank if new Organization){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="month"
+                    name="accreditedSince"
+                    value={
+                      formData.accreditedSince
+                        ? formData.accreditedSince.toISOString().slice(0, 7)
+                        : ""
+                    }
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                      errors.accreditedSince
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
                 </div>
-              )}
+              </div>
             </div>
           )}
-
           {/* Step 2: Adviser Information */}
           {currentStep === 2 && (
             <div className="space-y-5">
@@ -1357,6 +1411,20 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                           )}
                         </>
                       )}
+                      {formData.accreditedSince && (
+                        <div>
+                          <span className="font-medium">Accredited Since:</span>{" "}
+                          {formData.accreditedSince instanceof Date
+                            ? formData.accreditedSince.toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                }
+                              )
+                            : formData.accreditedSince}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1439,7 +1507,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
   );
 }
 
-export const departments = {
+const departments = {
   "College of Arts and Sciences": [
     "Bachelor of Science in Biology",
     "Bachelor of Science in Applied Mathematics",

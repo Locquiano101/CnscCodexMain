@@ -5,9 +5,9 @@ import React, {
   useImperativeHandle,
   forwardRef,
   useRef,
-  useMemo,
 } from "react";
-import { departments } from "../../initial-registration";
+import { departments } from "@/components/department_arrays";
+
 import axios from "axios";
 import { API_ROUTER } from "../../../../../App";
 
@@ -1520,32 +1520,11 @@ export const PhilippineAddressForm = forwardRef(
     };
 
     const loadRegions = async () => {
-      const regionCodeToRoman = {
-        "01": "Region I",
-        "02": "Region II",
-        "03": "Region III",
-        "04": "Region IV-A",
-        17: "Region IV-B",
-        "05": "Region V",
-        "06": "Region VI",
-        "07": "Region VII",
-        "08": "Region VIII",
-        "09": "Region IX",
-        10: "Region X",
-        11: "Region XI",
-        12: "Region XII",
-        13: "Region XIII",
-        14: "NCR",
-        15: "CAR",
-        16: "BARMM",
-      };
-
       setLoading((prev) => ({ ...prev, regions: true }));
       try {
         const response = await fetch(`${PSGC_API_BASE}/regions`);
         const data = await response.json();
         const formattedRegions = data.map((region) => {
-          const labelPrefix = regionCodeToRoman[region.code] || region.code;
           return {
             ...region,
             name: `${region.regionName} - ${region.name}`,

@@ -56,7 +56,11 @@ export const UpdateUser = async (req, res) => {
       targetId: updatedUser._id,
       organizationProfile: updatedUser.organizationProfile || null,
       organizationName: null,
-      meta: { name: updatedUser.name, email: updatedUser.email, position: updatedUser.position },
+      meta: {
+        name: updatedUser.name,
+        email: updatedUser.email,
+        position: updatedUser.position,
+      },
     });
 
     return res.status(200).json({
@@ -274,6 +278,7 @@ export const PostInitialOrganizationProfile = async (req, res) => {
       orgClass,
       orgCourse,
       orgAcronym,
+      accreditedSince,
       orgDepartment,
       orgSpecialization,
       orgStatus,
@@ -393,6 +398,7 @@ export const PostInitialOrganizationProfile = async (req, res) => {
       orgDepartment,
       orgSpecialization,
       orgStatus,
+      accreditedSince,
       orgLogo,
       isActive,
       orgPresident: null,
@@ -405,7 +411,7 @@ export const PostInitialOrganizationProfile = async (req, res) => {
     // Step 8: Update Organization with OrgProfile
     await Organization.findByIdAndUpdate(
       organizationDoc._id,
-      { $push: { organizationProfile: savedOrgProfile._id } },
+      { $push: { organizationProfile: savedOrgProfile._id, accreditedSince } },
       { new: true }
     );
 
@@ -513,6 +519,7 @@ export const ReRegisterOrganizationProfile = async (req, res) => {
       orgCourse,
       orgAcronym,
       orgDepartment,
+      accreditedSince,
       orgSpecialization,
       orgStatus,
       orgLogo,
@@ -593,6 +600,7 @@ export const ReRegisterOrganizationProfile = async (req, res) => {
       orgName,
       orgClass,
       orgCourse,
+      accreditedSince,
       orgAcronym,
       orgDepartment,
       orgSpecialization,
@@ -609,7 +617,7 @@ export const ReRegisterOrganizationProfile = async (req, res) => {
     // Step 5: Update Organization schema (push new profile)
     await Organization.findByIdAndUpdate(
       oldOrgProfile.organization._id,
-      { $push: { organizationProfile: savedOrgProfile._id } },
+      { $push: { organizationProfile: savedOrgProfile._id, accreditedSince } },
       { new: true }
     );
 
