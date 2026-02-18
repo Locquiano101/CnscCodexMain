@@ -86,7 +86,7 @@ export default function App() {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/post/:orgName" element={<PublicPostFeed />} />
       <Route path="/profile/:orgName" element={<PublicProfile />} />
-      <Route path="/test/*" element={<ReRegistration />} />
+      <Route path="/test/*" element={<InitialRegistration />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

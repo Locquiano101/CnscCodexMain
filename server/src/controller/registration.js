@@ -284,6 +284,7 @@ export const PostInitialOrganizationProfile = async (req, res) => {
       orgStatus,
       orgLogo,
       orgEmail,
+      yearsOfExistence,
       originalName = orgName,
       currentName = orgName,
       isActive = true,
@@ -396,6 +397,7 @@ export const PostInitialOrganizationProfile = async (req, res) => {
       orgCourse,
       orgAcronym,
       orgDepartment,
+      yearsOfExistence,
       orgSpecialization,
       orgStatus,
       accreditedSince,
@@ -411,7 +413,13 @@ export const PostInitialOrganizationProfile = async (req, res) => {
     // Step 8: Update Organization with OrgProfile
     await Organization.findByIdAndUpdate(
       organizationDoc._id,
-      { $push: { organizationProfile: savedOrgProfile._id, accreditedSince } },
+      {
+        $push: {
+          organizationProfile: savedOrgProfile._id,
+          accreditedSince,
+          yearsOfExistence,
+        },
+      },
       { new: true }
     );
 

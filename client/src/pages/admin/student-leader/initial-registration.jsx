@@ -18,9 +18,13 @@ export function InitialRegistration({ user, onComplete }) {
     orgSpecialization: "",
     studentGovDepartment: "",
     accreditedSince: "",
+    yearsOfExistence: "",
     userId: user?.userId || "69284dc91aee2b7bca2c29c4",
   });
 
+  const [hasAccreditedSince, setHasAccreditedSince] = useState(
+    !!formData.accreditedSince
+  );
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -376,7 +380,8 @@ export function InitialRegistration({ user, onComplete }) {
                   )}
                 </div>
               </div>
-              <div className="flex gap-4 w-full">
+
+              <div className="flex flex-col gap-4 w-full">
                 {formData.orgClass === "Local" && (
                   <div className="space-y-4 w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -506,28 +511,87 @@ export function InitialRegistration({ user, onComplete }) {
                     )}
                   </div>
                 )}
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Accredited Since (Leave Blank if new Organization){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
+
+                {/* Toggle */}
+                <div className="flex items-center gap-3 mb-4">
                   <input
-                    type="month"
-                    name="accreditedSince"
-                    value={formData.accreditedSince || ""}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                      errors.accreditedSince
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
+                    type="checkbox"
+                    id="hasAccreditedSince"
+                    checked={hasAccreditedSince}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setHasAccreditedSince(checked);
+
+                      if (!checked) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          accreditedSince: "",
+                          yearsOfExistence: "",
+                        }));
+                      }
+                    }}
+                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                   />
-                  {errors.accreditedSince && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.accreditedSince}
-                    </p>
-                  )}
+
+                  <label
+                    htmlFor="hasAccreditedSince"
+                    className="text-sm text-gray-700"
+                  >
+                    Organization has been previously accredited
+                  </label>
                 </div>
+
+                {/* Accredited Since Section (hidden by default) */}
+                {hasAccreditedSince && (
+                  <div className="w-full flex flex-col space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Accredited Since
+                    </label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Month & Year */}
+                      <input
+                        type="month"
+                        name="accreditedSince"
+                        value={formData.accreditedSince || ""}
+                        onChange={handleInputChange}
+                        max={new Date().toISOString().slice(0, 7)}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.accreditedSince
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                      />
+
+                      {/* Years of Existence */}
+                      <input
+                        type="number"
+                        name="yearsOfExistence"
+                        min="0"
+                        placeholder="Years of Existence"
+                        value={formData.yearsOfExistence || ""}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.yearsOfExistence
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                      />
+                    </div>
+
+                    {errors.accreditedSince && (
+                      <p className="text-red-500 text-sm">
+                        {errors.accreditedSince}
+                      </p>
+                    )}
+
+                    {errors.yearsOfExistence && (
+                      <p className="text-red-500 text-sm">
+                        {errors.yearsOfExistence}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
