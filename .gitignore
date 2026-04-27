@@ -45,3 +45,6 @@ server/uploads
 # Others
 # ------------------------
 .env
+client/package.json
+server/package.json
+package-lock.json

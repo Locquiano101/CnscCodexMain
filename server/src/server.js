@@ -68,7 +68,9 @@ seedAccreditationRequirements();
 if (process.env.ENABLE_REQUIREMENT_GATING === "true") {
   console.log("🔐 Accreditation requirement gating ENABLED");
 } else {
-  console.log("🔓 Accreditation requirement gating DISABLED (set ENABLE_REQUIREMENT_GATING=true to activate)");
+  console.log(
+    "🔓 Accreditation requirement gating DISABLED (set ENABLE_REQUIREMENT_GATING=true to activate)",
+  );
 }
 
 // -------------------- Profanity Middleware --------------------
@@ -112,7 +114,7 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-  })
+  }),
 );
 
 const sessionMiddleware = session({
@@ -174,7 +176,7 @@ app.use(
   express.static(path.join(__dirname, "../uploads"), {
     maxAge: "30d",
     etag: true,
-  })
+  }),
 );
 
 // -------------------- Start Server --------------------
