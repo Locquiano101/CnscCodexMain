@@ -86,7 +86,7 @@ const addOfficialHeader = (doc, reportTitle) => {
     "F. Pimentel Avenue, Brgy. 2, Daet, Camarines Norte – 4600, Philippines",
     pageWidth - 14,
     yPosition + 2,
-    { align: "right" }
+    { align: "right" },
   );
 
   // Horizontal line (positioned after logos)
@@ -104,7 +104,7 @@ const addOfficialHeader = (doc, reportTitle) => {
     "OFFICE OF THE STUDENT SERVICES AND DEVELOPMENT",
     pageWidth / 2,
     yPosition,
-    { align: "center" }
+    { align: "center" },
   );
 
   // STUDENT DEVELOPMENT UNIT
@@ -173,7 +173,7 @@ export const exportAccreditationToPDF = (data) => {
       ? new Date(
           startDate.getFullYear() + 1,
           startDate.getMonth(),
-          startDate.getDate()
+          startDate.getDate(),
         )
       : null;
 
@@ -266,7 +266,7 @@ export const exportAccreditationToPDF = (data) => {
         `Page ${data.pageNumber} of ${pageCount}`,
         pageWidth - 14,
         doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
+        { align: "right" },
       );
     },
   });
@@ -431,7 +431,7 @@ export const exportAccomplishmentToPDF = (data) => {
         `Page ${data.pageNumber} of ${pageCount}`,
         pageWidth - 14,
         doc.internal.pageSize.getHeight() - 10,
-        { align: "right" }
+        { align: "right" },
       );
     },
   });
@@ -679,7 +679,7 @@ export const exportActionPlanToPDF = (data, filters = {}) => {
       `Page ${i} of ${pageCount}`,
       pageWidth - 14,
       doc.internal.pageSize.getHeight() - 10,
-      { align: "right" }
+      { align: "right" },
     );
   }
 
@@ -808,7 +808,7 @@ export const exportFinancialReportToPDF = (data) => {
       `Page ${i} of ${pageCount}`,
       pageWidth - 14,
       doc.internal.pageSize.getHeight() - 10,
-      { align: "right" }
+      { align: "right" },
     );
   }
 
@@ -819,30 +819,35 @@ export const exportFinancialReportToPDF = (data) => {
 };
 
 export const exportRQATToPDF = (data) => {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4",
+  });
+
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  const academicYear = getAcademicYear();
-  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
+  let yPosition = addOfficialHeader(doc, "RQAT REPORT");
 
-  // --- FUNCTION: DRAW HEADER ---
-  const drawHeader = () => {
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
+  // OBSELETE
+  // // --- FUNCTION: DRAW HEADER ---
+  // const drawHeader = () => {
+  //   doc.setFontSize(12);
+  //   doc.setFont("helvetica", "bold");
 
-    const lines = doc.splitTextToSize(headerText, pageWidth - 28);
-    let y = 14;
+  //   const lines = doc.splitTextToSize(headerText, pageWidth - 28);
+  //   let y = 14;
 
-    lines.forEach((line) => {
-      doc.text(line, pageWidth / 2, y, { align: "center" });
-      y += 6;
-    });
+  //   lines.forEach((line) => {
+  //     doc.text(line, pageWidth / 2, y, { align: "center" });
+  //     y += 6;
+  //   });
 
-    return y + 4; // return the new Y position
-  };
+  //   return y + 4; // return the new Y position
+  // };
 
-  // Draw the header on the first page
-  const headerBottomY = drawHeader();
+  // // Draw the header on the first page
+  // const headerBottomY = drawHeader();
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -881,7 +886,7 @@ export const exportRQATToPDF = (data) => {
   ]);
 
   autoTable(doc, {
-    startY: headerBottomY,
+    startY: yPosition,
     head: [
       [
         "ORGANIZATION NAME",
@@ -921,7 +926,7 @@ export const exportRQATToPDF = (data) => {
       6: { cellWidth: 30, halign: "left" },
       7: { cellWidth: 60, halign: "left" },
     },
-    margin: { top: headerBottomY, left: 14, right: 14, bottom: 20 },
+    margin: { top: yPosition, left: 14, right: 14, bottom: 20 },
 
     didDrawPage: (data) => {
       if (data.pageNumber > 1) {
@@ -943,7 +948,7 @@ export const exportRQATToPDF = (data) => {
       `Page ${i} of ${pageCount}`,
       pageWidth - 14,
       doc.internal.pageSize.getHeight() - 10,
-      { align: "right" }
+      { align: "right" },
     );
   }
 
@@ -954,37 +959,40 @@ export const exportRQATToPDF = (data) => {
 export const exportRQATOfficersToPDF = (data) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const academicYear = getAcademicYear();
+
+  // OBSELETE
   // Custom header text
-  const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
+  // const headerText = `LIST OF ACCREDITED/RECOGNIZED/AUTHORIZED STUDENT ORGANIZATION/COUNCIL/GOVERNMENT AND STUDENT ACTIVITIES\nas of Academic Year (AY) ${academicYear}`;
 
-  // --- FUNCTION: DRAW HEADER ---
-  const drawHeader = () => {
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
+  // // --- FUNCTION: DRAW HEADER ---
+  // const drawHeader = () => {
+  //   doc.setFontSize(12);
+  //   doc.setFont("helvetica", "bold");
 
-    const lines = doc.splitTextToSize(headerText, pageWidth - 28);
-    let y = 14;
+  //   const lines = doc.splitTextToSize(headerText, pageWidth - 28);
+  //   let y = 14;
 
-    lines.forEach((line) => {
-      doc.text(line, pageWidth / 2, y, { align: "center" });
-      y += 6;
-    });
+  //   lines.forEach((line) => {
+  //     doc.text(line, pageWidth / 2, y, { align: "center" });
+  //     y += 6;
+  //   });
 
-    return y + 4; // return the new Y position
-  };
-  // Add official header (centered)
-  const yPosition = (() => {
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    const lines = doc.splitTextToSize(headerText, pageWidth - 28); // 14mm margin each side
-    let y = 14; // starting y position
-    lines.forEach((line) => {
-      doc.text(line, pageWidth / 2, y, { align: "center" });
-      y += 6; // line height
-    });
-    return y + 4; // space after header
-  })();
+  //   return y + 4; // return the new Y position
+  // };
+  // // Add official header (centered)
+  // const yPosition = (() => {
+  //   doc.setFontSize(12);
+  //   doc.setFont("helvetica", "bold");
+  //   const lines = doc.splitTextToSize(headerText, pageWidth - 28); // 14mm margin each side
+  //   let y = 14; // starting y position
+  //   lines.forEach((line) => {
+  //     doc.text(line, pageWidth / 2, y, { align: "center" });
+  //     y += 6; // line height
+  //   });
+  //   return y + 4; // space after header
+  // })();
+
+  let yPosition = addOfficialHeader(doc, "RQAT REPORT");
 
   // Prepare table rows
   const tableData = [];
@@ -1087,7 +1095,7 @@ export const exportRQATOfficersToPDF = (data) => {
       `Page ${i} of ${pageCount}`,
       pageWidth - 14,
       doc.internal.pageSize.getHeight() - 10,
-      { align: "right" }
+      { align: "right" },
     );
   }
 
