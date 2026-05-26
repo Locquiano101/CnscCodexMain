@@ -522,6 +522,7 @@ const handleRegistration = async (email, password, code) => {
 
 const SendOtp = async ({ email }) => {
   console.log(email);
+  console.log("API Router:", API_ROUTER);
   try {
     const response = await axios.post(`${API_ROUTER}/sendVerification`, {
       email,

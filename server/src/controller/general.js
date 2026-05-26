@@ -286,7 +286,6 @@ export const CheckSession = (req, res) => {
 
 export const Login = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     // Find the user by email (trim to handle whitespace)
     const user = await User.findOne({ email: email?.trim() });
@@ -303,6 +302,7 @@ export const Login = async (req, res) => {
       position: user.position?.trim(), // trim to handle trailing commas/spaces
       email: user.email?.trim(),
       deliveryUnit: user.deliveryUnit,
+      loggedIn: true,
       organizationProfile: user.organizationProfile,
     };
 

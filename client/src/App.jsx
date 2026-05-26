@@ -28,14 +28,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  InitialRegistration,
-  ReRegistration,
-} from "./pages/admin/student-leader/initial-registration";
+import { InitialRegistration } from "./pages/admin/student-leader/initial-registration";
 
-const MAIN_API_ROUTER = import.meta.env.VITE_API_URL;
-export const API_ROUTER = `${MAIN_API_ROUTER}/api`;
-export const DOCU_API_ROUTER = `${MAIN_API_ROUTER}/uploads`;
+export const API_ROUTER = import.meta.env.VITE_API_URL;
+export const DOCU_API_ROUTER = `${API_ROUTER}/uploads`;
 
 // Ensure session cookies are sent for all API calls by default
 axios.defaults.withCredentials = true;
@@ -44,7 +40,6 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/sandbox" element={<PhilippineAddressForm />} />
 
       <Route element={<ProtectedRoute allowedRoles={["student-leader"]} />}>
         <Route path="/student-leader/*" element={<StudentLeaderMainPage />} />
@@ -86,7 +81,6 @@ export default function App() {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/post/:orgName" element={<PublicPostFeed />} />
       <Route path="/profile/:orgName" element={<PublicProfile />} />
-      <Route path="/test/*" element={<InitialRegistration />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
@@ -104,14 +98,14 @@ const ProtectedRoute = ({ allowedRoles }) => {
     const checkSession = async () => {
       // Check if user had a previous session before making the request
       const hadPreviousSession = sessionStorage.getItem("userData");
-
+      console.log(hadPreviousSession);
       try {
         const res = await axios.get(`${API_ROUTER}/session-check`, {
           withCredentials: true,
         });
 
         console.log("session checking...");
-        console.log(res);
+        console.log(res.data);
         if (res.data.loggedIn) {
           const userRole = res.data.user.position;
 

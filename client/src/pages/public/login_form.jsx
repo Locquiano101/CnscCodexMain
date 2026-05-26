@@ -18,10 +18,8 @@ export default function Login({ onShowRegistration }) {
       const response = await axios.post(
         `${API_ROUTER}/login`,
         { email: username, password },
-        { withCredentials: true }
+        { withCredentials: true },
       );
-
-      console.log("response moto", response.data);
 
       const role = response.data.user.position;
       if (role === "student-leader") {

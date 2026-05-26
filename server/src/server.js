@@ -125,9 +125,14 @@ const sessionMiddleware = session({
     mongoUrl: DB,
     collectionName: "sessions",
   }),
-  cookie: { httpOnly: true },
+  cookie: {
+    secure: false, // true ONLY on HTTPS
+    httpOnly: true,
+    sameSite: "lax",
+  },
   rolling: true,
 });
+
 app.use(sessionMiddleware);
 
 // -------------------- Inactivity + Profanity Middleware --------------------
@@ -178,6 +183,16 @@ app.use(
     etag: true,
   }),
 );
+
+// Catch-all for SPA (serves index.html for any unknown route)
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  res.status(status).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+  });
+});
 
 // -------------------- Start Server --------------------
 app.listen(PORT, "0.0.0.0", () => {

@@ -51,18 +51,21 @@ The platform provides role-specific dashboards for **Student Leaders**, **Advise
 ## ✨ Features
 
 ### 🔐 Authentication & Authorization
+
 - Session-based authentication with persistent MongoDB session store
 - Role-based access control (RBAC) with protected routes per user type
 - Inactivity timeout with automatic session expiry (~1 month)
 - First-login detection for account setup flows
 
 ### 🏢 Organization Management
+
 - Initial and annual re-registration of student organizations
 - Organization profile with logo, status, department, acronym, classification, and years of existence
 - Public organization profile pages viewable without login
 - Status tracking: Active, Inactive, Disqualified
 
 ### 📋 Accreditation System
+
 - Multi-step accreditation workflow with configurable requirements:
   - President's Information
   - Financial Report
@@ -75,44 +78,52 @@ The platform provides role-specific dashboards for **Student Leaders**, **Advise
 - Revision notes and revocation support
 
 ### 📝 Proposals & Activity Management
+
 - Submit, edit, and track activity proposals (Program/Project/Activity — PPA)
 - Proposal calendar view for scheduled activities
 - Status workflow: Pending → Approved / Returned
 - Detailed proposal view with conduct tracking
 
 ### 🏆 Accomplishments
+
 - Log organizational development and activity accomplishments
 - Detailed accomplishment records linked to proposals
 - Review and status management by advisers and SDU coordinators
 
 ### 💰 Financial Reporting
+
 - Cash in-flow and cash out-flow tracking
 - Collection fees management
 - Transaction-level records with add/view support
 - Exportable financial reports
 
 ### 📢 Posts & Announcements
+
 - Student organizations can publish public posts
 - Public post feed accessible without login
 - Organization-specific post pages
 
 ### 🔔 Notifications
+
 - Real-time in-app notifications via Socket.IO
 - Email notifications via Nodemailer (Gmail)
 - Accreditation-related email alerts
 
 ### 📊 Reports & Exports
+
 - RQAT (Report on Qualified and Accredited Transactions) summaries
 - Export to PDF using jsPDF and jsPDF-AutoTable
 - Export to Excel using ExcelJS
 - Report formatting aligned to APESOC landscape document spec
 - Print utilities for formatted output
 
-### 🤖 AI Feedback *(Experimental)*
+### 🤖 AI Feedback _(Experimental)_
+
 - OpenAI-powered document feedback for uploaded proposals
 - Integrated at the server middleware level
 
 ### 🛡️ System Safeguards
+
 - Profanity filter on all incoming request bodies, queries, and params
 - Rate limiting on admin-level mutation endpoints
 - Audit logging for all accreditation requirement changes
@@ -122,28 +133,28 @@ The platform provides role-specific dashboards for **Student Leaders**, **Advise
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Frontend Framework** | React 19, React Router DOM 7 |
-| **Build Tool** | Vite 7 |
-| **Styling** | Tailwind CSS 4, tailwind-merge, tailwindcss-animate |
-| **UI Components** | Radix UI (Dialog, Select, Checkbox, Toast, Label, Separator) |
-| **Icons** | Lucide React |
-| **Charts** | Recharts |
-| **HTTP Client** | Axios |
-| **Real-time** | Socket.IO Client |
-| **Date Handling** | date-fns |
-| **PDF Export** | jsPDF, jsPDF-AutoTable |
-| **Excel Export** | ExcelJS, file-saver, xlsx |
-| **Backend Framework** | Express 5 |
-| **Database** | MongoDB with Mongoose 8 |
-| **Session Store** | connect-mongo |
-| **File Uploads** | Multer |
-| **Email** | Nodemailer (Gmail) |
-| **PDF Generation** | PDFKit, jsPDF |
-| **Real-time Server** | Socket.IO |
-| **AI** | OpenAI SDK |
-| **Monorepo Tool** | npm Workspaces + concurrently |
+| Layer                  | Technology                                                   |
+| ---------------------- | ------------------------------------------------------------ |
+| **Frontend Framework** | React 19, React Router DOM 7                                 |
+| **Build Tool**         | Vite 7                                                       |
+| **Styling**            | Tailwind CSS 4, tailwind-merge, tailwindcss-animate          |
+| **UI Components**      | Radix UI (Dialog, Select, Checkbox, Toast, Label, Separator) |
+| **Icons**              | Lucide React                                                 |
+| **Charts**             | Recharts                                                     |
+| **HTTP Client**        | Axios                                                        |
+| **Real-time**          | Socket.IO Client                                             |
+| **Date Handling**      | date-fns                                                     |
+| **PDF Export**         | jsPDF, jsPDF-AutoTable                                       |
+| **Excel Export**       | ExcelJS, file-saver, xlsx                                    |
+| **Backend Framework**  | Express 5                                                    |
+| **Database**           | MongoDB with Mongoose 8                                      |
+| **Session Store**      | connect-mongo                                                |
+| **File Uploads**       | Multer                                                       |
+| **Email**              | Nodemailer (Gmail)                                           |
+| **PDF Generation**     | PDFKit, jsPDF                                                |
+| **Real-time Server**   | Socket.IO                                                    |
+| **AI**                 | OpenAI SDK                                                   |
+| **Monorepo Tool**      | npm Workspaces + concurrently                                |
 
 ---
 
@@ -313,7 +324,7 @@ EMAIL_USER=your_gmail@gmail.com
 EMAIL_PASS=your_gmail_app_password
 
 # OpenAI (optional — for AI feedback feature)
-REACT_APP_OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_KEY=your_openai_api_key
 
 # Feature Flags
 ENABLE_REQUIREMENT_GATING=false
@@ -340,6 +351,7 @@ npm run dev
 ```
 
 This starts:
+
 - **Backend** at `http://localhost:5000` (with nodemon for hot reload)
 - **Frontend** at `http://localhost:5173` (Vite dev server)
 
@@ -357,20 +369,21 @@ npm run start
 
 ## 👥 User Roles
 
-| Role | Path | Description |
-|---|---|---|
-| **Student Leader** | `/student-leader/*` | Manages their organization's accreditation, proposals, accomplishments, and posts |
-| **Adviser** | `/adviser/*` | Reviews and approves proposals and accreditation for assigned organizations |
-| **Dean** | `/dean/*` | Reviews organization activities and accreditation within their college |
-| **SDU Coordinator** | `/sdu-coordinator/*` | Reviews and manages accreditation across organizations |
-| **SDU (Admin)** | `/SDU/*` | Full system administration: users, requirements, reports, settings |
-| **Public** | `/` | View home page, organization profiles, and public posts (no login required) |
+| Role                | Path                 | Description                                                                       |
+| ------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| **Student Leader**  | `/student-leader/*`  | Manages their organization's accreditation, proposals, accomplishments, and posts |
+| **Adviser**         | `/adviser/*`         | Reviews and approves proposals and accreditation for assigned organizations       |
+| **Dean**            | `/dean/*`            | Reviews organization activities and accreditation within their college            |
+| **SDU Coordinator** | `/sdu-coordinator/*` | Reviews and manages accreditation across organizations                            |
+| **SDU (Admin)**     | `/SDU/*`             | Full system administration: users, requirements, reports, settings                |
+| **Public**          | `/`                  | View home page, organization profiles, and public posts (no login required)       |
 
 ---
 
 ## 📦 Key Modules
 
 ### Accreditation Workflow
+
 The accreditation system is the core of CNSC Codex. Each organization must complete five requirement sections before the accreditation is considered complete:
 
 1. **President's Information** — Profile of the current organization president
@@ -382,12 +395,15 @@ The accreditation system is the core of CNSC Codex. Each organization must compl
 SDU administrators can enable or disable individual sections globally via the accreditation requirement gating system.
 
 ### Accreditation Requirement Gating
+
 The server supports toggling accreditation sections on/off at runtime. When `ENABLE_REQUIREMENT_GATING=true`, disabled requirements block their associated API routes with a `403` response. The frontend dynamically hides the corresponding navigation items.
 
 ### File Uploads
+
 All file uploads are handled through Multer using in-memory storage, then persisted to `server/uploads/<organizationProfile>/`. The static `/uploads` route serves these files with 30-day cache headers.
 
 ### Real-time Notifications
+
 Socket.IO is used for push notifications within the app. Server-sent events update users about status changes without requiring a page refresh.
 
 ---
@@ -396,22 +412,22 @@ Socket.IO is used for push notifications within the app. Server-sent events upda
 
 All API endpoints are prefixed with `/api`. Key route groups:
 
-| Group | Example Endpoints |
-|---|---|
-| **Session** | `GET /api/session-check` |
-| **Auth** | `POST /api/login`, `POST /api/logout`, `POST /api/register` |
-| **Organizations** | `GET /api/getAllOrganizationProfile`, `GET /api/getOrganizationProfile/:id` |
-| **Accreditation** | `GET /api/getAccreditation/:id`, `POST /api/createAccreditation` |
-| **Requirements** | `GET /api/admin/accreditation/requirements`, `PATCH /api/admin/accreditation/requirements/:id/enable` |
-| **Proposals** | `GET /api/getProposalsBySdu/:id`, `POST /api/createProposal` |
-| **Accomplishments** | `GET /api/getAccomplishments`, `POST /api/createAccomplishment` |
-| **Financial Reports** | `GET /api/getFinancialReport/:id`, `POST /api/addTransaction` |
-| **Presidents** | `GET /api/getPresidents/:orgId`, `POST /api/addPresident` |
-| **Roster** | `GET /api/getRoster/:orgId`, `POST /api/addRosterMember` |
-| **Notifications** | `GET /api/notifications`, `POST /api/markNotificationRead` |
-| **Reports** | `GET /api/rqatReport` |
-| **Posts** | `GET /api/posts/:orgName`, `POST /api/createPost` |
-| **Audit Logs** | `GET /api/admin/audit-logs` |
+| Group                 | Example Endpoints                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Session**           | `GET /api/session-check`                                                                              |
+| **Auth**              | `POST /api/login`, `POST /api/logout`, `POST /api/register`                                           |
+| **Organizations**     | `GET /api/getAllOrganizationProfile`, `GET /api/getOrganizationProfile/:id`                           |
+| **Accreditation**     | `GET /api/getAccreditation/:id`, `POST /api/createAccreditation`                                      |
+| **Requirements**      | `GET /api/admin/accreditation/requirements`, `PATCH /api/admin/accreditation/requirements/:id/enable` |
+| **Proposals**         | `GET /api/getProposalsBySdu/:id`, `POST /api/createProposal`                                          |
+| **Accomplishments**   | `GET /api/getAccomplishments`, `POST /api/createAccomplishment`                                       |
+| **Financial Reports** | `GET /api/getFinancialReport/:id`, `POST /api/addTransaction`                                         |
+| **Presidents**        | `GET /api/getPresidents/:orgId`, `POST /api/addPresident`                                             |
+| **Roster**            | `GET /api/getRoster/:orgId`, `POST /api/addRosterMember`                                              |
+| **Notifications**     | `GET /api/notifications`, `POST /api/markNotificationRead`                                            |
+| **Reports**           | `GET /api/rqatReport`                                                                                 |
+| **Posts**             | `GET /api/posts/:orgName`, `POST /api/createPost`                                                     |
+| **Audit Logs**        | `GET /api/admin/audit-logs`                                                                           |
 
 > ⚠️ Full route documentation is available in `server/src/routers.js`.
 
@@ -421,13 +437,13 @@ All API endpoints are prefixed with `/api`. Key route groups:
 
 > ⚠️ This section may need confirmation — screenshots have not been included in the repository. Add images of the main dashboard, accreditation flow, and financial report screens here.
 
-| View | Preview |
-|---|---|
-| Home Page | *(add screenshot)* |
-| Student Leader Dashboard | *(add screenshot)* |
-| Accreditation Overview | *(add screenshot)* |
-| Financial Report | *(add screenshot)* |
-| SDU Admin Panel | *(add screenshot)* |
+| View                     | Preview            |
+| ------------------------ | ------------------ |
+| Home Page                | _(add screenshot)_ |
+| Student Leader Dashboard | _(add screenshot)_ |
+| Accreditation Overview   | _(add screenshot)_ |
+| Financial Report         | _(add screenshot)_ |
+| SDU Admin Panel          | _(add screenshot)_ |
 
 ---
 
@@ -452,6 +468,7 @@ Contributions are welcome! To get started:
 6. Open a Pull Request against the `main` branch
 
 ### Development Notes
+
 - The `client/` and `server/` packages are managed as npm workspaces.
 - Use `nodemon` for backend development — it auto-restarts on file changes.
 - ESLint is configured for the client; run `npm run lint --workspace client` to check for issues.
