@@ -12,7 +12,6 @@ import HomePage from "./pages/public/home_page";
 import { AlertTriangle, X, LogOut } from "lucide-react";
 import { NotFoundPage, UnauthorizedPage } from "./components/error";
 import StudentLeaderMainPage from "./pages/admin/student-leader/student-leader-main";
-import PhilippineAddressForm from "./sandbox";
 import { AdviserPage } from "./pages/admin/adviser/adviser_main";
 import { DeanPage } from "./pages/admin/dean/dean-main";
 import { SduCoordinatorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main";
@@ -28,7 +27,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { InitialRegistration } from "./pages/admin/student-leader/initial-registration";
 
 export const API_ROUTER = import.meta.env.VITE_API_URL;
 export const DOCU_API_ROUTER = `${API_ROUTER}/uploads`;

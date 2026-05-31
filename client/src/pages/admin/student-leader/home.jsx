@@ -14,7 +14,13 @@ import {
   Users,
 } from "lucide-react";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../App";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,18 +28,25 @@ import { cn } from "@/lib/utils";
 
 export default function StudentHomePage({ orgData, accreditationData }) {
   return (
-    <div className="h-full overflow-auto space-y-6 p-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full overflow-auto space-y-6 p-6"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="text-2xl">Welcome, Student!</CardTitle>
-              <CardDescription className="mt-1">Manage your organization's activities</CardDescription>
+              <CardDescription className="mt-1">
+                Manage your organization's activities
+              </CardDescription>
             </div>
             <div className="text-right">
               <p className="font-medium">{orgData?.orgName}</p>
-              <p className="text-sm text-muted-foreground">{orgData?.orgClass}</p>
+              <p className="text-sm text-muted-foreground">
+                {orgData?.orgClass}
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -70,9 +83,14 @@ function AccreditationComponent({ accreditationData }) {
     async function loadCustomRequirements() {
       setLoadingCustom(true);
       try {
-        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true },
+        );
         if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
-        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        const customs = (Array.isArray(data) ? data : []).filter(
+          (r) => r.type === "custom",
+        );
         if (!orgId || customs.length === 0) {
           if (!ignore) setLoadingCustom(false);
           return;
@@ -80,16 +98,24 @@ function AccreditationComponent({ accreditationData }) {
         const results = await Promise.all(
           customs.map(async (r) => {
             try {
-              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
-              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+              const { data: sub } = await axios.get(
+                `${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`,
+                { withCredentials: true },
+              );
+              return {
+                key: r.key,
+                status: sub?.submission?.status || "Not Submitted",
+              };
             } catch (e) {
-              return { key: r.key, status: 'Not Submitted' };
+              return { key: r.key, status: "Not Submitted" };
             }
-          })
+          }),
         );
         if (!ignore) {
           const map = {};
-          results.forEach(({ key, status }) => { map[key] = status; });
+          results.forEach(({ key, status }) => {
+            map[key] = status;
+          });
           setCustomStatusMap(map);
         }
       } catch (err) {
@@ -100,19 +126,24 @@ function AccreditationComponent({ accreditationData }) {
       }
     }
     loadCustomRequirements();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [orgId]);
 
   // Determine which template requirements are enabled
   const enabledTemplateKeys = new Set(
     (visibleRequirements || [])
       .filter((r) => r.type === "template")
-      .map((r) => r.key)
+      .map((r) => r.key),
   );
 
   const requirements = [];
   // Only include document trio if template 'accreditation-documents' is enabled
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("accreditation-documents")
+  ) {
     requirements.push(
       {
         name: "Joint Statement",
@@ -120,13 +151,14 @@ function AccreditationComponent({ accreditationData }) {
       },
       {
         name: "Pledge Against Hazing",
-        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+        status:
+          accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
       },
       {
         name: "Constitution And By-Laws",
         status:
           accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-      }
+      },
     );
   }
   // Roster
@@ -137,7 +169,10 @@ function AccreditationComponent({ accreditationData }) {
     });
   }
   // President profile
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("president-info")
+  ) {
     requirements.push({
       name: "President Profile",
       status:
@@ -145,7 +180,10 @@ function AccreditationComponent({ accreditationData }) {
     });
   }
   // Financial Report
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("financial-report")
+  ) {
     requirements.push({
       name: "Financial Report",
       status: accreditationData.FinancialReport?.isActive
@@ -155,7 +193,9 @@ function AccreditationComponent({ accreditationData }) {
   }
 
   // Append custom requirements
-  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  const customVisible = (visibleRequirements || []).filter(
+    (r) => r.type === "custom",
+  );
   for (const req of customVisible) {
     requirements.push({
       name: req.title,
@@ -195,24 +235,32 @@ function AccreditationComponent({ accreditationData }) {
 
   const getDisplayStatus = (status) => {
     const statusMap = {
-      "DeanApproved": "Approved by the Dean",
-      "AdviserApproved": "Approved by the Adviser",
-      "RevisionRequested": "Revision Requested",
+      DeanApproved: "Approved by the Dean",
+      AdviserApproved: "Approved by the Adviser",
+      RevisionRequested: "Revision Requested",
       "Not Submitted": "Not Submitted",
-      "Incomplete": "Incomplete",
-      "Approved": "Approved",
-      "Pending": "Pending",
-      "Rejected": "Rejected",
-      "Submitted": "Submitted",
-      "Active": "Active",
-      "Inactive": "Inactive"
+      Incomplete: "Incomplete",
+      Approved: "Approved",
+      Pending: "Pending",
+      Rejected: "Rejected",
+      Submitted: "Submitted",
+      Active: "Active",
+      Inactive: "Inactive",
     };
     return statusMap[status] || status;
   };
 
   const getStatusIcon = (status) => {
     const statusLower = status?.toLowerCase();
-    if (["approved", "submitted", "active", "deanapproved", "adviserapproved"].includes(statusLower)) {
+    if (
+      [
+        "approved",
+        "submitted",
+        "active",
+        "deanapproved",
+        "adviserapproved",
+      ].includes(statusLower)
+    ) {
       return <CheckCircle className="w-4 h-4 text-emerald-600" />;
     }
     if (["pending", "revisionrequested"].includes(statusLower)) {
@@ -258,17 +306,20 @@ function AccreditationComponent({ accreditationData }) {
 
         {/* Requirements List */}
         <div className="space-y-3">
-          <h3 className="text-base font-semibold">
-            Requirements Checklist
-          </h3>
+          <h3 className="text-base font-semibold">Requirements Checklist</h3>
           {requirements.map((req, index) => {
             const displayStatus = getDisplayStatus(req.status);
-            const badgeVariant = 
-              req.status === "Approved" || req.status === "Submitted" || req.status === "Active" ? "approved" :
-              req.status === "Pending" ? "pending" :
-              req.status === "Rejected" || req.status === "For Revision" ? "rejected" :
-              "default";
-            
+            const badgeVariant =
+              req.status === "Approved" ||
+              req.status === "Submitted" ||
+              req.status === "Active"
+                ? "approved"
+                : req.status === "Pending"
+                  ? "pending"
+                  : req.status === "Rejected" || req.status === "For Revision"
+                    ? "rejected"
+                    : "default";
+
             return (
               <div
                 key={index}
@@ -276,9 +327,7 @@ function AccreditationComponent({ accreditationData }) {
               >
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium text-sm">
-                    {req.name}
-                  </span>
+                  <span className="font-medium text-sm">{req.name}</span>
                 </div>
                 <Badge variant={badgeVariant} className="gap-1.5">
                   {getStatusIcon(req.status)}
@@ -307,7 +356,7 @@ function ProposalsComponent({ orgData }) {
     try {
       const { data } = await axios.get(
         `${API_ROUTER}/getStudentLeaderProposalConduct/${orgData._id}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setProposalsConduct(data);
     } catch (err) {
@@ -340,7 +389,7 @@ function ProposalsComponent({ orgData }) {
   const getStatusBadge = (status) => {
     const statusMap = {
       "Approved For Conduct": "approved",
-      "Pending": "pending",
+      Pending: "pending",
       "Ready For Accomplishments": "secondary",
     };
     return statusMap[status] || "default";
@@ -352,7 +401,7 @@ function ProposalsComponent({ orgData }) {
         <CardHeader>
           <Skeleton className="h-6 w-48" />
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-16 w-full" />
           ))}
@@ -362,7 +411,7 @@ function ProposalsComponent({ orgData }) {
   }
 
   return (
-    <Card className="col-span-2">
+    <Card className="col-span-2 h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Activity Proposals</CardTitle>
@@ -376,9 +425,7 @@ function ProposalsComponent({ orgData }) {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h4 className="text-lg font-medium mb-2">
-              No proposals yet
-            </h4>
+            <h4 className="text-lg font-medium mb-2">No proposals yet</h4>
             <p className="text-sm text-muted-foreground">
               Create your first proposal to get started with activities
             </p>
@@ -426,18 +473,23 @@ function ProposalsComponent({ orgData }) {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {formatDate(item.ProposedIndividualActionPlan.proposedDate)}
+                      {formatDate(
+                        item.ProposedIndividualActionPlan.proposedDate,
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium">
                       {formatCurrency(
-                        item.ProposedIndividualActionPlan.budgetaryRequirements
+                        item.ProposedIndividualActionPlan.budgetaryRequirements,
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground capitalize">
                       {item.ProposedIndividualActionPlan.venue}
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant={getStatusBadge(item.overallStatus)} className="text-white whitespace-nowrap">
+                      <Badge
+                        variant={getStatusBadge(item.overallStatus)}
+                        className="text-white whitespace-nowrap"
+                      >
                         {item.overallStatus}
                       </Badge>
                     </td>
@@ -461,7 +513,7 @@ function PostComponent({ orgData }) {
       try {
         const response = await axios.get(
           `${API_ROUTER}/getOrgProfilePosts/${orgData._id}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setPosts(response.data);
       } catch (error) {
@@ -486,7 +538,7 @@ function PostComponent({ orgData }) {
       ".svg",
     ];
     const firstImage = content.find((item) =>
-      imageExtensions.some((ext) => item.fileName.toLowerCase().includes(ext))
+      imageExtensions.some((ext) => item.fileName.toLowerCase().includes(ext)),
     );
     return firstImage
       ? `${DOCU_API_ROUTER}/${orgId}/${firstImage.fileName}`
@@ -537,9 +589,7 @@ function PostComponent({ orgData }) {
               <div className="w-16 h-16 mx-auto mb-4 bg-muted-foreground/10 rounded-full flex items-center justify-center">
                 <MessageCircle className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">
-                No posts yet
-              </h3>
+              <h3 className="text-lg font-medium mb-2">No posts yet</h3>
               <p className="text-sm text-muted-foreground">
                 Be the first to share something with the community!
               </p>
@@ -548,7 +598,7 @@ function PostComponent({ orgData }) {
             posts.map((post) => {
               const imageUrl = getFirstImage(
                 post.content,
-                post.organizationProfile?._id
+                post.organizationProfile?._id,
               );
               const tags = parseTags(post.tags);
               const hasContent = post.caption && post.caption.trim().length > 0;
@@ -581,7 +631,11 @@ function PostComponent({ orgData }) {
                     {tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {tags.slice(0, 3).map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             {tag}
                           </Badge>
                         ))}
@@ -600,7 +654,8 @@ function PostComponent({ orgData }) {
                           {post.organizationProfile?.orgAcronym?.[0] || "O"}
                         </div>
                         <span className="text-sm font-medium">
-                          {post.organizationProfile?.orgAcronym || "Organization"}
+                          {post.organizationProfile?.orgAcronym ||
+                            "Organization"}
                         </span>
                       </div>
                       {post.createdAt && (

@@ -11,7 +11,7 @@ export function InitialRegistration({ user, onComplete }) {
     adviserDepartment: "",
     orgName: "",
     orgAcronym: "",
-    orgEmail: user?.email || "locquianopatrickgreg@gmail.com",
+    orgEmail: user?.email,
     orgClass: "System-wide",
     orgDepartment: "",
     orgCourse: "",
@@ -19,11 +19,11 @@ export function InitialRegistration({ user, onComplete }) {
     studentGovDepartment: "",
     accreditedSince: "",
     yearsOfExistence: "",
-    userId: user?.userId || "69284dc91aee2b7bca2c29c4",
+    userId: user?.userId,
   });
 
   const [hasAccreditedSince, setHasAccreditedSince] = useState(
-    !!formData.accreditedSince
+    !!formData.accreditedSince,
   );
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -187,7 +187,7 @@ export function InitialRegistration({ user, onComplete }) {
         const result = await axios.post(
           `${API_ROUTER}/initialRegistration`,
           formData,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         console.log("Registration successful:", result);
 
@@ -225,8 +225,8 @@ export function InitialRegistration({ user, onComplete }) {
             isActive
               ? "bg-red-800 text-white border-red-800"
               : isCompleted
-              ? "bg-red-800 text-white border-red-800"
-              : "bg-white text-gray-400 border-gray-300"
+                ? "bg-red-800 text-white border-red-800"
+                : "bg-white text-gray-400 border-gray-300"
           }`}
         >
           {stepNumber}
@@ -435,7 +435,7 @@ export function InitialRegistration({ user, onComplete }) {
                                 <option key={course} value={course}>
                                   {course}
                                 </option>
-                              )
+                              ),
                             )}
                         </select>
                         {errors.orgCourse && (
@@ -834,22 +834,26 @@ export function InitialRegistration({ user, onComplete }) {
 
 export function ReRegistration({ OrgData, user, onComplete }) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    adviserName: "John Paul Dino",
-    adviserEmail: "earlaurencereno@gmail.com",
-    adviserDepartment: "College of Arts and Sciences",
-    orgName: "Episteme Circle of Regal Union",
-    orgAcronym: "ECRU",
-    orgEmail: "elaurencecereno@gmail.com",
-    orgClass: "Local",
-    orgDepartment: "College of Arts and Sciences",
-    orgCourse: "Bachelor of Arts in Sociology",
-    orgSpecialization: "",
-    studentGovDepartment: "College of Arts and Sciences",
-    userId: "6928795e1aee2b7bca2c319f",
-    accreditedSince: new Date("2020-08-01T00:00:00"), // August 1, 2020 at 00:00:00
-  });
+  const [formData, setFormData] = useState(() => ({
+    adviserName: OrgData?.adviser?.name || "",
+    adviserEmail: OrgData?.adviser?.email || "",
+    adviserDepartment: OrgData?.adviser?.deliveryUnit || "",
 
+    orgName: OrgData?.orgName || "",
+    orgAcronym: OrgData?.orgAcronym || "",
+    orgEmail: user?.email || "",
+
+    orgClass: OrgData?.orgClass || "",
+    orgDepartment: OrgData?.orgDepartment || "",
+    orgCourse: OrgData?.orgCourse || "",
+    orgSpecialization: OrgData?.orgSpecialization || "",
+    studentGovDepartment: OrgData?.studentGovDepartment || "",
+    userId: user?._id || "",
+
+    accreditedSince: OrgData?.accreditedSince || "",
+  }));
+
+  console.log(OrgData, user);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -1000,7 +1004,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
           const result = await axios.post(
             `${API_ROUTER}/reRegistration`,
             formData,
-            { withCredentials: true }
+            { withCredentials: true },
           );
           console.log("Registration successful:", result);
         } catch (error) {
@@ -1221,7 +1225,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                                 <option key={course} value={course}>
                                   {course}
                                 </option>
-                              )
+                              ),
                             )}
                         </select>
                         {errors.orgCourse && (
@@ -1270,10 +1274,10 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                         </label>
                         <select
                           name="studentGovDepartment"
-                          value={formData.studentGovDepartment}
+                          value={formData.orgDepartment}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                            errors.studentGovDepartment
+                            errors.orgDepartment
                               ? "border-red-500"
                               : "border-gray-300"
                           }`}
@@ -1285,9 +1289,9 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                             </option>
                           ))}
                         </select>
-                        {errors.studentGovDepartment && (
+                        {errors.orgDepartment && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.studentGovDepartment}
+                            {errors.orgDepartment}
                           </p>
                         )}
                         <p className="text-xs text-blue-600 mt-1">
@@ -1299,8 +1303,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                 )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Accredited Since (Leave Blank if new Organization){" "}
-                    <span className="text-red-500">*</span>
+                    Accredited Since <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="month"
@@ -1484,7 +1487,7 @@ export function ReRegistration({ OrgData, user, onComplete }) {
                                 {
                                   year: "numeric",
                                   month: "long",
-                                }
+                                },
                               )
                             : formData.accreditedSince}
                         </div>

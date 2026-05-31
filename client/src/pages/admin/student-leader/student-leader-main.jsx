@@ -123,7 +123,7 @@ export default function StudentLeaderMainPage() {
       try {
         const response = await axios.get(
           `${API_ROUTER}/getAccreditationInfo/${orgProfileId}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         setAccreditationData(response.data);
@@ -273,13 +273,13 @@ function StudentRoutes({ orgData, accreditationData, user }) {
       try {
         const { data } = await axios.get(
           `${API_ROUTER}/accreditation/requirements/visible`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         if (!ignore) setVisibleRequirements(data || []);
       } catch (err) {
         console.warn(
           "StudentRoutes: failed to fetch visible requirements",
-          err?.message
+          err?.message,
         );
       }
     }
@@ -428,7 +428,7 @@ function StudentLeaderCustomRequirementViewer({
       try {
         const { data } = await axios.get(
           `${API_ROUTER}/accreditation/requirements/${requirementKey}/submission/${orgProfileId}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         if (!ignore) setSubmission(data.submission);
       } catch (err) {
@@ -456,7 +456,7 @@ function StudentLeaderCustomRequirementViewer({
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
       setSubmission(data.submission);
       setFile(null);
@@ -596,11 +596,6 @@ function StudentNavigation({ orgData }) {
   const [croppedData, setCroppedData] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const cropRef = useRef();
-  const navigate = useNavigate();
-
-  const handleUploadClick = () => {
-    setIsUploadingLogo(true);
-  };
 
   const cancelUploadLogo = () => {
     setIsUploadingLogo(false);
@@ -651,7 +646,7 @@ function StudentNavigation({ orgData }) {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       console.log("Logo uploaded successfully:", response.data);
@@ -726,7 +721,7 @@ function StudentNavigation({ orgData }) {
                   "flex items-center gap-3 h-11 px-3 rounded-md cursor-pointer transition-colors text-sm font-medium",
                   isActive
                     ? "bg-primary text-white hover:bg-primary/90"
-                    : "text-foreground hover:bg-muted"
+                    : "text-foreground hover:bg-muted",
                 )
               }
             >
@@ -807,7 +802,7 @@ function LogoutButton() {
         onClick={handleLogoutClick}
         className={cn(
           "w-full flex items-center gap-3 h-11 px-3 rounded-md cursor-pointer transition-colors",
-          "text-destructive hover:bg-destructive/10"
+          "text-destructive hover:bg-destructive/10",
         )}
       >
         <LogOut className="w-5 h-5" />
@@ -858,13 +853,13 @@ function StudentAccreditationNavigationPage() {
       try {
         const { data } = await axios.get(
           `${API_ROUTER}/accreditation/requirements/visible`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         if (!ignore) setVisibleRequirements(data || []);
       } catch (err) {
         console.warn(
           "StudentAccreditationNavigationPage: failed to fetch requirements",
-          err?.message
+          err?.message,
         );
         setVisibleRequirements([]); // fallback show all templates by default below
       }
@@ -902,7 +897,7 @@ function StudentAccreditationNavigationPage() {
       const anyDisabledFallback = visibleRequirements.length === 0; // we treat empty as error fallback
       if (anyDisabledFallback) return true;
       return visibleRequirements.some(
-        (r) => r.type === "template" && r.key === key
+        (r) => r.type === "template" && r.key === key,
       );
     })
     .map((key) => templateMap[key]);
@@ -931,7 +926,7 @@ function StudentAccreditationNavigationPage() {
                 "px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors",
                 isActive
                   ? "bg-primary text-white"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )
             }
           >

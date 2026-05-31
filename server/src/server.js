@@ -10,6 +10,8 @@ import MongoStore from "connect-mongo";
 
 import apiRoutes from "./routers.js";
 import { AccreditationRequirement } from "./models/index.js";
+import { seedAccreditationRequirements, seedUsers } from "./middleware/seed.js";
+import { profanityMiddleware } from "./middleware/profanity_checker.js";
 
 dotenv.config();
 
@@ -25,6 +27,9 @@ async function connectDB() {
   try {
     await mongoose.connect(DB);
     console.log(`✅ Connected to MongoDB at ${DB}`);
+
+    await seedUsers();
+    await seedAccreditationRequirements();
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error);
     process.exit(1);
@@ -32,37 +37,6 @@ async function connectDB() {
 }
 
 connectDB();
-
-// -------------------- Seed Accreditation Requirements --------------------
-async function seedAccreditationRequirements() {
-  try {
-    const templates = [
-      { key: "president-info", title: "President's Information" },
-      { key: "financial-report", title: "Financial Report" },
-      { key: "roster", title: "Members Roster" },
-      { key: "accreditation-documents", title: "Accreditation Documents" },
-      { key: "action-plan", title: "Action Plan" },
-    ];
-
-    for (const tpl of templates) {
-      const existing = await AccreditationRequirement.findOne({ key: tpl.key });
-      if (!existing) {
-        await AccreditationRequirement.create({
-          key: tpl.key,
-          type: "template",
-          title: tpl.title,
-          removable: false,
-          enabled: true,
-        });
-        console.log(`✅ Seeded accreditation template: ${tpl.key}`);
-      }
-    }
-  } catch (err) {
-    console.error("❌ Error seeding accreditation requirements", err.message);
-  }
-}
-
-seedAccreditationRequirements();
 
 // Log gating status early for operational visibility
 if (process.env.ENABLE_REQUIREMENT_GATING === "true") {
@@ -72,36 +46,6 @@ if (process.env.ENABLE_REQUIREMENT_GATING === "true") {
     "🔓 Accreditation requirement gating DISABLED (set ENABLE_REQUIREMENT_GATING=true to activate)",
   );
 }
-
-// -------------------- Profanity Middleware --------------------
-const badWords = [
-  "fuck",
-  "shit",
-  "bitch",
-  "asshole",
-  "cunt",
-  "nigger",
-  "faggot",
-];
-
-const profanityMiddleware = (req, res, next) => {
-  const content = [
-    JSON.stringify(req.body || {}),
-    JSON.stringify(req.query || {}),
-    JSON.stringify(req.params || {}),
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  if (badWords.some((word) => content.includes(word))) {
-    return res.status(418).json({
-      error: "Profanity detected",
-      rickroll: true,
-      youtube: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    });
-  }
-  next();
-};
 
 // -------------------- Middleware --------------------
 app.use(express.json({ limit: "50mb" }));
@@ -149,12 +93,6 @@ const activityMiddleware = (req, res, next) => {
   ]
     .join(" ")
     .toLowerCase();
-
-  if (badWords.some((word) => content.includes(word))) {
-    return res
-      .status(400)
-      .json({ error: "Profanity detected", rickroll: true });
-  }
 
   const now = Date.now();
   if (req.session?.lastActivity) {

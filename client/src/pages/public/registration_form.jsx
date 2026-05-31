@@ -512,22 +512,16 @@ const handleRegistration = async (email, password, code) => {
       password,
       code,
     });
-
-    // Proceed to registration form or next step
-    console.log("OTP confirmed successfully:", response.data);
   } catch (err) {
     console.error("OTP confirmation failed", err.response?.data || err.message);
   }
 };
 
 const SendOtp = async ({ email }) => {
-  console.log(email);
-  console.log("API Router:", API_ROUTER);
   try {
     const response = await axios.post(`${API_ROUTER}/sendVerification`, {
       email,
     });
-    console.log("OTP sent response:", response.data);
     return response.data; // Return the response for success handling
   } catch (err) {
     console.error("OTP sending failed", err.response?.data || err.message);

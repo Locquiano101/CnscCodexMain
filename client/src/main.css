@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary: red;
+@theme /* =========================
+     LIGHT MODE (DEFAULT)
+  ========================= */
+  :root {
+  --color-primary: #500000;
   --color-brand-red-100: blue;
 
   --color-cnsc-primary-color: #500000;
@@ -16,15 +19,15 @@
 
   /* shadcn/ui theme variables */
   --radius: 0.5rem;
-  
-  /* shadcn color system */
+
+  /* shadcn color system (LIGHT) */
   --background: 0 0% 100%;
   --foreground: 0 0% 29.8%;
   --card: 0 0% 100%;
   --card-foreground: 0 0% 29.8%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 29.8%;
-  --primary: 0 60% 15.7%; 
+  --primary: 0 60% 15.7%;
   --primary-foreground: 0 0% 98%;
   --secondary: 28 100% 46.7%;
   --secondary-foreground: 0 0% 9%;
@@ -37,6 +40,54 @@
   --border: 0 0% 89.8%;
   --input: 0 0% 89.8%;
   --ring: 0 60% 15.7%;
+}
+
+/* =========================
+     DARK MODE
+     (toggle with .dark class on <html>)
+  ========================= */
+.dark {
+  --color-primary: #7a1a1a;
+  --color-brand-red-100: #1e90ff;
+
+  --color-cnsc-primary-color: #7a1a1a;
+  --color-cnsc-secondary-color: #ffb347;
+  --color-cnsc-accent-1-color: #4a7dff;
+  --color-cnsc-accent-2-color: #00c2c7;
+  --color-cnsc-white-color: #e5e5e5;
+  --color-cnsc-black-color: #cfcfcf;
+  --color-cnsc-blue-color: #4b6b8a;
+
+  --color-brian-blue: #2a4a6a;
+
+  /* shadcn color system (DARK) */
+  --background: 0 0% 10%;
+  --foreground: 0 0% 95%;
+
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 95%;
+
+  --popover: 0 0% 12%;
+  --popover-foreground: 0 0% 95%;
+
+  --primary: 0 60% 50%;
+  --primary-foreground: 0 0% 10%;
+
+  --secondary: 28 100% 55%;
+  --secondary-foreground: 0 0% 10%;
+
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 65%;
+
+  --accent: 0 0% 18%;
+  --accent-foreground: 0 0% 95%;
+
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 22%;
+  --input: 0 0% 22%;
+  --ring: 0 60% 50%;
 }
 
 /* Reset base styles */
@@ -60,7 +111,9 @@ body {
   color: #ee8f00;
   font-weight: 700; /* or bold */
   /* Using text-shadow for pseudo outline to avoid unsupported text-stroke */
-  text-shadow: 0 0 2px rgba(0,0,0,0.15), 0 0 6px rgba(0,0,0,0.1);
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.15),
+    0 0 6px rgba(0, 0, 0, 0.1);
 }
 /* Scrollbar width */
 ::-webkit-scrollbar {
@@ -80,8 +133,13 @@ input[type="number"] {
   appearance: textfield;
 }
 input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-input[type="number"] { appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+}
 
 /* Scrollbar Track */
 ::-webkit-scrollbar-track {
@@ -112,17 +170,27 @@ body {
   scrollbar-width: thin; /* Firefox */
   scrollbar-color: #c5c5c5 transparent;
 }
-.nav-scroll::-webkit-scrollbar { height: 6px; }
-.nav-scroll::-webkit-scrollbar-track { background: transparent; }
+.nav-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
 .nav-scroll::-webkit-scrollbar-thumb {
   background: #c5c5c5;
   border-radius: 9999px;
 }
-.nav-scroll:hover::-webkit-scrollbar-thumb { background: #9b9b9b; }
+.nav-scroll:hover::-webkit-scrollbar-thumb {
+  background: #9b9b9b;
+}
 /* Optionally hide scrollbar completely on very small screens */
 @media (max-width: 640px) {
-  .nav-scroll { scrollbar-width: none; }
-  .nav-scroll::-webkit-scrollbar { display: none; }
+  .nav-scroll {
+    scrollbar-width: none;
+  }
+  .nav-scroll::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .underline-animate {

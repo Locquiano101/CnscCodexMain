@@ -15,7 +15,7 @@ export function OrganizationComponent() {
   const fetchData = async () => {
     try {
       const res = await axios.get(
-        `${API_ROUTER}/getAllOrganizationProfileCard`
+        `${API_ROUTER}/getAllOrganizationProfileCard`,
       );
       const orgs = Array.isArray(res.data) ? res.data : [];
       const activeOrgs = orgs.filter((org) => org?.isActive);
@@ -38,12 +38,11 @@ export function OrganizationComponent() {
     });
   };
 
-
   // --- PAGINATION LOGIC ---
   const totalSections = Math.ceil(filteredOrgs.length / ORGS_PER_PAGE);
   const currentOrgs = filteredOrgs.slice(
     currentSection * ORGS_PER_PAGE,
-    currentSection * ORGS_PER_PAGE + ORGS_PER_PAGE
+    currentSection * ORGS_PER_PAGE + ORGS_PER_PAGE,
   );
 
   const goToPrevious = () => {
@@ -61,20 +60,58 @@ export function OrganizationComponent() {
   // --- LOADING STATE ---
   if (loading) {
     return (
-      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading organizations...</p>
+      <div className="max-w-7xl sm:px-6 py-6 sm:py-8 ">
+        <div className="bg-gradient-to-br from-[#500000]/30 to-[#ee8f00]/20 backdrop-blur-sm border-2 border-white/50 rounded-2xl shadow-2xl overflow-hidden animate-pulse">
+          {/* Organizations Grid Skeleton */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide">
+            <span className="text-[#500000] drop-shadow-[2px_2px_0_white]">
+              CNSC{" "}
+            </span>
+            <span className="text-[#ee8f00] drop-shadow-[2px_2px_0_white]">
+              CODEX{" "}
+            </span>
+            <span className="block sm:inline text-white drop-shadow-[2px_2px_0_#ee8f00] mt-2 sm:mt-0">
+              STUDENT ORGANIZATIONS
+            </span>
+          </h1>
+          <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow-lg overflow-hidden"
+                >
+                  {/* Image Skeleton */}
+                  <div className="h-40 sm:h-44 bg-gray-300"></div>
+
+                  {/* Footer Skeleton */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 border-t-2 border-gray-200">
+                    <div className="flex items-start gap-3">
+                      {/* Acronym Circle */}
+                      <div className="w-10 h-10 rounded-full bg-gray-300 flex-shrink-0"></div>
+
+                      {/* Text Content */}
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+
+                        {/* Badge */}
+                        <div className="h-6 bg-gray-300 rounded-full w-20 mt-3"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-
   return (
     <div className="max-w-7xl sm:px-6 py-6 sm:py-8">
       <div className="bg-gradient-to-br from-[#500000]/30 to-[#ee8f00]/20 backdrop-blur-sm border-2 border-white/50 rounded-2xl shadow-2xl overflow-hidden">
-        
         {/* Header */}
         <div className="text-center px-4 py-6 sm:py-8 bg-gradient-to-b from-black/10 to-transparent">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide">
@@ -96,7 +133,9 @@ export function OrganizationComponent() {
             {currentOrgs.length === 0 ? (
               <div className="col-span-full text-center py-16">
                 <Building2 className="w-16 h-16 mx-auto text-white/40 mb-4" />
-                <p className="text-white/70 text-lg">No organizations available</p>
+                <p className="text-white/70 text-lg">
+                  No organizations available
+                </p>
               </div>
             ) : (
               currentOrgs.map((org) => (
@@ -109,8 +148,7 @@ export function OrganizationComponent() {
                   <div className="h-40 sm:h-44 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
                     {org?.orgLogo ? (
                       <img
-                                              src={`${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`}
-
+                        src={`${DOCU_API_ROUTER}/${org?._id}/${org?.orgLogo}`}
                         alt={`${org?.orgName || "Organization"} Logo`}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
@@ -119,7 +157,7 @@ export function OrganizationComponent() {
                         <Building2 className="w-10 h-10 text-white" />
                       </div>
                     )}
-                    
+
                     {/* Hover overlay */}
                     <div className="absolute inset-0 bg-[#500000]/0 group-hover:bg-[#500000]/10 transition-colors duration-300" />
                   </div>
@@ -151,8 +189,8 @@ export function OrganizationComponent() {
                             org?.orgClass === "System-wide"
                               ? "bg-amber-100 text-amber-800 border border-amber-200"
                               : org?.orgClass === "Local"
-                              ? "bg-red-100 text-red-800 border border-red-200"
-                              : "bg-green-100 text-green-800 border border-green-200"
+                                ? "bg-red-100 text-red-800 border border-red-200"
+                                : "bg-green-100 text-green-800 border border-green-200"
                           }`}
                         >
                           {org?.orgClass || "Unknown"}
