@@ -7,7 +7,14 @@ import { saveAs } from "file-saver";
 import { X, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
@@ -23,7 +30,7 @@ export default function StudentLeaderRosters({ orgData }) {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${API_ROUTER}/getRosterMembers/${orgData._id}`
+        `${API_ROUTER}/getRosterMembers/${orgData._id}`,
       );
       console.log(response.data);
       setRosterData(response.data);
@@ -118,7 +125,10 @@ export default function StudentLeaderRosters({ orgData }) {
 
   if (loading) {
     return (
-      <div className="p-6 min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F9' }}>
+      <div
+        className="p-6 min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F5F5F9" }}
+      >
         <Card className="bg-white">
           <CardContent className="p-8 text-center">
             <p className="text-gray-600">Loading roster members...</p>
@@ -130,13 +140,14 @@ export default function StudentLeaderRosters({ orgData }) {
 
   if (error) {
     return (
-      <div className="p-6 min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F9' }}>
+      <div
+        className="p-6 min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F5F5F9" }}
+      >
         <Card className="bg-white">
           <CardContent className="p-8 text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Retry
-            </Button>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
           </CardContent>
         </Card>
       </div>
@@ -158,23 +169,43 @@ export default function StudentLeaderRosters({ orgData }) {
   });
 
   const actions = [
-    { id: "add", label: "Add Roster Member", onClick: () => handleAction("add"), tone: "primary" },
-    { id: "Completion", label: "Submit For Completion", onClick: () => handleAction("Completion"), tone: "secondary" },
-    { id: "export", label: "Export Spreadsheet", onClick: () => handleAction("export"), tone: "ghost" },
+    {
+      id: "add",
+      label: "Add Roster Member",
+      onClick: () => handleAction("add"),
+      tone: "primary",
+    },
+    {
+      id: "Completion",
+      label: "Submit For Completion",
+      onClick: () => handleAction("Completion"),
+      tone: "secondary",
+    },
+    {
+      id: "export",
+      label: "Export Spreadsheet",
+      onClick: () => handleAction("export"),
+      tone: "ghost",
+    },
   ];
 
   return (
-    <div className="h-full overflow-auto p-6 flex flex-col" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full overflow-auto px-4 flex flex-col"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       {/* Outer Container for Roster Management */}
       <Card className="bg-white">
         <CardHeader>
           <div className="flex w-full justify-between items-center">
-            <div>
-              <CardTitle className="text-2xl">Roster Management</CardTitle>
-              <Badge variant={rosterData.roster.isComplete ? "default" : "secondary"} className="mt-2 text-white whitespace-nowrap">
-                Status: {rosterData.roster.isComplete ? "Complete" : "Not Complete"}
-              </Badge>
-            </div>
+            <CardTitle className="text-2xl">Roster Management</CardTitle>
+            {/* <Badge
+                variant={rosterData.roster.isComplete ? "default" : "secondary"}
+                className="mt-2 text-white whitespace-nowrap"
+              >
+                Status:{" "}
+                {rosterData.roster.isComplete ? "Complete" : "Not Complete"}
+              </Badge> */}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 items-center justify-end">
@@ -182,13 +213,19 @@ export default function StudentLeaderRosters({ orgData }) {
                 <Button
                   key={a.id}
                   onClick={a.onClick}
-                  variant={a.tone === "primary" ? "default" : a.tone === "secondary" ? "default" : "outline"}
+                  variant={
+                    a.tone === "primary"
+                      ? "default"
+                      : a.tone === "secondary"
+                        ? "default"
+                        : "outline"
+                  }
                   className={
                     a.tone === "primary"
-                      ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      ? "bg-primary hover:bg-primary/=90 text-white"
                       : a.tone === "secondary"
-                      ? "bg-amber-500 hover:bg-amber-600 text-white"
-                      : ""
+                        ? "bg-amber-600 hover:bg-amber-600 text-white"
+                        : ""
                   }
                 >
                   {a.label}
@@ -202,7 +239,7 @@ export default function StudentLeaderRosters({ orgData }) {
         {rosterMembers.length > 0 && (
           <CardContent>
             <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-300">
-              <Search className="text-gray-500 mr-2" size={20} />
+              <Search className="text-gray-500" size={20} />
               <Input
                 type="text"
                 placeholder="Search members..."
@@ -249,7 +286,10 @@ export default function StudentLeaderRosters({ orgData }) {
 
       {/* Modal Rendering */}
       {activeModal === "add" && (
-        <Dialog open={activeModal === "add"} onOpenChange={() => setActiveModal(null)}>
+        <Dialog
+          open={activeModal === "add"}
+          onOpenChange={() => setActiveModal(null)}
+        >
           <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
             <AddRosterForm
               orgData={orgData}
@@ -269,7 +309,10 @@ export default function StudentLeaderRosters({ orgData }) {
       )}
 
       {activeModal === "export" && (
-        <Dialog open={activeModal === "export"} onOpenChange={() => setActiveModal(null)}>
+        <Dialog
+          open={activeModal === "export"}
+          onOpenChange={() => setActiveModal(null)}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Export Roster</DialogTitle>
@@ -283,7 +326,7 @@ export default function StudentLeaderRosters({ orgData }) {
               </Button>
               <Button
                 onClick={handleExportExcel}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-primary hover:bg-red-700 text-white"
               >
                 Export
               </Button>
@@ -304,7 +347,7 @@ const SubmitForCompletion = ({ rosterId, onClose }) => {
     try {
       // Send form data to backend
       const response = await axios.post(
-        `${API_ROUTER}/CompleteStudentRoster/${rosterId}`
+        `${API_ROUTER}/CompleteStudentRoster/${rosterId}`,
       );
       console.log("Success:", response);
 
@@ -370,7 +413,9 @@ const RosterMemberCard = ({ member, orgId }) => {
           </p>
 
           <p className="text-sm text-gray-600 break-words">{member.email}</p>
-          <p className="text-sm text-gray-600 break-words">{member.contactNumber}</p>
+          <p className="text-sm text-gray-600 break-words">
+            {member.contactNumber}
+          </p>
           <p className="text-sm text-gray-500 break-words">{member.address}</p>
         </div>
 
@@ -381,7 +426,9 @@ const RosterMemberCard = ({ member, orgId }) => {
               ? new Date(member.birthDate).toLocaleDateString()
               : "Not provided"}
           </p>
-          <p className="text-xs text-gray-500 break-words">Status: {member.status}</p>
+          <p className="text-xs text-gray-500 break-words">
+            Status: {member.status}
+          </p>
         </div>
       </CardContent>
     </Card>
