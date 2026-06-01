@@ -411,7 +411,7 @@ export function AccreditationDocuments({ orgData }) {
               {/* Left Info Panel */}
               <div className="w-80 bg-gray-50 p-6 border-r overflow-y-auto space-y-6">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
+                  <FileText className="w-5 h-5 text-red-600" />
                   <h3 className="text-lg font-semibold text-gray-900">
                     Document Details
                   </h3>

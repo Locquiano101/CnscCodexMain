@@ -912,7 +912,7 @@ function StudentAccreditationNavigationPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Navigation */}
-      <nav className="flex gap-1 px-6 py-3 bg-background border-b overflow-x-auto">
+      <nav className="flex gap-1 px-6 pt-3 bg-shade-light overflow-x-auto">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}

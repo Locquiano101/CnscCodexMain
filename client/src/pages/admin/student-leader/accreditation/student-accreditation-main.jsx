@@ -248,10 +248,7 @@ export default function StudentAccreditationMainComponent({ orgId }) {
   }
 
   return (
-    <div
-      className="h-full p-6 overflow-auto"
-      style={{ backgroundColor: "#F5F5F9" }}
-    >
+    <div className="h-full px-6 py-4 overflow-auto bg-shade-light">
       <div className="w-full">
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-6">
@@ -561,11 +558,11 @@ function OverallStatus({
     (completedRequirements / requirements.length) * 100;
 
   return (
-    <Card className="bg-white h-full">
+    <Card className="bg-white h-full ">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-2xl">Accreditation Status</CardTitle>
-          <Badge variant="outline" className="px-4 py-2">
+          <Badge variant="outline" className="">
             <span className="font-medium">{overallStatus || "N/A"}</span>
           </Badge>
         </div>
@@ -748,7 +745,7 @@ function DocumentDisplayCard({ accreditationData }) {
           <CardContent className="p-4">
             <div className="flex flex-col gap-4 justify-between">
               <div className="flex items-center gap-3">
-                <FileText className="min-w-8 min-h-8 text-blue-600" />
+                <FileText className="min-w-8 min-h-8 text-primary" />
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-gray-900">{label}</h3>
                   <p
@@ -792,31 +789,26 @@ function DocumentDisplayCard({ accreditationData }) {
   };
 
   return (
-    <Card className="bg-white h-full">
+    <Card className="bg-white h-full flex flex-col">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Required Documents
-        </CardTitle>
+        <CardTitle className="flex items-center">Required Documents</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col space-y-4">
-          {renderDocumentCard(
-            "Joint Statement",
-            JointStatement,
-            "JointStatement",
-          )}
-          {renderDocumentCard(
-            "Constitution and By-Laws",
-            ConstitutionAndByLaws,
-            "ConstitutionAndByLaws",
-          )}
-          {renderDocumentCard(
-            "Pledge Against Hazing",
-            PledgeAgainstHazing,
-            "PledgeAgainstHazing",
-          )}
-        </div>
+      <CardContent className="h-full flex flex-col justify-between">
+        {renderDocumentCard(
+          "Joint Statement",
+          JointStatement,
+          "JointStatement",
+        )}
+        {renderDocumentCard(
+          "Constitution and By-Laws",
+          ConstitutionAndByLaws,
+          "ConstitutionAndByLaws",
+        )}
+        {renderDocumentCard(
+          "Pledge Against Hazing",
+          PledgeAgainstHazing,
+          "PledgeAgainstHazing",
+        )}
       </CardContent>
     </Card>
   );
