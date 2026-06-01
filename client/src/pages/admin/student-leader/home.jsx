@@ -21,21 +21,16 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 export default function StudentHomePage({ orgData, accreditationData }) {
   return (
-    <div
-      className="h-full overflow-auto space-y-6 p-6"
-      style={{ backgroundColor: "#F5F5F9" }}
-    >
+    <div className="h-full overflow-auto space-y-6 p-6 bg-shade-light">
       {/* Header */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-shade2-light">
             <div>
               <CardTitle className="text-2xl">Welcome, Student!</CardTitle>
               <CardDescription className="mt-1">
@@ -210,29 +205,6 @@ function AccreditationComponent({ accreditationData }) {
   const progressPercentage =
     (completedRequirements / requirements.length) * 100;
 
-  const getStatusColor = (status) => {
-    const statusLower = status?.toLowerCase();
-    if (["approved", "submitted", "active"].includes(statusLower)) {
-      return "text-emerald-700 bg-emerald-50";
-    }
-    if (statusLower === "deanapproved") {
-      return "text-indigo-700 bg-indigo-50";
-    }
-    if (statusLower === "adviserapproved") {
-      return "text-blue-700 bg-blue-50";
-    }
-    if (statusLower === "revisionrequested") {
-      return "text-orange-700 bg-orange-50";
-    }
-    if (statusLower === "pending") {
-      return "text-amber-700 bg-amber-50";
-    }
-    if (statusLower === "rejected") {
-      return "text-red-700 bg-red-50";
-    }
-    return "text-slate-700 bg-slate-100";
-  };
-
   const getDisplayStatus = (status) => {
     const statusMap = {
       DeanApproved: "Approved by the Dean",
@@ -291,7 +263,7 @@ function AccreditationComponent({ accreditationData }) {
               {completedRequirements}/{requirements.length} completed
             </span>
           </div>
-          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-shade2-light rounded-full h-3 overflow-hidden">
             <div
               className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progressPercentage}%` }}
@@ -323,13 +295,13 @@ function AccreditationComponent({ accreditationData }) {
             return (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-muted-foreground" />
                   <span className="font-medium text-sm">{req.name}</span>
                 </div>
-                <Badge variant={badgeVariant} className="gap-1.5">
+                <Badge variant={badgeVariant} className="gap-1.5 p-1 px-2">
                   {getStatusIcon(req.status)}
                   <span>{displayStatus}</span>
                 </Badge>

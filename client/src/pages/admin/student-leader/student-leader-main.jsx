@@ -307,10 +307,7 @@ function StudentRoutes({ orgData, accreditationData, user }) {
     ));
 
   return (
-    <div
-      className="flex flex-col w-full h-full overflow-hidden"
-      style={{ backgroundColor: "#F5F5F9" }}
-    >
+    <div className="flex flex-col w-full h-full overflow-hidden bg-accent-main">
       <Routes>
         <Route
           index
@@ -668,9 +665,9 @@ function StudentNavigation({ orgData }) {
 
   return (
     <>
-      <div className="h-full w-full flex flex-col bg-background border-r">
+      <div className="bg-accent-main h-full w-full flex flex-col bg-background">
         {/* Logo and Brand Header */}
-        <div className="h-18 border-b flex items-center px-6 gap-3">
+        <div className="h-18 border-b border- flex items-center px-6 gap-3">
           <img src={cnscLogo} alt="CNSC Codex" className="w-10 h-10" />
           <div className="flex flex-col">
             <h1 className="font-bold text-lg leading-tight">CNSC Codex</h1>
@@ -679,7 +676,7 @@ function StudentNavigation({ orgData }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto bg-shade-light">
           {[
             {
               key: "home",

@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export const API_ROUTER = import.meta.env.VITE_API_URL;
-export const DOCU_API_ROUTER = `${API_ROUTER}/uploads`;
+export const DOCU_API_ROUTER = import.meta.env.VITE_UPLOADS_URL;
 
 // Ensure session cookies are sent for all API calls by default
 axios.defaults.withCredentials = true;

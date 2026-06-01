@@ -49,7 +49,7 @@ export function AccreditationDocuments({ orgData }) {
           `${API_ROUTER}/getAccreditationInfo/${orgId}`,
           {
             withCredentials: true,
-          }
+          },
         );
         console.log(data);
         setAccreditationData(data);
@@ -67,11 +67,11 @@ export function AccreditationDocuments({ orgData }) {
     const formData = new FormData();
     formData.append(
       "organizationProfile",
-      accreditationData.organizationProfile._id
+      accreditationData.organizationProfile._id,
     );
     formData.append(
       "organization",
-      accreditationData.organizationProfile.organization
+      accreditationData.organizationProfile.organization,
     );
     formData.append("file", selectedFile);
     formData.append("accreditationId", accreditationData._id);
@@ -184,7 +184,13 @@ export function AccreditationDocuments({ orgData }) {
                 </p>
               </div>
               <Badge
-                variant={doc.status === "Approved" ? "default" : doc.status === "Pending" ? "secondary" : "outline"}
+                variant={
+                  doc.status === "Approved"
+                    ? "default"
+                    : doc.status === "Pending"
+                      ? "secondary"
+                      : "outline"
+                }
                 className={`flex items-center gap-1.5 ${getStatusStyle(doc.status)}`}
               >
                 {getStatusIcon(doc.status)}
@@ -245,7 +251,9 @@ export function AccreditationDocuments({ orgData }) {
       {/* Header Section */}
       <Card className="bg-white">
         <CardHeader>
-          <CardTitle className="text-2xl">Accreditation Summary</CardTitle>
+          <CardTitle className="text-2xl">
+            Accreditation Document Summary
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -277,7 +285,9 @@ export function AccreditationDocuments({ orgData }) {
                     ].filter((doc) => doc?.status === "Pending").length
                   }
                 </div>
-                <div className="text-sm text-amber-700 mt-1">Pending Review</div>
+                <div className="text-sm text-amber-700 mt-1">
+                  Pending Review
+                </div>
               </CardContent>
             </Card>
 
@@ -292,16 +302,14 @@ export function AccreditationDocuments({ orgData }) {
                     ].filter((doc) => doc === null).length
                   }
                 </div>
-                <div className="text-sm text-gray-600 mt-1">Missing Documents</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  Missing Documents
+                </div>
               </CardContent>
             </Card>
           </div>
         </CardContent>
       </Card>
-
-      <h2 className="text-xl font-semibold text-gray-800 tracking-tight">
-        Accreditation Documents
-      </h2>
 
       {/* Documents Grid */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
@@ -359,7 +367,7 @@ export function AccreditationDocuments({ orgData }) {
                     onFileSelect={setSelectedFile}
                     acceptedFormats="application/pdf"
                     title={`Select PDF for ${formatDocumentName(
-                      uploadingDocType
+                      uploadingDocType,
                     )}`}
                   />
                 </div>
@@ -433,9 +441,13 @@ export function AccreditationDocuments({ orgData }) {
                       Status
                     </label>
                     <Badge
-                      variant={selectedDocumentDetails.status === "Approved" ? "default" : "secondary"}
+                      variant={
+                        selectedDocumentDetails.status === "Approved"
+                          ? "default"
+                          : "secondary"
+                      }
                       className={`inline-flex items-center gap-2 ${getStatusStyle(
-                        selectedDocumentDetails.status
+                        selectedDocumentDetails.status,
                       )}`}
                     >
                       {getStatusIcon(selectedDocumentDetails.status)}
@@ -451,7 +463,7 @@ export function AccreditationDocuments({ orgData }) {
                       <Calendar className="w-4 h-4 text-gray-500" />
                       <span>
                         {new Date(
-                          selectedDocumentDetails.createdAt
+                          selectedDocumentDetails.createdAt,
                         ).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
@@ -520,7 +532,7 @@ export function Documents({ accreditationData, orgId }) {
       const formData = new FormData();
       formData.append(
         "organizationProfile",
-        accreditationData.organizationProfile
+        accreditationData.organizationProfile,
       );
       formData.append("organization", orgId);
       formData.append("file", selectedFile);
@@ -575,12 +587,12 @@ export function Documents({ accreditationData, orgId }) {
       {renderOrUploadBox(
         "Constitution and By-Laws",
         ConstituionAndByLaws,
-        "Constitution and By-Laws"
+        "Constitution and By-Laws",
       )}
       {renderOrUploadBox(
         "Pledge Against Hazing",
         PledgeAgainstHazing,
-        "PledgeAgainstHazing"
+        "PledgeAgainstHazing",
       )}
     </div>
   );

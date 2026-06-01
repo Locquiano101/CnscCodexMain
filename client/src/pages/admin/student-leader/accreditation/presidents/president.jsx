@@ -18,7 +18,12 @@ import { ProportionCropTool } from "./../../../../../components/image_uploader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Loading Component
 const LoadingScreen = () => {
@@ -72,7 +77,7 @@ export default function StudentLeaderPresidentListComponent({
         setError(null);
 
         const response = await axios.get(
-          `${API_ROUTER}/getPresidents/${orgId}`
+          `${API_ROUTER}/getPresidents/${orgId}`,
         );
         const data = response.data;
 
@@ -81,7 +86,7 @@ export default function StudentLeaderPresidentListComponent({
           const orgPresidentId = orgData.orgPresident._id;
 
           const matchedPresident = data.find(
-            (president) => president._id === orgPresidentId
+            (president) => president._id === orgPresidentId,
           );
 
           if (matchedPresident) {
@@ -89,7 +94,7 @@ export default function StudentLeaderPresidentListComponent({
 
             // Remaining presidents (exclude current one)
             const remaining = data.filter(
-              (president) => president._id !== orgPresidentId
+              (president) => president._id !== orgPresidentId,
             );
             setRemainingPresidents(remaining);
           } else {
@@ -166,7 +171,10 @@ export default function StudentLeaderPresidentListComponent({
   }
 
   return (
-    <div className="flex flex-col h-full w-full gap-6 overflow-auto p-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="flex flex-col h-full w-full gap-6 overflow-auto p-6"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       {/* Current President */}
       <div>
         {/* Header */}
@@ -252,19 +260,15 @@ export default function StudentLeaderPresidentListComponent({
 
       {/* Modal */}
       {showAddForm && (
-        <Dialog open={showAddForm} onOpenChange={() => setShowAddForm(false)}>
-          <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-            <AddStudentPresident
-              orgInfo={orgData}
-              AccreditationId={accreditationData._id}
-              onClose={() => setShowAddForm(false)}
-              onSuccess={() => {
-                setShowAddForm(false);
-                window.location.reload();
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+        <AddStudentPresident
+          orgInfo={orgData}
+          AccreditationId={accreditationData._id}
+          onClose={() => setShowAddForm(false)}
+          onSuccess={() => {
+            setShowAddForm(false);
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );
@@ -596,7 +600,7 @@ const PresidentCard = ({
             >
               {president.facebookAccount.replace(
                 "https://www.facebook.com/",
-                "@"
+                "@",
               )}
             </a>
           </div>
@@ -674,7 +678,7 @@ export function UploadPresidentProfilePicture({
     for (let [key, value] of formData.entries()) {
       if (value instanceof File) {
         console.log(
-          `${key}: [FILE] ${value.name} (${value.size} bytes, ${value.type})`
+          `${key}: [FILE] ${value.name} (${value.size} bytes, ${value.type})`,
         );
       } else {
         console.log(`${key}: ${value}`);
@@ -686,7 +690,7 @@ export function UploadPresidentProfilePicture({
     try {
       const res = await axios.post(
         `${API_ROUTER}/addPresidentProfile/${presidentProfileId}`,
-        formData
+        formData,
       );
 
       const data = res.data;

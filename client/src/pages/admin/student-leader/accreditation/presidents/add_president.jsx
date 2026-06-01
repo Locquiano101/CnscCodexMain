@@ -103,7 +103,7 @@ export default function AddStudentPresident({
       try {
         setLoading(true);
         const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,demonyms"
+          "https://restcountries.com/v3.1/all?fields=name,demonyms",
         );
         const data = await response.json();
 
@@ -263,7 +263,7 @@ export default function AddStudentPresident({
 
     // Class schedule validation (at least one complete entry)
     const validSchedules = classSchedules.filter(
-      (cls) => cls.subject && cls.place && cls.time && cls.day
+      (cls) => cls.subject && cls.place && cls.time && cls.day,
     );
     if (validSchedules.length === 0) {
       errors.classSchedule = "At least one complete class schedule is required";
@@ -447,10 +447,10 @@ export default function AddStudentPresident({
         contactNo: formData.contactNo,
         facebookAccount: formData.facebookAccount || null,
         talentSkills: talentSkills.filter(
-          (skill) => skill.skill && skill.level
+          (skill) => skill.skill && skill.level,
         ),
         classSchedule: classSchedules.filter(
-          (cls) => cls.subject && cls.place && cls.time && cls.day
+          (cls) => cls.subject && cls.place && cls.time && cls.day,
         ),
         AccreditationId: AccreditationId,
       };
@@ -460,7 +460,7 @@ export default function AddStudentPresident({
 
       const response = await axios.post(
         `${API_ROUTER}/addPresident`,
-        mergedData
+        mergedData,
       );
       console.log("Success:", response.data);
 
@@ -510,7 +510,7 @@ export default function AddStudentPresident({
         <div className="text-lg font-semibold text-gray-800 mb-4">
           Uploading...
         </div>
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -570,282 +570,228 @@ export default function AddStudentPresident({
       nextStep();
     }
   };
-  // Step Indicator Component
-  const StepIndicator = () => (
-    <div className="flex items-center justify-center mb-10">
-      <div className="flex items-center space-x-4">
-        {steps.map((stepItem, index) => (
-          <div key={stepItem.id} className="flex items-center">
-            <div className="flex flex-col items-center">
+
+  return (
+    <div className="absolute inset-0 bg-black/50 flex items-center justify">
+      <div className="relative max-w-6xl w-full mx-auto p-6 bg-white shadow-lg rounded-lg">
+        {/* Title */}
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          President Profile Form
+        </h2>
+
+        {/* Step Indicator - Centered */}
+        <div className="relative flex items-center justify-between w-full max-w-2xl mx-auto mb-8">
+          {/* Background Line (behind all circles, trimmed to circle centers) */}
+          <div
+            className="absolute top-7 h-1 bg-gray-300 transform -translate-y-1/2 z-0"
+            style={{
+              left: "calc(6rem / 2)", // half of circle width (w-12 = 3rem)
+              right: "calc(6rem / 2)", // trims at last circle center
+            }}
+          />
+
+          {steps.map((stepItem) => {
+            const isActive = step === stepItem.id;
+            const isCompleted = step > stepItem.id;
+
+            return (
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
-                  step === stepItem.id
-                    ? "bg-blue-600 text-white ring-4 ring-blue-200"
-                    : step > stepItem.id
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-300 text-gray-600"
-                }`}
+                key={stepItem.id}
+                className="relative flex flex-col items-center z-10 flex-1"
               >
-                {step > stepItem.id ? (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  stepItem.id
-                )}
-              </div>
-              <div className="mt-2 text-center">
+                {/* Circle with number */}
                 <div
-                  className={`text-sm font-medium ${
-                    step === stepItem.id ? "text-blue-600" : "text-gray-600"
+                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 text-lg font-bold
+              ${
+                isActive
+                  ? "bg-primary border-primary text-white"
+                  : isCompleted
+                    ? "bg-green-500 border-green-500 text-white"
+                    : "bg-gray-300 border-gray-300 text-gray-700"
+              }
+            `}
+                >
+                  {isCompleted ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : (
+                    stepItem.id
+                  )}
+                </div>
+
+                {/* Step Title */}
+                <span
+                  className={`mt-2 text-sm font-medium text-center ${
+                    isActive ? "text-primary" : "text-gray-600"
                   }`}
                 >
                   {stepItem.title}
-                </div>
+                </span>
               </div>
-            </div>
-            {index < steps.length - 1 && (
-              <div
-                className={`w-12 h-1 mx-2 transition-all duration-200 ${
-                  step > stepItem.id ? "bg-green-500" : "bg-gray-300"
-                }`}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+            );
+          })}
 
-  return (
-    <div className="relative max-w-3xl w-full mx-auto p-6 bg-white shadow-lg rounded-lg">
-      {/* Title */}
-      <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-        President Profile Form
-      </h2>
-
-      {/* Step Indicator - Centered */}
-      <div className="relative flex items-center justify-between w-full max-w-2xl mx-auto mb-8">
-        {/* Background Line (behind all circles, trimmed to circle centers) */}
-        <div
-          className="absolute top-7 h-1 bg-gray-300 transform -translate-y-1/2 z-0"
-          style={{
-            left: "calc(6rem / 2)", // half of circle width (w-12 = 3rem)
-            right: "calc(6rem / 2)", // trims at last circle center
-          }}
-        />
-
-        {steps.map((stepItem) => {
-          const isActive = step === stepItem.id;
-          const isCompleted = step > stepItem.id;
-
-          return (
-            <div
-              key={stepItem.id}
-              className="relative flex flex-col items-center z-10 flex-1"
-            >
-              {/* Circle with number */}
-              <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 text-lg font-bold
-              ${
-                isActive
-                  ? "bg-blue-600 border-blue-600 text-white"
-                  : isCompleted
-                  ? "bg-green-500 border-green-500 text-white"
-                  : "bg-gray-300 border-gray-300 text-gray-700"
-              }
-            `}
-              >
-                {isCompleted ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  stepItem.id
-                )}
-              </div>
-
-              {/* Step Title */}
-              <span
-                className={`mt-2 text-sm font-medium text-center ${
-                  isActive ? "text-blue-600" : "text-gray-600"
-                }`}
-              >
-                {stepItem.title}
-              </span>
-            </div>
-          );
-        })}
-
-        {/* Progress Line Overlay (trimmed to circle centers) */}
-        <div
-          className={`absolute top-7 h-1 transform -translate-y-1/2 z-0 transition-all duration-300 ${
-            step > 1 ? "bg-green-500" : "bg-blue-600"
-          }`}
-          style={{
-            left: "calc(6rem / 2)", // start at first circle center
-            width: `calc(((100% - 6rem) / (${steps.length - 1})) * ${
-              step - 1
-            })`,
-          }}
-        />
-      </div>
-
-      {/* Scrollable Form Wrapper */}
-      <div className="max-h-[70vh] overflow-y-auto pr-2">
-        {/* Current Step Title */}
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-700">
-            Step {step}: {steps[step - 1].title}
-          </h3>
-          <p className="text-gray-500 text-sm mt-1">
-            {steps[step - 1].description}
-          </p>
+          {/* Progress Line Overlay (trimmed to circle centers) */}
+          <div
+            className={`absolute top-7 h-1 transform -translate-y-1/2 z-0 transition-all duration-300 ${
+              step > 1 ? "bg-green-500" : "bg-primary"
+            }`}
+            style={{
+              left: "calc(6rem / 2)", // start at first circle center
+              width: `calc(((100% - 6rem) / (${steps.length - 1})) * ${
+                step - 1
+              })`,
+            }}
+          />
         </div>
 
-        <form
-          onSubmit={handleFinalSubmit}
-          className="flex flex-col gap-6 w-full"
-        >
-          {/* Step 1 */}
-          {step === 1 && (
-            <PresidentPersonalInfo
-              formData={formData}
-              getFieldErrorClass={getFieldErrorClass}
-              handleInputChange={handleInputChange}
-              renderFieldError={renderFieldError}
-              loading={loading}
-              countries={countries}
-            />
-          )}
-
-          {/* Step 2 */}
-          {step === 2 && (
-            <PresidentGuardianInfo
-              formData={formData}
-              handleInputChange={handleInputChange}
-              getFieldErrorClass={getFieldErrorClass}
-              renderFieldError={renderFieldError}
-            />
-          )}
-
-          {/* Step 3 */}
-          {step === 3 && (
-            <>
-              <PhilippineAddressForm
-                ref={formRef}
-                initialData={formData.address}
-                onChange={(data) => setAddressFormData(data)}
-              />
-              {validationErrors.address && (
-                <div className="text-red-500 text-sm">
-                  {validationErrors.address}
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Step 4 */}
-          {step === 4 && (
-            <PresidentTalentInfo
-              talentSkills={talentSkills}
-              skillLevels={skillLevels}
-              handleSkillChange={handleSkillChange}
-              removeSkill={removeSkill}
-              formData={formData}
-              getFieldErrorClass={getFieldErrorClass}
-              handleInputChange={handleInputChange}
-              renderFieldError={renderFieldError}
-              loading={loading}
-              countries={countries}
-            />
-          )}
-
-          {/* Step 5 */}
-          {step === 5 && (
-            <PresidentClassSchedInfo
-              validationErrors={validationErrors}
-              classSchedules={classSchedules}
-              handleClassChange={handleClassChange}
-              removeClassSchedule={removeClassSchedule}
-              renderFieldError={renderFieldError}
-              formData={formData}
-              getFieldErrorClass={getFieldErrorClass}
-              handleInputChange={handleInputChange}
-              loading={loading}
-              countries={countries}
-            />
-          )}
-
-          {/* Validation Summary */}
-          {Object.keys(validationErrors).length > 0 && (
-            <div className="border border-red-300 bg-red-50 p-4 rounded-lg">
-              <h4 className="text-red-800 font-semibold mb-2">
-                Please fix the following errors to continue:
-              </h4>
-              <ul className="text-red-700 text-sm space-y-1">
-                {Object.entries(validationErrors).map(([field, error]) => (
-                  <li key={field}>• {error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between pt-4">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-8 rounded-lg transition duration-200"
-              >
-                Back
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={isUploading}
-              className={`ml-auto bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 focus:ring-4 focus:ring-blue-300 ${
-                step === 1 ? "w-full" : ""
-              }`}
-            >
-              {step === 5
-                ? isUploading
-                  ? "Submitting..."
-                  : "Submit Application"
-                : "Next"}
-            </button>
+        {/* Scrollable Form Wrapper */}
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          {/* Current Step Title */}
+          <div className="text-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-700">
+              Step {step}: {steps[step - 1].title}
+            </h3>
+            <p className="text-gray-500 text-sm mt-1">
+              {steps[step - 1].description}
+            </p>
           </div>
-        </form>
-      </div>
 
-      {/* Close Button */}
-      <X
-        size={32}
-        className="text-red-500 absolute top-4 right-4 cursor-pointer hover:text-red-600 transition-colors"
-        onClick={onClose}
-      />
+          <form
+            onSubmit={handleFinalSubmit}
+            className="flex flex-col gap-6 w-full"
+          >
+            {/* Step 1 */}
+            {step === 1 && (
+              <PresidentPersonalInfo
+                formData={formData}
+                getFieldErrorClass={getFieldErrorClass}
+                handleInputChange={handleInputChange}
+                renderFieldError={renderFieldError}
+                loading={loading}
+                countries={countries}
+              />
+            )}
+
+            {/* Step 2 */}
+            {step === 2 && (
+              <PresidentGuardianInfo
+                formData={formData}
+                handleInputChange={handleInputChange}
+                getFieldErrorClass={getFieldErrorClass}
+                renderFieldError={renderFieldError}
+              />
+            )}
+
+            {/* Step 3 */}
+            {step === 3 && (
+              <>
+                <PhilippineAddressForm
+                  ref={formRef}
+                  initialData={formData.address}
+                  onChange={(data) => setAddressFormData(data)}
+                />
+                {validationErrors.address && (
+                  <div className="text-red-500 text-sm">
+                    {validationErrors.address}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Step 4 */}
+            {step === 4 && (
+              <PresidentTalentInfo
+                talentSkills={talentSkills}
+                skillLevels={skillLevels}
+                handleSkillChange={handleSkillChange}
+                removeSkill={removeSkill}
+                formData={formData}
+                getFieldErrorClass={getFieldErrorClass}
+                handleInputChange={handleInputChange}
+                renderFieldError={renderFieldError}
+                loading={loading}
+                countries={countries}
+              />
+            )}
+
+            {/* Step 5 */}
+            {step === 5 && (
+              <PresidentClassSchedInfo
+                validationErrors={validationErrors}
+                classSchedules={classSchedules}
+                handleClassChange={handleClassChange}
+                removeClassSchedule={removeClassSchedule}
+                renderFieldError={renderFieldError}
+                formData={formData}
+                getFieldErrorClass={getFieldErrorClass}
+                handleInputChange={handleInputChange}
+                loading={loading}
+                countries={countries}
+              />
+            )}
+
+            {/* Validation Summary */}
+            {Object.keys(validationErrors).length > 0 && (
+              <div className="border border-red-300 bg-red-50 p-4 rounded-lg">
+                <h4 className="text-red-800 font-semibold mb-2">
+                  Please fix the following errors to continue:
+                </h4>
+                <ul className="text-red-700 text-sm space-y-1">
+                  {Object.entries(validationErrors).map(([field, error]) => (
+                    <li key={field}>• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-4">
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-8 rounded-lg transition duration-200"
+                >
+                  Back
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={isUploading}
+                className={`ml-auto bg-primary hover:bg-primary disabled:bg-primary text-white font-semibold py-3 px-8 rounded-lg transition duration-200 focus:ring-4 focus:ring-red-300 ${
+                  step === 1 ? "w-full" : ""
+                }`}
+              >
+                {step === 5
+                  ? isUploading
+                    ? "Submitting..."
+                    : "Submit Application"
+                  : "Next"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Close Button */}
+        <X
+          size={32}
+          className="text-red-500 absolute top-4 right-4 cursor-pointer hover:text-red-600 transition-colors"
+          onClick={onClose}
+        />
+      </div>
     </div>
   );
 }
@@ -879,8 +825,8 @@ function PresidentPersonalInfo({
     "Other",
   ];
   return (
-    <div className="border p-6 rounded-lg bg-blue-50">
-      <h3 className="text-xl font-semibold mb-6 text-blue-800">
+    <div className="p-4">
+      <h3 className="text-xl font-semibold mb-6 text-red-800">
         Personal Information
       </h3>
 
@@ -894,8 +840,8 @@ function PresidentPersonalInfo({
             name="firstName"
             value={formData.firstName}
             onChange={handleInputChange}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 ${getFieldErrorClass(
-              "firstName"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 ${getFieldErrorClass(
+              "firstName",
             )}`}
           />
           {renderFieldError("firstName")}
@@ -909,7 +855,7 @@ function PresidentPersonalInfo({
             name="middleName"
             value={formData.middleName}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
           />
         </div>
         <div>
@@ -921,8 +867,8 @@ function PresidentPersonalInfo({
             name="lastName"
             value={formData.lastName}
             onChange={handleInputChange}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 ${getFieldErrorClass(
-              "lastName"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 ${getFieldErrorClass(
+              "lastName",
             )}`}
           />
           {renderFieldError("lastName")}
@@ -939,8 +885,8 @@ function PresidentPersonalInfo({
             name="birthPlace"
             value={formData.birthPlace}
             onChange={handleInputChange}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 ${getFieldErrorClass(
-              "birthPlace"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 ${getFieldErrorClass(
+              "birthPlace",
             )}`}
           />
           {renderFieldError("birthPlace")}
@@ -955,8 +901,8 @@ function PresidentPersonalInfo({
             value={formData.birthDate}
             onChange={handleInputChange}
             max={new Date().toISOString().split("T")[0]}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 ${getFieldErrorClass(
-              "birthDate"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 ${getFieldErrorClass(
+              "birthDate",
             )}`}
           />
           {renderFieldError("birthDate")}
@@ -969,8 +915,8 @@ function PresidentPersonalInfo({
             name="sex"
             value={formData.sex}
             onChange={handleInputChange}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 ${getFieldErrorClass(
-              "sex"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 ${getFieldErrorClass(
+              "sex",
             )}`}
           >
             <option value="">Select...</option>
@@ -995,7 +941,7 @@ function PresidentPersonalInfo({
             onChange={handleInputChange}
             placeholder="https://facebook.com/your-profile"
             className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
-              "facebookAccount"
+              "facebookAccount",
             )}`}
           />
           {renderFieldError("facebookAccount")}
@@ -1023,7 +969,7 @@ function PresidentPersonalInfo({
               placeholder="9XXXXXXXXX"
               maxLength={10}
               className={`w-full p-2 border rounded-r-md focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
-                "contactNo"
+                "contactNo",
               )}`}
               inputMode="numeric"
               required
@@ -1043,7 +989,7 @@ function PresidentPersonalInfo({
               name="religion"
               value={formData.religion}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
             >
               <option value="">Select a religion</option>
               {religionOptions.map((religion) => (
@@ -1060,8 +1006,8 @@ function PresidentPersonalInfo({
                   placeholder="Please specify"
                   value={formData.customReligion}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 ${getFieldErrorClass(
-                    "customReligion"
+                  className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 ${getFieldErrorClass(
+                    "customReligion",
                   )}`}
                 />
                 {renderFieldError("customReligion")}
@@ -1078,8 +1024,8 @@ function PresidentPersonalInfo({
             value={formData.nationality}
             onChange={handleInputChange}
             disabled={loading}
-            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${getFieldErrorClass(
-              "nationality"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 ${getFieldErrorClass(
+              "nationality",
             )}`}
           >
             <option value="">
@@ -1104,7 +1050,7 @@ function PresidentPersonalInfo({
             value={formData.sourceOfFinancialSupport}
             onChange={handleInputChange}
             className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${getFieldErrorClass(
-              "sourceOfFinancialSupport"
+              "sourceOfFinancialSupport",
             )}`}
           >
             <option value="">Select...</option>
@@ -1128,7 +1074,7 @@ function PresidentPersonalInfo({
             value={formData.department}
             onChange={handleInputChange}
             className={`w-full p-2 border rounded focus:ring-2 focus:ring-green-500 ${getFieldErrorClass(
-              "department"
+              "department",
             )}`}
           >
             <option value="">Select Department...</option>
@@ -1150,7 +1096,7 @@ function PresidentPersonalInfo({
             onChange={handleInputChange}
             disabled={!formData.department}
             className={`w-full p-2 border rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 ${getFieldErrorClass(
-              "course"
+              "course",
             )}`}
           >
             <option value="">Select Course...</option>
@@ -1172,7 +1118,7 @@ function PresidentPersonalInfo({
             value={formData.yearLevel}
             onChange={handleInputChange}
             className={`w-full p-2 border rounded focus:ring-2 focus:ring-green-500 ${getFieldErrorClass(
-              "yearLevel"
+              "yearLevel",
             )}`}
           >
             <option value="">Select Year...</option>
@@ -1189,15 +1135,10 @@ function PresidentPersonalInfo({
   );
 }
 
-function PresidentGuardianInfo({
-  formData,
-  handleInputChange,
-  getFieldErrorClass,
-  renderFieldError,
-}) {
+function PresidentGuardianInfo({ formData, handleInputChange }) {
   return (
-    <div className="border p-4 rounded-lg bg-yellow-50">
-      <h3 className="text-lg font-semibold mb-4 text-yellow-800">
+    <div className="border p-4 rounded-lg bg-red-50">
+      <h3 className="text-lg font-semibold mb-4 text-red-800">
         Guardian Information
       </h3>
 
@@ -1211,7 +1152,7 @@ function PresidentGuardianInfo({
             name="guardianFirstName"
             value={formData.guardianFirstName}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
           />
         </div>
 
@@ -1224,7 +1165,7 @@ function PresidentGuardianInfo({
             name="guardianMiddleName"
             value={formData.guardianMiddleName}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
           />
         </div>
 
@@ -1237,7 +1178,7 @@ function PresidentGuardianInfo({
             name="guardianLastName"
             value={formData.guardianLastName}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
           />
         </div>
       </div>
@@ -1262,7 +1203,7 @@ function PresidentGuardianInfo({
 
             const formatted = `+63 ${value.replace(
               /(\d{3})(\d{3})(\d{0,4})/,
-              (_, a, b, c) => `${a} ${b}${c ? " " + c : ""}`
+              (_, a, b, c) => `${a} ${b}${c ? " " + c : ""}`,
             )}`;
 
             handleInputChange({
@@ -1270,7 +1211,7 @@ function PresidentGuardianInfo({
             });
           }}
           placeholder="+63 9XX XXX XXXX"
-          className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500"
+          className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
         />
       </div>
     </div>
@@ -1460,10 +1401,10 @@ export const PhilippineAddressForm = forwardRef(
     };
 
     const [addresses, setAddresses] = useState(
-      initialData?.rawData || defaultAddresses
+      initialData?.rawData || defaultAddresses,
     );
     const [sameAsPresent, setSameAsPresent] = useState(
-      !!initialData?.sameAsPresent
+      !!initialData?.sameAsPresent,
     );
     const [dropdownData, setDropdownData] = useState({
       regions: [],
@@ -1541,7 +1482,7 @@ export const PhilippineAddressForm = forwardRef(
       setLoading((prev) => ({ ...prev, provinces: true }));
       try {
         const response = await fetch(
-          `${PSGC_API_BASE}/regions/${regionCode}/provinces`
+          `${PSGC_API_BASE}/regions/${regionCode}/provinces`,
         );
         const data = await response.json();
         setDropdownData((prev) => ({ ...prev, provinces: data }));
@@ -1555,7 +1496,7 @@ export const PhilippineAddressForm = forwardRef(
       setLoading((prev) => ({ ...prev, cities: true }));
       try {
         const response = await fetch(
-          `${PSGC_API_BASE}/provinces/${provinceCode}/cities-municipalities`
+          `${PSGC_API_BASE}/provinces/${provinceCode}/cities-municipalities`,
         );
         const data = await response.json();
         setDropdownData((prev) => ({ ...prev, cities: data }));
@@ -1569,7 +1510,7 @@ export const PhilippineAddressForm = forwardRef(
       setLoading((prev) => ({ ...prev, barangays: true }));
       try {
         const response = await fetch(
-          `${PSGC_API_BASE}/cities-municipalities/${cityCode}/barangays`
+          `${PSGC_API_BASE}/cities-municipalities/${cityCode}/barangays`,
         );
         const data = await response.json();
         console.log(data);
@@ -1759,7 +1700,7 @@ export const PhilippineAddressForm = forwardRef(
                   id="sameAsPresent"
                   checked={sameAsPresent}
                   onChange={(e) => handleSameAsPresentChange(e.target.checked)}
-                  className="mr-2 rounded border-black bg-white text-blue-600 focus:ring-blue-500"
+                  className="mr-2 rounded border-black bg-white text-primary focus:ring-red-500"
                 />
                 <label
                   htmlFor="sameAsPresent"
@@ -1783,7 +1724,7 @@ export const PhilippineAddressForm = forwardRef(
                   handleAddressChange(addressType, "region", e.target.value)
                 }
                 required
-                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={loading.regions || isDisabled}
               >
                 <option value="">Select Region</option>
@@ -1806,7 +1747,7 @@ export const PhilippineAddressForm = forwardRef(
                   handleAddressChange(addressType, "province", e.target.value)
                 }
                 required
-                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={
                   loading.provinces || !addressData.region || isDisabled
                 }
@@ -1831,7 +1772,7 @@ export const PhilippineAddressForm = forwardRef(
                   handleAddressChange(addressType, "city", e.target.value)
                 }
                 required
-                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={loading.cities || !addressData.province || isDisabled}
               >
                 <option value="">Select City/Municipality</option>
@@ -1854,7 +1795,7 @@ export const PhilippineAddressForm = forwardRef(
                   handleAddressChange(addressType, "barangay", e.target.value)
                 }
                 required
-                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={loading.barangays || !addressData.city || isDisabled}
               >
                 <option value="">Select Barangay</option>
@@ -1878,7 +1819,7 @@ export const PhilippineAddressForm = forwardRef(
                   handleAddressChange(addressType, "purok", e.target.value)
                 }
                 required
-                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Enter purok/street"
                 disabled={isDisabled}
               />
@@ -1895,7 +1836,7 @@ export const PhilippineAddressForm = forwardRef(
                 onChange={(e) =>
                   handleAddressChange(addressType, "street", e.target.value)
                 }
-                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-black bg-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Enter house number or residence (optional)"
                 disabled={isDisabled}
               />
@@ -1924,5 +1865,5 @@ export const PhilippineAddressForm = forwardRef(
         </div>
       </div>
     );
-  }
+  },
 );

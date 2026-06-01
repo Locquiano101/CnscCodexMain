@@ -33,7 +33,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentAccreditationMainComponent({ orgId }) {
-  console.log("🎯 StudentAccreditationMainComponent mounted with orgId:", orgId);
+  console.log(
+    "🎯 StudentAccreditationMainComponent mounted with orgId:",
+    orgId,
+  );
   const [accreditationData, setAccreditationData] = useState(null);
   const [visibleRequirements, setVisibleRequirements] = useState([]); // enabled templates + custom
   const [customStatusMap, setCustomStatusMap] = useState({}); // { key: status }
@@ -61,7 +64,7 @@ export default function StudentAccreditationMainComponent({ orgId }) {
 
         const response = await axios.get(
           `${API_ROUTER}/getAccreditationInfo/${orgId}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         console.log(response.data);
@@ -89,32 +92,53 @@ export default function StudentAccreditationMainComponent({ orgId }) {
     async function loadVisibleAndStatuses() {
       setLoadingCustom(true);
       try {
-        console.log("🌐 Fetching from:", `${API_ROUTER}/accreditation/requirements/visible`);
-        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        console.log(
+          "🌐 Fetching from:",
+          `${API_ROUTER}/accreditation/requirements/visible`,
+        );
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true },
+        );
         console.log("📋 Visible requirements fetched:", data);
         if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
-        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        const customs = (Array.isArray(data) ? data : []).filter(
+          (r) => r.type === "custom",
+        );
         console.log("🔧 Custom requirements found:", customs);
         if (!orgId || customs.length === 0) {
-          console.log("⚠️ No orgId or no custom requirements, skipping submission fetch");
+          console.log(
+            "⚠️ No orgId or no custom requirements, skipping submission fetch",
+          );
           if (!ignore) setLoadingCustom(false);
           return;
         }
         const results = await Promise.all(
           customs.map(async (r) => {
             try {
-              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
+              const { data: sub } = await axios.get(
+                `${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`,
+                { withCredentials: true },
+              );
               console.log(`✅ Submission for ${r.key}:`, sub);
-              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+              return {
+                key: r.key,
+                status: sub?.submission?.status || "Not Submitted",
+              };
             } catch (e) {
-              console.warn(`❌ Failed to fetch submission for ${r.key}:`, e.message);
-              return { key: r.key, status: 'Not Submitted' };
+              console.warn(
+                `❌ Failed to fetch submission for ${r.key}:`,
+                e.message,
+              );
+              return { key: r.key, status: "Not Submitted" };
             }
-          })
+          }),
         );
         if (!ignore) {
           const map = {};
-          results.forEach(({ key, status }) => { map[key] = status; });
+          results.forEach(({ key, status }) => {
+            map[key] = status;
+          });
           console.log("🗺️ Custom status map:", map);
           setCustomStatusMap(map);
         }
@@ -128,7 +152,9 @@ export default function StudentAccreditationMainComponent({ orgId }) {
       }
     }
     loadVisibleAndStatuses();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [orgId]);
 
   // Create new accreditation for this org
@@ -136,7 +162,7 @@ export default function StudentAccreditationMainComponent({ orgId }) {
     try {
       const res = await axios.get(
         `${API_ROUTER}/getAccreditationInfo/${orgId}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       console.log("New accreditation created:", res.data);
@@ -157,11 +183,11 @@ export default function StudentAccreditationMainComponent({ orgId }) {
     const formData = new FormData();
     formData.append(
       "organizationProfile",
-      accreditationData.organizationProfile._id
+      accreditationData.organizationProfile._id,
     );
     formData.append(
       "organization",
-      accreditationData.organizationProfile.organization
+      accreditationData.organizationProfile.organization,
     );
     formData.append("file", selectedFile);
     formData.append("accreditationId", accreditationData._id);
@@ -181,7 +207,7 @@ export default function StudentAccreditationMainComponent({ orgId }) {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       console.log("Upload success:", response.data);
@@ -222,7 +248,10 @@ export default function StudentAccreditationMainComponent({ orgId }) {
   }
 
   return (
-    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full p-6 overflow-auto"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <div className="w-full">
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-6">
@@ -285,7 +314,10 @@ export default function StudentAccreditationMainComponent({ orgId }) {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowResetPopup(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowResetPopup(false)}
+              >
                 Close
               </Button>
               <Button onClick={handleCreateNewAccreditation}>
@@ -302,7 +334,10 @@ export default function StudentAccreditationMainComponent({ orgId }) {
 // Loading skeleton component
 function LoadingSkeleton() {
   return (
-    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full p-6 overflow-auto"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header Skeleton */}
         <div className="mb-8">
@@ -395,7 +430,10 @@ function LoadingSkeleton() {
 // Error state component
 function ErrorState({ error, onRetry }) {
   return (
-    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full p-6 overflow-auto"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -415,9 +453,7 @@ function ErrorState({ error, onRetry }) {
               Error Loading Data
             </h3>
             <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={onRetry}>
-              Try Again
-            </Button>
+            <Button onClick={onRetry}>Try Again</Button>
           </CardContent>
         </Card>
       </div>
@@ -425,28 +461,36 @@ function ErrorState({ error, onRetry }) {
   );
 }
 
-function OverallStatus({ accreditationData, visibleRequirements = [], customStatusMap = {}, loadingCustom = false }) {
+function OverallStatus({
+  accreditationData,
+  visibleRequirements = [],
+  customStatusMap = {},
+  loadingCustom = false,
+}) {
   const { overallStatus } = accreditationData ?? {};
-  
+
   console.log("📊 OverallStatus received:", {
     visibleRequirements,
     customStatusMap,
     loadingCustom,
-    accreditationData
+    accreditationData,
   });
 
   // Determine which template requirements are enabled (by key)
   const enabledTemplateKeys = new Set(
     (visibleRequirements || [])
       .filter((r) => r.type === "template")
-      .map((r) => r.key)
+      .map((r) => r.key),
   );
 
   console.log("🔑 Enabled template keys:", Array.from(enabledTemplateKeys));
 
   const requirements = [];
   // Only include document trio if template 'accreditation-documents' is enabled
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("accreditation-documents")
+  ) {
     requirements.push(
       {
         name: "Joint Statement",
@@ -454,13 +498,14 @@ function OverallStatus({ accreditationData, visibleRequirements = [], customStat
       },
       {
         name: "Pledge Against Hazing",
-        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+        status:
+          accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
       },
       {
         name: "Constitution And By-Laws",
         status:
           accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-      }
+      },
     );
   }
   // Roster
@@ -471,22 +516,33 @@ function OverallStatus({ accreditationData, visibleRequirements = [], customStat
     });
   }
   // President profile
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("president-info")
+  ) {
     requirements.push({
       name: "President Profile",
-      status: accreditationData.PresidentProfile?.overAllStatus || "Not Submitted",
+      status:
+        accreditationData.PresidentProfile?.overAllStatus || "Not Submitted",
     });
   }
   // Financial Report
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("financial-report")
+  ) {
     requirements.push({
       name: "Finacial Report",
-      status: accreditationData.FinancialReport?.isActive ? "Active" : "Inactive",
+      status: accreditationData.FinancialReport?.isActive
+        ? "Active"
+        : "Inactive",
     });
   }
 
   // Append custom requirements (enabled ones only)
-  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  const customVisible = (visibleRequirements || []).filter(
+    (r) => r.type === "custom",
+  );
   console.log("🎨 Custom visible requirements to add:", customVisible);
   for (const req of customVisible) {
     requirements.push({
@@ -538,17 +594,27 @@ function OverallStatus({ accreditationData, visibleRequirements = [], customStat
           </h3>
           {requirements.map((req, index) => {
             const displayStatus = getDisplayStatus(req.status);
-            const statusColor = getStatusColor(req.status);
+            const badgeVariant =
+              req.status === "Approved" ||
+              req.status === "Submitted" ||
+              req.status === "Active"
+                ? "approved"
+                : req.status === "Pending"
+                  ? "pending"
+                  : req.status === "Rejected" || req.status === "For Revision"
+                    ? "rejected"
+                    : "default";
+
             return (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-gray-400" />
-                  <span className="font-medium text-gray-900">{req.name}</span>
+                  <FileText className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium text-sm">{req.name}</span>
                 </div>
-                <Badge variant="outline" className={statusColor}>
+                <Badge variant={badgeVariant} className="gap-1.5 p-1 px-2">
                   {getStatusIcon(req.status)}
                   <span>{displayStatus}</span>
                 </Badge>
@@ -645,7 +711,10 @@ function PresidentInformation({ accreditationData }) {
                   className="flex justify-between items-center p-2 bg-gray-50 rounded"
                 >
                   <span className="text-sm font-medium">{skill.skill}</span>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-800"
+                  >
                     {skill.level}
                   </Badge>
                 </div>
@@ -735,17 +804,17 @@ function DocumentDisplayCard({ accreditationData }) {
           {renderDocumentCard(
             "Joint Statement",
             JointStatement,
-            "JointStatement"
+            "JointStatement",
           )}
           {renderDocumentCard(
             "Constitution and By-Laws",
             ConstitutionAndByLaws,
-            "ConstitutionAndByLaws"
+            "ConstitutionAndByLaws",
           )}
           {renderDocumentCard(
             "Pledge Against Hazing",
             PledgeAgainstHazing,
-            "PledgeAgainstHazing"
+            "PledgeAgainstHazing",
           )}
         </div>
       </CardContent>
@@ -762,7 +831,7 @@ function RosterLists({ accreditationData }) {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${API_ROUTER}/getRosterMembers/${accreditationData.organizationProfile._id}`
+        `${API_ROUTER}/getRosterMembers/${accreditationData.organizationProfile._id}`,
       );
       setRosterData(response.data.rosterMembers || []);
       setError(null);
@@ -843,7 +912,11 @@ function RosterLists({ accreditationData }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge
-                    variant={member.status?.toLowerCase() === "active" ? "default" : "secondary"}
+                    variant={
+                      member.status?.toLowerCase() === "active"
+                        ? "default"
+                        : "secondary"
+                    }
                     className={getStatusColor(member.status)}
                   >
                     {member.status}
@@ -891,16 +964,14 @@ function UploadDocument({
             Select a document to upload for accreditation
           </DialogDescription>
         </DialogHeader>
-        
+
         <DocumentUploader onFileSelect={onFileSelect} title={title} />
 
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={onSubmit}>
-            {buttonLabel}
-          </Button>
+          <Button onClick={onSubmit}>{buttonLabel}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -932,17 +1003,17 @@ function getStatusColor(status) {
 
 function getDisplayStatus(status) {
   const statusMap = {
-    "DeanApproved": "Approved by the Dean",
-    "AdviserApproved": "Approved by the Adviser",
-    "RevisionRequested": "Revision Requested",
+    DeanApproved: "Approved by the Dean",
+    AdviserApproved: "Approved by the Adviser",
+    RevisionRequested: "Revision Requested",
     "Not Submitted": "Not Submitted",
-    "Incomplete": "Incomplete",
-    "Approved": "Approved",
-    "Pending": "Pending",
-    "Rejected": "Rejected",
-    "Submitted": "Submitted",
-    "Active": "Active",
-    "Inactive": "Inactive"
+    Incomplete: "Incomplete",
+    Approved: "Approved",
+    Pending: "Pending",
+    Rejected: "Rejected",
+    Submitted: "Submitted",
+    Active: "Active",
+    Inactive: "Inactive",
   };
   return statusMap[status] || status;
 }
