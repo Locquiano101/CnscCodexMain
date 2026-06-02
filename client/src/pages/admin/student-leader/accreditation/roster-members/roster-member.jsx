@@ -191,7 +191,7 @@ export default function StudentLeaderRosters({ orgData }) {
 
   return (
     <div
-      className="h-full overflow-auto px-4 flex flex-col"
+      className="h-full overflow-auto px-4 pt-2 flex flex-col"
       style={{ backgroundColor: "#F5F5F9" }}
     >
       {/* Outer Container for Roster Management */}

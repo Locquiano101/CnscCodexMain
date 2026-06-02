@@ -4,13 +4,25 @@ import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 
 import { X, CheckCircle, ChevronDown, Search, Banknote } from "lucide-react";
 import CurrencyInput from "../../../../../components/currency-input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function AddProposedActionPlan({
   orgData,
@@ -116,7 +128,7 @@ export function AddProposedActionPlan({
           headers: {
             "Content-Type": "application/json", // Specify JSON content type
           },
-        }
+        },
       );
 
       console.log("API Response Success:", response.data);
@@ -323,7 +335,7 @@ export function AddProposedActionPlan({
             <span className="text-red-500">*</span>
           </label>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-9 gap-3">
             {[
               { value: "SDG 1", label: "No Poverty" },
               { value: "SDG 2", label: "Zero Hunger" },
@@ -438,41 +450,13 @@ export function AddProposedActionPlan({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-2xl font-bold text-gray-900">
             Add New Proposed Action Plan
           </DialogTitle>
         </DialogHeader>
 
-        {/* Progress Bar */}
-        <div className="flex py-4 items-center justify-evenly gap-4 border-b border-gray-300">
-          {[1, 2].map((step) => (
-            <div key={step} className="flex items-center flex-col">
-              <div
-                className={`w-12 aspect-square rounded-full flex items-center justify-center text-lg font-medium ${
-                  step <= currentStep
-                    ? "bg-amber-600 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {step}
-              </div>
-              {/* Step description directly under circle */}
-              <p className="mt-2 text-sm font-medium text-gray-700">
-                {step === 1 && "Basic Information"}
-                {step === 2 && "Review & Submit"}
-              </p>
-              {step < 2 && (
-                <div
-                  className={`flex${
-                    step < currentStep ? "bg-amber-600" : "bg-gray-200"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
@@ -483,20 +467,14 @@ export function AddProposedActionPlan({
           <div className="flex justify-between w-full">
             <div>
               {currentStep > 1 && (
-                <Button
-                  onClick={prevStep}
-                  variant="outline"
-                >
+                <Button onClick={prevStep} variant="outline">
                   Previous
                 </Button>
               )}
             </div>
 
             <div className="flex gap-2">
-              <Button
-                onClick={onClose}
-                variant="outline"
-              >
+              <Button onClick={onClose} variant="outline">
                 Cancel
               </Button>
 
@@ -578,14 +556,14 @@ function OrganizationDropdown({ selectedOrgs, onSelectOrgs, excludeOrgId }) {
       }
       const res = await axios.get(
         `${API_ROUTER}/getAllCollaboratingOrganizationProfile?search=${encodeURIComponent(
-          searchTerm
+          searchTerm,
         )}&department=${encodeURIComponent(
-          selectedDepartment
+          selectedDepartment,
         )}&program=${encodeURIComponent(
-          selectedProgram
+          selectedProgram,
         )}&specialization=${encodeURIComponent(
-          selectedSpecialization
-        )}&scope=${encodeURIComponent(searchScope)}`
+          selectedSpecialization,
+        )}&scope=${encodeURIComponent(searchScope)}`,
       );
 
       // Filter out the excluded organization
@@ -635,14 +613,14 @@ function OrganizationDropdown({ selectedOrgs, onSelectOrgs, excludeOrgId }) {
 
   const handleOrgToggle = (org) => {
     const isSelected = selectedOrgs.some(
-      (selected) => selected._id === org._id
+      (selected) => selected._id === org._id,
     );
     let newSelectedOrgs;
 
     if (isSelected) {
       // Remove from selection
       newSelectedOrgs = selectedOrgs.filter(
-        (selected) => selected._id !== org._id
+        (selected) => selected._id !== org._id,
       );
     } else {
       // Add to selection
@@ -782,7 +760,7 @@ function OrganizationDropdown({ selectedOrgs, onSelectOrgs, excludeOrgId }) {
                 {/* Organization options with checkboxes */}
                 {orgs.map((org) => {
                   const isSelected = selectedOrgs.some(
-                    (selected) => selected._id === org._id
+                    (selected) => selected._id === org._id,
                   );
                   return (
                     <label

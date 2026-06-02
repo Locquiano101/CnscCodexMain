@@ -20,6 +20,7 @@ import {
   X,
   Plus,
   Bell,
+  User2,
 } from "lucide-react";
 
 import axios from "axios";
@@ -222,6 +223,11 @@ function StudentTopbar({ orgData }) {
       return {
         title: "Notifications",
         description: "Stay updated with your organization",
+      };
+    } else if (path.includes("/Profile")) {
+      return {
+        title: "Profile",
+        description: "Update your Public Profle",
       };
     }
 
@@ -707,6 +713,12 @@ function StudentNavigation({ orgData }) {
               icon: <Bell className="w-5 h-5" />,
               label: "Notifications",
               path: "/student-leader/notifications",
+            },
+            {
+              key: "Profile",
+              icon: <User2 className="w-5 h-5" />,
+              label: "Profile",
+              path: "/student-leader/Profile",
             },
           ].map((item) => (
             <NavLink

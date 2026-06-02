@@ -3,7 +3,13 @@ import { ChevronDown, Search, CheckCircle, X, Banknote } from "lucide-react";
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../../App";
 import CurrencyInput from "../../../../../components/currency-input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +24,7 @@ export default function EditPpa({
   onFinish,
 }) {
   const [selectedOrganizations, setSelectedOrganizations] = useState(
-    selectedProposal?.collaboratingEntities || []
+    selectedProposal?.collaboratingEntities || [],
   );
   const [formData, setFormData] = useState({
     activityTitle: selectedProposal?.activityTitle || "",
@@ -83,7 +89,7 @@ export default function EditPpa({
     try {
       const response = await axios.post(
         `${API_ROUTER}/UpdateStudentLeaderProposal/${selectedProposal._id}`,
-        formData
+        formData,
       );
       console.log("Success:", response.data);
 
@@ -107,7 +113,7 @@ export default function EditPpa({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-2xl font-bold text-gray-900">
             Edit Proposed Action Plan
@@ -193,7 +199,9 @@ export default function EditPpa({
 
             {/* Aligned Organization Objectives */}
             <div>
-              <Label htmlFor="AlignedObjective">Aligned Organization Objectives *</Label>
+              <Label htmlFor="AlignedObjective">
+                Aligned Organization Objectives *
+              </Label>
               <Textarea
                 id="AlignedObjective"
                 name="AlignedObjective"
@@ -208,7 +216,9 @@ export default function EditPpa({
 
             {/* Collaborating Entities */}
             <div>
-              <Label htmlFor="collaboratingEntities">Collaborating Entities</Label>
+              <Label htmlFor="collaboratingEntities">
+                Collaborating Entities
+              </Label>
               <OrganizationDropdown
                 selectedOrgs={selectedOrganizations}
                 onSelectOrgs={handleOrgSelection}
@@ -216,65 +226,63 @@ export default function EditPpa({
               />
             </div>
             {/* Aligned SDG */}
-            <div className="md:col-span-2">
-              <Label className="text-base">Aligned SDG *</Label>
-              <div className="flex w-full col-span-2 flex-wrap gap-2 mt-2">
+            <div className="md:col-span-2 text-black">
+              <label className="block text-sm font-semibold text-gray-800 mb-3">
+                Aligned Sustainable Development Goals (SDGs){" "}
+                <span className="text-red-500">*</span>
+              </label>
+
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-9 gap-3">
                 {[
-                  { value: "SDG 1", label: "SDG 1: No Poverty" },
-                  { value: "SDG 2", label: "SDG 2: Zero Hunger" },
-                  {
-                    value: "SDG 3",
-                    label: "SDG 3: Good Health and Well-being",
-                  },
-                  { value: "SDG 4", label: "SDG 4: Quality Education" },
-                  { value: "SDG 5", label: "SDG 5: Gender Equality" },
-                  {
-                    value: "SDG 6",
-                    label: "SDG 6: Clean Water and Sanitation",
-                  },
-                  {
-                    value: "SDG 7",
-                    label: "SDG 7: Affordable and Clean Energy",
-                  },
-                  {
-                    value: "SDG 8",
-                    label: "SDG 8: Decent Work and Economic Growth",
-                  },
+                  { value: "SDG 1", label: "No Poverty" },
+                  { value: "SDG 2", label: "Zero Hunger" },
+                  { value: "SDG 3", label: "Good Health and Well-being" },
+                  { value: "SDG 4", label: "Quality Education" },
+                  { value: "SDG 5", label: "Gender Equality" },
+                  { value: "SDG 6", label: "Clean Water and Sanitation" },
+                  { value: "SDG 7", label: "Affordable and Clean Energy" },
+                  { value: "SDG 8", label: "Decent Work and Economic Growth" },
                   {
                     value: "SDG 9",
-                    label: "SDG 9: Industry, Innovation and Infrastructure",
+                    label: "Industry, Innovation and Infrastructure",
                   },
-                  { value: "SDG 10", label: "SDG 10: Reduced Inequalities" },
+                  { value: "SDG 10", label: "Reduced Inequalities" },
                   {
                     value: "SDG 11",
-                    label: "SDG 11: Sustainable Cities and Communities",
+                    label: "Sustainable Cities and Communities",
                   },
                   {
                     value: "SDG 12",
-                    label: "SDG 12: Responsible Consumption and Production",
+                    label: "Responsible Consumption and Production",
                   },
-                  { value: "SDG 13", label: "SDG 13: Climate Action" },
-                  { value: "SDG 14", label: "SDG 14: Life Below Water" },
-                  { value: "SDG 15", label: "SDG 15: Life on Land" },
+                  { value: "SDG 13", label: "Climate Action" },
+                  { value: "SDG 14", label: "Life Below Water" },
+                  { value: "SDG 15", label: "Life on Land" },
                   {
                     value: "SDG 16",
-                    label: "SDG 16: Peace, Justice and Strong Institutions",
+                    label: "Peace, Justice and Strong Institutions",
                   },
-                  {
-                    value: "SDG 17",
-                    label: "SDG 17: Partnerships for the Goals",
-                  },
+                  { value: "SDG 17", label: "Partnerships for the Goals" },
                 ].map((sdg) => (
-                  <div key={sdg.value} className="bg-gray-200 rounded-full">
-                    <label className="flex items-center space-x-1 p-2 hover:bg-gray-100 rounded cursor-pointer">
+                  <label
+                    key={sdg.value}
+                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border cursor-pointer transition-all duration-200 shadow-sm
+          ${
+            formData.alignedSDG.includes(sdg.value)
+              ? "border-amber-500 bg-amber-50 text-amber-700 shadow"
+              : "border-gray-200 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
+          }`}
+                  >
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         checked={formData.alignedSDG.includes(sdg.value)}
                         onCheckedChange={() => handleSDGChange(sdg.value)}
                         className="h-5 w-5 rounded-full border-gray-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
                       />
-                      <span className="text-sm">{sdg.label}</span>
-                    </label>
-                  </div>
+                      <span className="font-semibold text-sm">{sdg.value}</span>
+                    </div>
+                    <span className="text-xs text-gray-600">{sdg.label}</span>
+                  </label>
                 ))}
               </div>
             </div>
@@ -359,14 +367,14 @@ function OrganizationDropdown({ selectedOrgs, onSelectOrgs, excludeOrgId }) {
       }
       const res = await axios.get(
         `${API_ROUTER}/getAllCollaboratingOrganizationProfile?search=${encodeURIComponent(
-          searchTerm
+          searchTerm,
         )}&department=${encodeURIComponent(
-          selectedDepartment
+          selectedDepartment,
         )}&program=${encodeURIComponent(
-          selectedProgram
+          selectedProgram,
         )}&specialization=${encodeURIComponent(
-          selectedSpecialization
-        )}&scope=${encodeURIComponent(searchScope)}`
+          selectedSpecialization,
+        )}&scope=${encodeURIComponent(searchScope)}`,
       );
 
       // Filter out the excluded organization
@@ -416,14 +424,14 @@ function OrganizationDropdown({ selectedOrgs, onSelectOrgs, excludeOrgId }) {
 
   const handleOrgToggle = (org) => {
     const isSelected = selectedOrgs.some(
-      (selected) => selected._id === org._id
+      (selected) => selected._id === org._id,
     );
     let newSelectedOrgs;
 
     if (isSelected) {
       // Remove from selection
       newSelectedOrgs = selectedOrgs.filter(
-        (selected) => selected._id !== org._id
+        (selected) => selected._id !== org._id,
       );
     } else {
       // Add to selection
@@ -563,7 +571,7 @@ function OrganizationDropdown({ selectedOrgs, onSelectOrgs, excludeOrgId }) {
                 {/* Organization options with checkboxes */}
                 {orgs.map((org) => {
                   const isSelected = selectedOrgs.some(
-                    (selected) => selected._id === org._id
+                    (selected) => selected._id === org._id,
                   );
                   return (
                     <label

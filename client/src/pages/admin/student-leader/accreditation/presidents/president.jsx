@@ -32,8 +32,8 @@ const LoadingScreen = () => {
       <CardContent className="flex flex-col items-center space-y-6 p-8">
         {/* Animated spinner */}
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-indigo-400 rounded-full animate-spin animation-delay-150"></div>
+          <div className="w-16 h-16 border-4 border-primary border-t-primary rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-primary rounded-full animate-spin animation-delay-150"></div>
         </div>
 
         {/* Loading text */}
@@ -48,9 +48,9 @@ const LoadingScreen = () => {
 
         {/* Animated dots */}
         <div className="flex space-x-1">
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-200"></div>
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce animation-delay-400"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-200"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-400"></div>
         </div>
       </CardContent>
     </Card>
@@ -160,7 +160,7 @@ export default function StudentLeaderPresidentListComponent({
             <p className="text-sm text-gray-600 mb-4">{error}</p>
             <Button
               onClick={() => window.location.reload()}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-primary hover:bg-primary"
             >
               Retry
             </Button>
@@ -171,15 +171,12 @@ export default function StudentLeaderPresidentListComponent({
   }
 
   return (
-    <div
-      className="flex flex-col h-full w-full gap-6 overflow-auto p-6"
-      style={{ backgroundColor: "#F5F5F9" }}
-    >
+    <div className="flex flex-col h-full w-full gap-6 overflow-auto p-6 bg-shade-light">
       {/* Current President */}
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 border-b-2">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-2xl font-bold text-gray-800">
             Current President
           </h2>
         </div>
@@ -196,16 +193,13 @@ export default function StudentLeaderPresidentListComponent({
         ) : (
           <Card
             onClick={handleAdd}
-            className="group bg-gradient-to-br from-indigo-50 to-white border-2 border-dashed border-indigo-300 hover:border-indigo-500 cursor-pointer hover:shadow-lg transition-all duration-300"
+            className="group border-2 border-dashed border-a-300 hover:border-primary cursor-pointer hover:shadow-lg transition-all duration-300"
           >
             <CardContent className="p-8 flex flex-col justify-center items-center text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center border border-indigo-300 group-hover:border-indigo-500 group-hover:scale-105 transition-all duration-300">
-                <Plus
-                  size={44}
-                  className="text-indigo-600 group-hover:text-indigo-700"
-                />
+              <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary rounded-full flex items-center justify-center border border-primary group-hover:border-primary group-hover:scale-105 transition-all duration-300">
+                <Plus size={44} className="text-white group-hover:text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mt-4 group-hover:text-indigo-700 transition-colors duration-200">
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 group-hover:text-primary transition-colors duration-200">
                 Add Current President
               </h3>
               <p className="text-sm text-gray-500 mt-2 group-hover:text-gray-600 transition-colors duration-200">
@@ -217,10 +211,10 @@ export default function StudentLeaderPresidentListComponent({
       </div>
 
       {/* Former Presidents */}
-      <div className="mt-10">
+      <div className="">
         {/* Header with subtle divider */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800">
             Former Presidents
           </h2>
           <Badge variant="secondary" className="text-sm italic">
@@ -323,8 +317,8 @@ const CurrentPresidentCard = ({ currentPresident, orgData }) => {
           {/* Basic Info */}
           <div className="text-center md:text-left text-white">
             <h1 className="text-2xl md:text-3xl font-bold mb-2">{name}</h1>
-            <p className="text-lg text-blue-100 mb-1">{course}</p>
-            <p className="text-blue-200">
+            <p className="text-lg text-primary mb-1">{course}</p>
+            <p className="text-primary">
               {year} • {department}
             </p>
           </div>
@@ -383,7 +377,7 @@ const CurrentPresidentCard = ({ currentPresident, orgData }) => {
                   href={facebookAccount}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline font-medium truncate max-w-32"
+                  className="text-primary hover:underline font-medium truncate max-w-32"
                 >
                   View Profile
                 </a>
@@ -414,7 +408,7 @@ const CurrentPresidentCard = ({ currentPresident, orgData }) => {
               <Badge
                 key={index}
                 variant="secondary"
-                className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200"
+                className="px-3 py-1 bg-primary text-primary hover:bg-primary"
               >
                 {talent.skill} ({talent.level})
               </Badge>
@@ -504,7 +498,7 @@ const PresidentCard = ({
             onClick={() => onEdit(president)}
             variant="ghost"
             size="icon"
-            className="text-gray-400 hover:text-blue-600"
+            className="text-gray-400 hover:text-primary"
             title="Edit"
           >
             <Edit className="w-4 h-4" />
@@ -539,11 +533,11 @@ const PresidentCard = ({
 
           {/* Fallback avatar with initials */}
           <div
-            className={`min-w-32 h-auto aspect-square bg-indigo-100 rounded-full flex items-center justify-center border-2 border-gray-200 ${
+            className={`min-w-32 h-auto aspect-square bg-primary rounded-full flex items-center justify-center border-2 border-gray-200 ${
               president.profilePicture ? "hidden" : "flex"
             }`}
           >
-            <span className="text-2xl font-bold text-indigo-600">
+            <span className="text-2xl font-bold text-primary">
               {president.name ? president.name.charAt(0).toUpperCase() : "P"}
             </span>
           </div>
@@ -570,7 +564,7 @@ const PresidentCard = ({
           variant={president.isCurrent ? "default" : "secondary"}
           className={
             president.isCurrent
-              ? "bg-indigo-600 hover:bg-indigo-700"
+              ? "bg-primary hover:bg-primary"
               : "bg-gray-50 hover:bg-gray-100"
           }
         >
@@ -596,7 +590,7 @@ const PresidentCard = ({
               href={president.facebookAccount}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-xs break-all"
+              className="text-primary hover:text-primary text-xs break-all"
             >
               {president.facebookAccount.replace(
                 "https://www.facebook.com/",
@@ -726,7 +720,7 @@ export function UploadPresidentProfilePicture({
             <Button
               onClick={handleUpload}
               disabled={uploading}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary"
             >
               {uploading ? "Processing..." : "Upload Image"}
             </Button>

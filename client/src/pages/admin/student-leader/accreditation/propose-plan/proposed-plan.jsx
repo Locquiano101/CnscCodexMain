@@ -15,7 +15,14 @@ import EditPpa from "./proposed-plan-edit";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export function StudentProposedPlan({ orgData, accreditationData }) {
   const [proposals, setProposals] = useState([]);
@@ -31,7 +38,7 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${API_ROUTER}/getStudentLeaderProposalById/${accreditationData._id}`
+        `${API_ROUTER}/getStudentLeaderProposalById/${accreditationData._id}`,
       );
       console.log(response.data);
       setProposals(response.data);
@@ -107,7 +114,7 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
   };
 
   return (
-    <div className="p-6 w-full h-full" style={{ backgroundColor: '#F5F5F9' }}>
+    <div className="p-6 w-full h-full bg-shade-light">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
@@ -116,9 +123,8 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
         {!loading && proposals.length > 0 && (
           <Button
             onClick={() => setShowManageModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+            className="bg-primary text-white font-bold flex items-center gap-2"
           >
-            <Plus size={16} />
             Add New Proposal
           </Button>
         )}
@@ -153,12 +159,12 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
                 No Proposals Found
               </h3>
               <p className="text-gray-600 mb-6">
-                There are currently no proposed action plans for this
+                + There are currently no proposed action plans for this
                 organization.
               </p>
               <Button
                 onClick={() => setShowManageModal(true)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8 py-4 mx-auto shadow-lg hover:shadow-xl"
+                className="bg-primary text-white font-bold font-lg py-4 mx-auto shadow-lg hover:shadow-xl"
               >
                 <Plus size={20} className="mr-2" />
                 Create First Proposal
@@ -264,7 +270,10 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
       )}
       {/* View Modal */}
       {showViewModal && selectedProposal && (
-        <Dialog open={showViewModal} onOpenChange={() => setShowViewModal(false)}>
+        <Dialog
+          open={showViewModal}
+          onOpenChange={() => setShowViewModal(false)}
+        >
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>View Proposal</DialogTitle>
@@ -357,7 +366,7 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
                               Class: {entity.orgClass}
                             </p>
                           </div>
-                        )
+                        ),
                       )}
                     </div>
                   </div>
@@ -365,10 +374,7 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
             </div>
 
             <DialogFooter>
-              <Button
-                onClick={() => setShowViewModal(false)}
-                variant="outline"
-              >
+              <Button onClick={() => setShowViewModal(false)} variant="outline">
                 Close
               </Button>
             </DialogFooter>
@@ -387,14 +393,19 @@ export function StudentProposedPlan({ orgData, accreditationData }) {
       )}
       {/* Delete Modal */}
       {showDeleteModal && (
-        <Dialog open={showDeleteModal} onOpenChange={() => setShowDeleteModal(false)}>
+        <Dialog
+          open={showDeleteModal}
+          onOpenChange={() => setShowDeleteModal(false)}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="text-red-600">
                 Delete Proposal
               </DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete "{selectedProposal?.activityTitle}"? This action cannot be undone.
+                Are you sure you want to delete "
+                {selectedProposal?.activityTitle}"? This action cannot be
+                undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

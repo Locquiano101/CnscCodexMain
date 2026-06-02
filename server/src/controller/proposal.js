@@ -21,14 +21,14 @@ export const ApprovedProposal = async (req, res) => {
 
     // 🔗 Step 3: Update parent ProposedActionPlan status (aggregate from children)
     const actionPlan = await ProposedActionPlan.findById(
-      proposal.ProposedActionPlanSchema
+      proposal.ProposedActionPlanSchema,
     ).populate("ProposedIndividualActionPlan");
 
     if (actionPlan) {
       // If ALL proposals are approved → mark overall approved
       if (
         actionPlan.ProposedIndividualActionPlan.every(
-          (p) => p.overallStatus === "Approved For Conduct"
+          (p) => p.overallStatus === "Approved For Conduct",
         )
       ) {
         actionPlan.overallStatus = "Approved For Conduct";
@@ -37,7 +37,7 @@ export const ApprovedProposal = async (req, res) => {
       else if (
         actionPlan.ProposedIndividualActionPlan.some(
           (p) =>
-            p.overallStatus === "Rejected" || p.overallStatus === "Revision"
+            p.overallStatus === "Rejected" || p.overallStatus === "Revision",
         )
       ) {
         actionPlan.overallStatus = "With Revisions";
@@ -72,7 +72,7 @@ export const ApprovedProposal = async (req, res) => {
 
 export const updateStudentLeaderProposal = async (req, res) => {
   try {
-    const { id } = req.params; // Proposal ID
+    const { ProposalId } = req.params; // Proposal ID
     const {
       activityTitle,
       alignedSDG,
@@ -92,7 +92,7 @@ export const updateStudentLeaderProposal = async (req, res) => {
     }
 
     const updatedProposal = await Proposal.findByIdAndUpdate(
-      id,
+      ProposalId,
       {
         activityTitle,
         alignedSDG: normalizedSDG,
@@ -104,7 +104,7 @@ export const updateStudentLeaderProposal = async (req, res) => {
         proposalType,
         proposalCategory,
       },
-      { new: true } // return the updated doc
+      { new: true }, // return the updated doc
     );
 
     if (!updatedProposal) {
@@ -293,7 +293,7 @@ export const getPpaBySdu = async (req, res) => {
 
   try {
     const proposals = await Proposal.find({ organizationProfile: id }).populate(
-      "document"
+      "document",
     ); // Mongoose query
 
     if (!proposals || proposals.length === 0) {
