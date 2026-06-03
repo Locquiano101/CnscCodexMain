@@ -10,7 +10,7 @@ import MongoStore from "connect-mongo";
 
 import apiRoutes from "./routers.js";
 import { AccreditationRequirement } from "./models/index.js";
-import { seedAccreditationRequirements, seedUsers } from "./middleware/seed.js";
+import { seed } from "./middleware/seed.js";
 import { profanityMiddleware } from "./middleware/profanity_checker.js";
 
 dotenv.config();
@@ -27,9 +27,6 @@ async function connectDB() {
   try {
     await mongoose.connect(DB);
     console.log(`✅ Connected to MongoDB at ${DB}`);
-
-    await seedUsers();
-    await seedAccreditationRequirements();
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error);
     process.exit(1);
@@ -37,7 +34,6 @@ async function connectDB() {
 }
 
 connectDB();
-
 // Log gating status early for operational visibility
 if (process.env.ENABLE_REQUIREMENT_GATING === "true") {
   console.log("🔐 Accreditation requirement gating ENABLED");

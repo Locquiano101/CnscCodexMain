@@ -250,11 +250,9 @@ export function AccreditationDocuments({ orgData }) {
     <div className="flex flex-col p-6 gap-6">
       {/* Header Section */}
       <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="text-2xl">
-            Accreditation Document Summary
-          </CardTitle>
-        </CardHeader>
+        <h1 className="text-2xl font-bold m-2 ml-4 ">
+          Accreditation Document Summary
+        </h1>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-emerald-50 border-emerald-100">

@@ -96,14 +96,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
     const checkSession = async () => {
       // Check if user had a previous session before making the request
       const hadPreviousSession = sessionStorage.getItem("userData");
-      console.log(hadPreviousSession);
       try {
         const res = await axios.get(`${API_ROUTER}/session-check`, {
           withCredentials: true,
         });
 
-        console.log("session checking...");
-        console.log(res.data);
         if (res.data.loggedIn) {
           const userRole = res.data.user.position;
 

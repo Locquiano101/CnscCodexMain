@@ -85,7 +85,7 @@ export default function StudentLeaderMainPage() {
         const response = await axios.get(`${API_ROUTER}/userInfo/${userId}`, {
           withCredentials: true,
         });
-        console.log(response.data.organization);
+
         const userData = response.data.organization;
         setOrgData(userData);
 

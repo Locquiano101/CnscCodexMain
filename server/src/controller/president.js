@@ -55,7 +55,9 @@ Accreditation Support Team
     // 🛎️ 5. Create in-system notifications for each organization
     const orgProfileIds = [
       ...new Set(
-        users.map((u) => u.organizationProfile?._id?.toString()).filter(Boolean)
+        users
+          .map((u) => u.organizationProfile?._id?.toString())
+          .filter(Boolean),
       ),
     ];
 
@@ -87,6 +89,7 @@ export const UpdatePresidentProfileStatus = async (req, res) => {
   const { presidentId } = req.params;
   const { overallStatus, revisionNotes } = req.body;
 
+  console.log(req.body, req.params);
   if (!presidentId) {
     return res
       .status(400)
@@ -102,8 +105,10 @@ export const UpdatePresidentProfileStatus = async (req, res) => {
   try {
     // 🔹 Find the president profile and linked organizationProfile
     const profile = await PresidentProfile.findById(presidentId).populate(
-      "organizationProfile"
+      "organizationProfile",
     );
+
+    console.log(profile);
 
     if (!profile) {
       return res
@@ -124,12 +129,12 @@ export const UpdatePresidentProfileStatus = async (req, res) => {
       organizationProfile: profile.organizationProfile?._id,
     }).select("email name");
 
-    if (!connectedUsers.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No connected users found for this president profile.",
-      });
-    }
+    // if (!connectedUsers.length) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "No connected users found for this president profile.",
+    //   });
+    // }
 
     const recipientEmails = connectedUsers.map((user) => user.email);
 
@@ -279,13 +284,13 @@ export const AddPresident = async (req, res) => {
     await OrganizationProfile.findByIdAndUpdate(
       organizationProfile,
       { orgPresident: savedProfile._id },
-      { new: true }
+      { new: true },
     );
 
     await Accreditation.findByIdAndUpdate(
       AccreditationId,
       { PresidentProfile: savedProfile._id },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({
@@ -318,7 +323,7 @@ export const UpdatePresidentProfile = async (req, res) => {
     const updatedProfile = await PresidentProfile.findByIdAndUpdate(
       presidentId,
       { profilePicture: file }, // or file.originalname if you prefer the original name
-      { new: true }
+      { new: true },
     );
 
     if (!updatedProfile) {

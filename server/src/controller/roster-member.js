@@ -31,8 +31,10 @@ export const ApprovedRosterList = async (req, res) => {
       updateFields,
       {
         new: true,
-      }
+      },
     ).populate("organizationProfile");
+
+    console.log(updatedRoster.organizationProfile);
 
     if (!updatedRoster) {
       return res
@@ -156,7 +158,7 @@ export const SendEmailToOrgUsers = async (req, res) => {
 
     // ✉️ Send email to each user
     const emailPromises = users.map((user) =>
-      NodeEmail(user.email, subject, message)
+      NodeEmail(user.email, subject, message),
     );
 
     res.status(200).json({
@@ -177,7 +179,7 @@ export const revisionNoteRosterList = async (req, res) => {
     const updatedRoster = await Roster.findByIdAndUpdate(
       rosterId,
       { overAllStatus: `Revision from ${position}`, revisionNotes },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedRoster) {
@@ -212,7 +214,7 @@ export const CompleteRosterList = async (req, res) => {
     const updatedRoster = await Roster.findByIdAndUpdate(
       rosterId,
       { isComplete: true },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedRoster) {

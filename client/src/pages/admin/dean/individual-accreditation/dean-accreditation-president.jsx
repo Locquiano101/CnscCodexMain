@@ -25,7 +25,7 @@ export function DeanPresident({ selectedOrg }) {
 
       try {
         const response = await axios.get(
-          `${API_ROUTER}/getPresidents/${orgId}`
+          `${API_ROUTER}/getPresidents/${orgId}`,
         );
         const data = response.data || [];
 
@@ -108,7 +108,10 @@ export function DeanPresident({ selectedOrg }) {
 
   // --- Main Render ---
   return (
-    <div className="h-full overflow-auto flex flex-col gap-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full overflow-auto flex flex-col gap-6"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <div className="grid grid-cols-4 gap-6">
         {/* Current President */}
         <div className="col-span-4">
@@ -346,7 +349,7 @@ const InfoSection = ({
                 <span className="font-medium">{value}</span>
               )}
             </div>
-          ) : null
+          ) : null,
         )}
       </div>
     </div>
@@ -510,7 +513,7 @@ const PresidentCard = ({
             >
               {president.facebookAccount.replace(
                 "https://www.facebook.com/",
-                "@"
+                "@",
               )}
             </a>
           </div>
@@ -548,7 +551,7 @@ export function ApprovePresidentProfile({ presidentData, setShowPopup }) {
   const HandleSubmitApprovalOfPresidentProfile = async () => {
     console.log(
       "Submitting approval for president profile:",
-      presidentData._id
+      presidentData._id,
     );
     try {
       setIsLoading(true);
@@ -556,7 +559,7 @@ export function ApprovePresidentProfile({ presidentData, setShowPopup }) {
         `${API_ROUTER}/updateStatusPresident/${presidentData._id}`,
         {
           overallStatus: "Approved by the Dean", // ✅ Fixed: Send the correct field name
-        }
+        },
       );
       console.log("Approval response:", res.data);
 
@@ -633,7 +636,7 @@ export function RevisePresidentProfile({ presidentData, setShowPopup }) {
       "Submitting revision for president profile:",
       presidentData._id,
       "Notes:",
-      revisionNotes
+      revisionNotes,
     );
     try {
       setIsLoading(true);
@@ -642,7 +645,7 @@ export function RevisePresidentProfile({ presidentData, setShowPopup }) {
         {
           overallStatus: "Revision From the Dean", // ✅ Fixed: Send correct field name
           revisionNotes: revisionNotes.trim(), // ✅ Fixed: Send revision notes correctly
-        }
+        },
       );
       console.log("Revision response:", res.data);
 

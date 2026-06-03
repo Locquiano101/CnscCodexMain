@@ -9,6 +9,7 @@ import {
   MapPin,
   Award,
   Clock,
+  RadioTower,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import AddStudentPresident from "./add_president";
@@ -79,9 +80,11 @@ export default function StudentLeaderPresidentListComponent({
         const response = await axios.get(
           `${API_ROUTER}/getPresidents/${orgId}`,
         );
+
+        console.log(orgId);
         const data = response.data;
 
-        console.log(orgData);
+        console.log(data);
         if (orgData?.orgPresident?._id) {
           const orgPresidentId = orgData.orgPresident._id;
 
