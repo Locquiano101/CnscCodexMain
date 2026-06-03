@@ -7,7 +7,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { DonePopUp } from "../../../../components/components";
 
-export function DeanRosterData({ selectedOrg }) {
+export function SduCoorRosterData({ selectedOrg }) {
   // Replaced three-dots dropdown with visible action buttons
   const [notificationModal, setNotificationModal] = useState(false);
   const [revisionModal, setRevisionModal] = useState(false);
@@ -25,7 +25,7 @@ export function DeanRosterData({ selectedOrg }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(
-    `Dear ${selectedOrg.orgName},\n\nWe kindly request you to complete your roster list as part of the accreditation process. Please ensure that all required members and details are submitted at the earliest convenience.\n\nThank you for your cooperation.\n\nSincerely,\n Dean`,
+    `Dear ${selectedOrg.orgName},\n\nWe kindly request you to complete your roster list as part of the accreditation process. Please ensure that all required members and details are submitted at the earliest convenience.\n\nThank you for your cooperation.\n\nSincerely,\n Sdu Coordinator`,
   );
   const [subject, setSubject] = useState("Notification for Roster Lists");
 
@@ -132,7 +132,10 @@ export function DeanRosterData({ selectedOrg }) {
     }
   };
   const handleDropdownAction = (id) => {
-    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+    const SduCoorStatuses = [
+      "Revision From the Sdu Coordinator",
+      "Approved By the Sdu Coordinator",
+    ];
     const adviserStatuses = [
       "Approved by the Adviser",
       "Revision from the Adviser",
@@ -142,7 +145,7 @@ export function DeanRosterData({ selectedOrg }) {
       ?.toLowerCase()
       .trim();
 
-    const isDeanUpdated = deanStatuses.some(
+    const isSduCoorUpdated = SduCoorStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus,
     );
 
@@ -150,11 +153,11 @@ export function DeanRosterData({ selectedOrg }) {
       (status) => status.toLowerCase().trim() === currentStatus,
     );
 
-    if (isDeanUpdated || !isAdviserValid) {
+    if (isSduCoorUpdated || !isAdviserValid) {
       setPendingAction(id);
       setConfirmMessage(
-        isDeanUpdated
-          ? "This roster has already been updated by the Dean. Do you want to continue updating it again?"
+        isSduCoorUpdated
+          ? "This roster has already been updated by the Sdu Coordinator. Do you want to continue updating it again?"
           : "This roster has not yet been reviewed by the Adviser. Do you want to proceed anyway?",
       );
       setConfirmUpdateModal(true);
@@ -428,7 +431,7 @@ export function DeanRosterData({ selectedOrg }) {
               onClick={async () => {
                 setApprovalLoading(true);
                 await handleApproval({
-                  status: "Revision From the Dean",
+                  status: "Revision From the Sdu Coordinator",
                   revisionNotes: message,
                   forceApprove: true,
                 });
@@ -470,7 +473,7 @@ export function DeanRosterData({ selectedOrg }) {
 
             <button
               onClick={() => {
-                handleApproval({ status: "Approved By the Dean" });
+                handleApproval({ status: "Approved By the Sdu Coordinator" });
               }}
               disabled={approvalLoading}
               className={`w-full py-2 rounded-lg text-sm font-medium shadow-md transition ${
@@ -503,7 +506,7 @@ export function DeanRosterData({ selectedOrg }) {
               <button
                 onClick={() => {
                   handleApproval({
-                    status: "Approved by the Dean",
+                    status: "Approved by the Sdu Coordinator",
                     forceApprove: true,
                   });
                 }}

@@ -13,8 +13,8 @@ import { AlertTriangle, X, LogOut } from "lucide-react";
 import { NotFoundPage, UnauthorizedPage } from "./components/error";
 import StudentLeaderMainPage from "./pages/admin/student-leader/student-leader-main";
 import { AdviserPage } from "./pages/admin/adviser/adviser_main";
+import { SduCoorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main";
 import { DeanPage } from "./pages/admin/dean/dean-main";
-import { SduCoordinatorPage } from "./pages/admin/sdu-coordinator/sdu-coor-main";
 import { PublicPostFeed } from "./pages/public/public_post";
 import { PublicProfile } from "./pages/public/public_profile";
 import { SduMainPage } from "./pages/admin/sdu-main/sdu-main";
@@ -73,7 +73,7 @@ export default function App() {
           />
         }
       >
-        <Route path="/sdu-coordinator/*" element={<SduCoordinatorPage />} />
+        <Route path="/SduCoor/*" element={<SduCoorPage />} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />

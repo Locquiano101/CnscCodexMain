@@ -1,36 +1,39 @@
-import { DOCU_API_ROUTER } from "../../../../App";
 import { useState } from "react";
+import { DOCU_API_ROUTER } from "../../../../App";
 import { UpdateStatusProposal } from "../../../../components/update-status-proposal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
-export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
+export function ShowSduCoorDetailedProposal({
+  proposal,
+  orgData,
+  user,
+  onClose,
+}) {
   const [statusModal, setStatusModal] = useState(null); // ✅ unique name
-
   const [selectedDocIndex, setSelectedDocIndex] = useState(0);
   const selectedDoc = proposal?.document?.[selectedDocIndex] || null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col p-0">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Proposal Details
-            </h2>
-            <p className="text-gray-600 text-sm mt-1">
-              Comprehensive proposal information and documents
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl p-2 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+        <DialogHeader className="px-6 py-6 border-b bg-white">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            Proposal Details
+          </DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Comprehensive proposal information and documents
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Content: Split View */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left: Details Panel */}
           <div className="w-2/5 border-r border-gray-200 overflow-y-auto bg-gray-50">
             <div className="p-6 space-y-6">
@@ -87,7 +90,7 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
                   <div className="bg-white rounded-md p-4 border border-gray-200">
                     <p className="text-gray-900 font-medium">
                       {new Date(
-                        proposal.ProposedIndividualActionPlan.proposedDate
+                        proposal.ProposedIndividualActionPlan.proposedDate,
                       ).toLocaleDateString("en-PH", {
                         year: "numeric",
                         month: "long",
@@ -136,7 +139,7 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
                         >
                           {sdg}
                         </span>
-                      )
+                      ),
                     )}
                   </div>
                 </div>
@@ -170,6 +173,7 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
             <div className="flex-1 bg-gray-100">
               {selectedDoc ? (
                 <iframe
+                  key={`${DOCU_API_ROUTER}/${proposal.organizationProfile}/${selectedDoc.fileName}`}
                   src={`${DOCU_API_ROUTER}/${proposal.organizationProfile}/${selectedDoc.fileName}`}
                   title={`${selectedDoc.label || "Document"} PDF`}
                   className="w-full h-full border-0"
@@ -226,7 +230,7 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
                         onClick={() => setSelectedDocIndex(index)}
                         className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${
                           selectedDocIndex === index
-                            ? "bg-blue-600 text-white"
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
                             : "text-gray-700 hover:bg-gray-100 border border-gray-200 bg-white"
                         }`}
                       >
@@ -240,8 +244,8 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
                         setSelectedDocIndex(
                           Math.min(
                             proposal.document.length - 1,
-                            selectedDocIndex + 1
-                          )
+                            selectedDocIndex + 1,
+                          ),
                         )
                       }
                       disabled={
@@ -261,7 +265,7 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4 bg-white flex justify-between items-center">
+        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-between items-center">
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span>
               Created:{" "}
@@ -275,10 +279,10 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
             )}
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md"
+              className="px-4 py-2 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors"
             >
               Close
             </button>
@@ -288,10 +292,10 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
               onClick={() =>
                 setStatusModal({
                   type: "alert",
-                  status: "Revision from SDU Coordinator",
+                  status: "Revision from Sdu Coordinator",
                 })
               }
-              className="px-4 py-2 text-white bg-amber-700 hover:bg-amber-800 rounded-md"
+              className="px-4 py-2 text-white bg-amber-600 hover:bg-amber-700 rounded-md transition-colors"
             >
               Send Revision
             </button>
@@ -299,12 +303,9 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
             {/* Approve button */}
             <button
               onClick={() =>
-                setStatusModal({
-                  type: "approval",
-                  status: "Approved by SDU Coordinator",
-                })
+                setStatusModal({ type: "approval", status: "Conduct Approved" })
               }
-              className="px-4 py-2 text-white bg-green-700 hover:bg-green-800 rounded-md"
+              className="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
             >
               Approve
             </button>
@@ -319,7 +320,7 @@ export function SduCoorDetailedProposal({ proposal, orgData, user, onClose }) {
           proposal={proposal}
           user={user}
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

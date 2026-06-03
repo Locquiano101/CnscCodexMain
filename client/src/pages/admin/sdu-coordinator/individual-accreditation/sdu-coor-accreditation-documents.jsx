@@ -29,10 +29,8 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
   const [selectedDocumentDetails, setSelectedDocumentDetails] = useState(null);
   const [revisionModal, setRevisionModal] = useState(false);
   const [message, setMessage] = useState("");
-  const [confirmUpdateModal, setConfirmUpdateModal] = useState(false);
   const [popup, setPopup] = useState(null);
-  const [confirmMessage, setConfirmMessage] = useState("");
-  const [pendingAction, setPendingAction] = useState(null);
+
   const [approvalModal, setApprovalModal] = useState(false);
   useEffect(() => {
     const fetchAccreditationInfo = async () => {
@@ -42,7 +40,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
           `${API_ROUTER}/getAccreditatationDocuments/${selectedOrg._id}`,
           {
             withCredentials: true,
-          }
+          },
         );
         console.log("+++++++++++");
         console.log(data);
@@ -67,13 +65,11 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
     }
   };
 
-  // ✅ Corrected handleApproval
   const handleApproval = async ({ status, revisionNotes }) => {
-    // ✅ Safe to update immediately
     try {
       const response = await axios.post(
         `${API_ROUTER}/UpdateDocument/${selectedDocumentDetails._id}`,
-        { status, revisionNotes }
+        { status, revisionNotes },
       );
 
       console.log("✅ Success:", response.data);
@@ -105,62 +101,6 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
     }
   };
 
-  // Add this inside CurrentPresidentCard component
-  // Replace the existing handleDropdownAction function with this corrected version:
-  const handleDropdownAction = (id) => {
-    const deanStatuses = ["Revision from the Dean", "Approved by the Dean"];
-    const sduCoorStatuses = [
-      "Revision from the Sdu Coordinator",
-      "Approved by the Sdu Coordinator",
-    ];
-    const adviserStatuses = [
-      "Approved by the Adviser",
-      "Revision from the Adviser",
-    ];
-
-    // ✅ Fixed: Use selectedDocumentDetails instead of currentPresident
-    const currentStatus = selectedDocumentDetails?.status?.toLowerCase().trim();
-    console.log(currentStatus);
-    const isDeanUpdated = deanStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
-    const isSduCoorUpdated = sduCoorStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
-
-    console.log(isDeanUpdated);
-    const isAdviserValid = adviserStatuses.some(
-      (status) => status.toLowerCase().trim() === currentStatus
-    );
-
-    console.log(id);
-    // Show confirmation modal if already updated by any authority or not reviewed by Adviser
-    if (isDeanUpdated || isSduCoorUpdated || !isAdviserValid) {
-      setPendingAction(id);
-
-      if (isDeanUpdated) {
-        setConfirmMessage(
-          "This document has already been updated by the Dean. Do you want to continue updating it again?"
-        );
-      } else if (isSduCoorUpdated) {
-        setConfirmMessage(
-          "This document has already been updated by the SDU Coordinator. Do you want to continue updating it again?"
-        );
-      } else if (!isAdviserValid) {
-        setConfirmMessage(
-          "This document has not yet been reviewed by the Adviser. Do you want to proceed anyway?"
-        );
-      }
-
-      setConfirmUpdateModal(true);
-      return;
-    }
-
-    // Otherwise, open modal normally
-    if (id === "revision") setRevisionModal(true);
-    else if (id === "approve") setApprovalModal(true); // ✅ lowercase
-  };
-
   const openDocumentDetails = (doc, label, docKey) => {
     if (!doc) return;
     console.log(doc);
@@ -182,10 +122,14 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
   };
 
   const DocumentCard = ({ label, doc, docKey }) => {
-    return doc?.fileName ? (
+    const hasFile = Boolean(doc?.fileName && selectedOrg?._id);
+    const url = hasFile
+      ? `${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}`
+      : null;
+    return hasFile ? (
       <div
         onClick={() => openDocumentDetails(doc, label, docKey)}
-        className="flex-1 h-full  transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
+        className="flex-1 min-h-180 h-full  transition-all duration-500 hover:bg-amber-100 cursor-pointer rounded-lg"
       >
         <div className=" h-full flex flex-col  bg-white rounded-lg shadow-md  hover:shadow-md transition-all duration-300">
           {/* Header */}
@@ -211,7 +155,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
                 <div className="flex items-center ">
                   <div
                     className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getStatusStyle(
-                      doc.status
+                      doc.status,
                     )}`}
                   >
                     {getStatusIcon(doc.status)}
@@ -225,7 +169,8 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
           {/* PDF Viewer */}
           <div className="flex-1  overflow-hidden">
             <iframe
-              src={`${DOCU_API_ROUTER}/${selectedOrg._id}/${doc.fileName}#toolbar=0&navpanes=0&scrollbar=0`}
+              key={url}
+              src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
               title={`${label} PDF Viewer`}
               className="w-full h-full"
             />
@@ -255,9 +200,12 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
   }
 
   return (
-    <div className="w-full  p-4 gap-4 flex flex-col h-full bg-gray-200">
+    <div
+      className="h-full overflow-auto flex flex-col gap-6"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       {/* Summary Stats */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Accreditation Summary
         </h2>
@@ -375,7 +323,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
                       </label>
                       <div
                         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(
-                          selectedDocumentDetails.status
+                          selectedDocumentDetails.status,
                         )}`}
                       >
                         {getStatusIcon(selectedDocumentDetails.status)}
@@ -391,7 +339,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
                         <Calendar className="w-4 h-4 text-gray-500" />
                         <span>
                           {new Date(
-                            selectedDocumentDetails.createdAt
+                            selectedDocumentDetails.createdAt,
                           ).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "long",
@@ -449,7 +397,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
                   <div className="flex gap-4 ">
                     <button
                       onClick={() => {
-                        handleDropdownAction("approve");
+                        setApprovalModal(true);
                       }}
                       className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2"
                     >
@@ -457,7 +405,9 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
                       Approve Document
                     </button>
                     <button
-                      onClick={() => handleDropdownAction("revision")}
+                      onClick={() => {
+                        setRevisionModal(true);
+                      }}
                       className="w-full bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors font-medium flex items-center justify-center gap-2"
                     >
                       <Pen className="w-4 h-4" />
@@ -471,6 +421,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
               <div className="flex-1 bg-white">
                 <div className="h-full">
                   <iframe
+                    key={selectedDocumentDetails.url}
                     src={`${selectedDocumentDetails.url}#toolbar=1&navpanes=1`}
                     title={`${selectedDocumentDetails.label} PDF Viewer`}
                     className="w-full h-full"
@@ -484,7 +435,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
 
       {/* Revision Modal */}
       {revisionModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-101">
+        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-100">
           <div className="h-fit bg-white w-1/6 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
             {/* Close Button */}
             <button
@@ -528,7 +479,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
 
       {/* Approval Modal */}
       {approvalModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-101">
+        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-100">
           <div className="h-fit bg-white w-1/4 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
             {/* Close Button */}
             <button
@@ -539,7 +490,7 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
             </button>
 
             <h1 className="text-lg font-semibold mb-4">
-              Approval: Roster of Organization
+              Approval: {selectedDocumentDetails.fileName} of Organization
             </h1>
 
             <p className="mb-4 text-gray-700">
@@ -568,43 +519,6 @@ export function SduCoorAccreditationDocument({ selectedOrg }) {
           message={popup.message}
           onClose={() => setPopup(null)}
         />
-      )}
-
-      {confirmUpdateModal && (
-        <div className="absolute bg-black/10 backdrop-blur-xs inset-0 flex justify-center items-center z-100">
-          <div className="h-fit bg-white w-1/3 flex flex-col px-6 py-6 rounded-2xl shadow-xl relative">
-            <button
-              onClick={() => setConfirmUpdateModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-
-            <h1 className="text-lg font-semibold mb-4">Confirmation</h1>
-            <p className="text-sm text-gray-700 mb-4">{confirmMessage}</p>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setConfirmUpdateModal(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Trigger the correct modal based on pending action
-                  if (pendingAction === "revision") setRevisionModal(true);
-                  else if (pendingAction === "approve") setApprovalModal(true); // ✅ lowercase
-
-                  setConfirmUpdateModal(false);
-                }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

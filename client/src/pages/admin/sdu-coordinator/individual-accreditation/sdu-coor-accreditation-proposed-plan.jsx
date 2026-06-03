@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { DonePopUp } from "../../../../components/components";
 
-export function DeanProposedPlan({ selectedOrg }) {
+export function SduCoorProposedPlan({ selectedOrg }) {
   const [proposals, setProposals] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -120,7 +120,10 @@ export function DeanProposedPlan({ selectedOrg }) {
   };
 
   const handleRevision = () => {
-    const deanStatuses = ["Revision From the Dean", "Approved by the Dean"];
+    const SduCoorStatuses = [
+      "Revision From the SduCoor",
+      "Approved by the SduCoor",
+    ];
     const adviserStatuses = [
       "Approved by the Adviser",
       "Revision from the Adviser",
@@ -128,7 +131,7 @@ export function DeanProposedPlan({ selectedOrg }) {
 
     const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
 
-    const isDeanUpdated = deanStatuses.some(
+    const isSduCoorUpdated = SduCoorStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus,
     );
 
@@ -136,12 +139,12 @@ export function DeanProposedPlan({ selectedOrg }) {
       (status) => status.toLowerCase().trim() === currentStatus,
     );
 
-    if (isDeanUpdated || !isAdviserValid) {
+    if (isSduCoorUpdated || !isAdviserValid) {
       setPendingAction("revision");
 
-      if (isDeanUpdated) {
+      if (isSduCoorUpdated) {
         setConfirmMessage(
-          "This proposal has already been updated by the Dean. Do you want to continue updating it again?",
+          "This proposal has already been updated by the SduCoor. Do you want to continue updating it again?",
         );
       } else if (!isAdviserValid) {
         setConfirmMessage(
@@ -157,7 +160,10 @@ export function DeanProposedPlan({ selectedOrg }) {
   };
 
   const handleApproval = () => {
-    const deanStatuses = ["Revision From the Dean", "Approved By the Dean"];
+    const SduCoorStatuses = [
+      "Revision From the SduCoor",
+      "Approved By the SduCoor",
+    ];
     const adviserStatuses = [
       "Approved by the Adviser",
       "Revision from the Adviser",
@@ -165,7 +171,7 @@ export function DeanProposedPlan({ selectedOrg }) {
 
     const currentStatus = selectedProposal.overallStatus?.toLowerCase().trim();
 
-    const isDeanUpdated = deanStatuses.some(
+    const isSduCoorUpdated = SduCoorStatuses.some(
       (status) => status.toLowerCase().trim() === currentStatus,
     );
 
@@ -173,16 +179,16 @@ export function DeanProposedPlan({ selectedOrg }) {
       (status) => status.toLowerCase().trim() === currentStatus,
     );
 
-    if (isDeanUpdated || !isAdviserValid) {
+    if (isSduCoorUpdated || !isAdviserValid) {
       setPendingAction("Approval");
 
-      if (isDeanUpdated) {
+      if (isSduCoorUpdated) {
         setConfirmMessage(
-          "This proposal has already been updated by the Dean. Do you want to continue updating it again?",
+          "This proposal has already been updated by the SduCoor. Do you want to continue updating it again?",
         );
       } else if (!isAdviserValid) {
         setConfirmMessage(
-          "This proposal has not yet been reviewed by the Dean. Do you want to proceed anyway?",
+          "This proposal has not yet been reviewed by the Adviser. Do you want to proceed anyway?",
         );
       }
 
@@ -741,7 +747,7 @@ export function DeanProposedPlan({ selectedOrg }) {
                 <button
                   onClick={() =>
                     submitUpdate({
-                      status: "Revision from the Dean",
+                      status: "Revision from the Sdu Coordinator",
                     })
                   }
                   className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-400 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:cursor-not-allowed"
@@ -826,7 +832,7 @@ export function DeanProposedPlan({ selectedOrg }) {
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() =>
-                    submitUpdate({ status: "Approved by the Dean" })
+                    submitUpdate({ status: "Approved by the Sdu Coordinator" })
                   }
                   className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
