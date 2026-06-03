@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CNSC Codex — Deployment Guide</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="\client\src\assets\cnsc-codex.svg"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: "#500000",
+                dark: "#380000",
+                light: "#f5e6e6",
+                muted: "#fdf0f0",
+              },
+              accent: "#8b1a1a",
+            },
+            fontFamily: {
+              sans: ['"IBM Plex Sans"', "sans-serif"],
+              mono: ['"IBM Plex Mono"', "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Tailwind doesn't generate these at CDN-runtime for custom colors — keep only what's needed */
+      .bg-primary {
+        background-color: #500000;
+      }
+      .bg-primary-dark {
+        background-color: #380000;
+      }
+      .bg-primary-light {
+        background-color: #f5e6e6;
+      }
+      .bg-primary-muted {
+        background-color: #fdf0f0;
+      }
+      .text-primary {
+        color: #500000;
+      }
+      .text-accent {
+        color: #8b1a1a;
+      }
+      .border-primary {
+        border-color: #500000;
+      }
+      .border-accent {
+        border-color: #8b1a1a;
+      }
+      .border-l-primary {
+        border-left-color: #500000;
+      }
+      .border-l-accent {
+        border-left-color: #8b1a1a;
+      }
+      code {
+        font-family: "IBM Plex Mono", monospace;
+      }
+    </style>
+  </head>
+  <body class="font-sans bg-stone-100 text-stone-900 text-sm leading-relaxed">
+    <!-- ═══ HEADER ═══ -->
+    <header class="bg-primary border-b-4 border-primary-dark text-white py-12">
+      <div class="max-w-3xl mx-auto px-8">
+        <p
+          class="font-mono text-[11px] tracking-widest uppercase mb-3"
+          style="color: #e8a0a0"
+        >
+          System Deployment Documentation
+        </p>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">
+          CNSC Codex — Setup Guide
+        </h1>
+        <p class="text-sm font-light" style="color: #d4b0b0">
+          Camarines Norte State College &mdash; Student Development Unit &mdash;
+          Local Installation Reference
+        </p>
+      </div>
+    </header>
+
+    <!-- ═══ BODY ═══ -->
+    <div class="max-w-5xl mx-auto px-8 py-10 pb-20">
+      <!-- Table of Contents -->
+      <div
+        class="bg-white border border-stone-300 border-l-4 border-l-primary pl-7 pr-7 pt-6 pb-6 mb-10"
+      >
+        <p
+          class="font-mono text-[11px] tracking-widest uppercase text-stone-500 mb-4"
+        >
+          Table of Contents
+        </p>
+        <ol class="grid grid-cols-2 gap-x-6 gap-y-1 list-none">
+          <li>
+            <a
+              href="#s1"
+              class="text-primary font-semibold text-xs hover:underline"
+              >01 — Required Software &amp; Tools</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s2"
+              class="text-primary font-semibold text-xs hover:underline"
+              >02 — OS Requirements</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s3"
+              class="text-primary font-semibold text-xs hover:underline"
+              >03 — Database Backup File</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s4"
+              class="text-primary font-semibold text-xs hover:underline"
+              >04 — Database Setup Instructions</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s5"
+              class="text-primary font-semibold text-xs hover:underline"
+              >05 — Database Credentials</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s6"
+              class="text-primary font-semibold text-xs hover:underline"
+              >06 — Port Configuration</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s7"
+              class="text-primary font-semibold text-xs hover:underline"
+              >07 — Environment Config Files</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s8"
+              class="text-primary font-semibold text-xs hover:underline"
+              >08 — Install &amp; Run Commands</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s9"
+              class="text-primary font-semibold text-xs hover:underline"
+              >09 — Local Access URL</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s10"
+              class="text-primary font-semibold text-xs hover:underline"
+              >10 — Test Account Credentials</a
+            >
+          </li>
+          <li>
+            <a
+              href="#s11"
+              class="text-primary font-semibold text-xs hover:underline"
+              >11 — External Service Dependencies</a
+            >
+          </li>
+        </ol>
+      </div>
+
+      <!-- ── Section component macro ── -->
+      <!-- Section 1 -->
+      <section id="s1" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >01</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Required Software and Tools to Install</span
+          >
+        </div>
+        <div class="px-6 py-5 space-y-2 text-sm text-stone-800">
+          <p>
+            The following must be installed on the machine before running the
+            project. No XAMPP, Docker, or PHP is needed — this is a fully
+            Node.js and MongoDB stack.
+          </p>
+          <ul class="divide-y divide-dashed divide-stone-200 mt-3">
+            <li
+              class="py-2 pl-5 relative before:content-['—'] before:absolute before:left-0 before:text-stone-400 before:font-mono before:text-xs"
+            >
+              <strong>Node.js v18 or higher</strong> — the entire backend and
+              frontend tooling depends on it. Download from
+              <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                >nodejs.org</code
+              >
+            </li>
+            <li
+              class="py-2 pl-5 relative before:content-['—'] before:absolute before:left-0 before:text-stone-400 before:font-mono before:text-xs"
+            >
+              <strong>npm v9 or higher</strong> — included with Node.js; used
+              for package management and running workspace scripts
+            </li>
+            <li
+              class="py-2 pl-5 relative before:content-['—'] before:absolute before:left-0 before:text-stone-400 before:font-mono before:text-xs"
+            >
+              <strong>MongoDB</strong> — either a local MongoDB Community Server
+              installation, or a free cloud account on MongoDB Atlas at
+              <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                >mongodb.com/atlas</code
+              >
+            </li>
+            <li
+              class="py-2 pl-5 relative before:content-['—'] before:absolute before:left-0 before:text-stone-400 before:font-mono before:text-xs"
+            >
+              <strong>Git</strong> — required to clone the repository from
+              GitHub
+            </li>
+            <li
+              class="py-2 pl-5 relative before:content-['—'] before:absolute before:left-0 before:text-stone-400 before:font-mono before:text-xs"
+            >
+              <strong>A Gmail account with App Password enabled</strong> —
+              required only for the email notification feature (Nodemailer).
+              Standard Gmail passwords will not work if 2FA is active.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section id="s2" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >02</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Operating System Requirements</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            There are no specific OS restrictions. The project is built entirely
+            on Node.js, React (Vite), and MongoDB — all of which are
+            cross-platform.
+          </p>
+          <div
+            class="bg-primary-light border border-red-200 border-l-4 border-l-primary px-4 py-3 text-xs"
+            style="color: #500000"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1"
+              style="color: #8b1a1a"
+              >Compatible Systems</strong
+            >
+            Compatible with Windows, macOS, and Linux. There are no DLL
+            dependencies or platform-specific binaries.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section id="s3" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >03</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Database Backup File Location</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            This cannot be determined from the repository alone. The project
+            uses <strong>MongoDB</strong> (not MySQL), so the backup format is a
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >.bson</code
+            >
+            dump folder (via
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >mongodump</code
+            >) or a JSON export — not a
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >.sql</code
+            >
+            file. The uploads folder is gitignored and no backup file was
+            committed to the repository.
+          </p>
+          <div
+            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
+              >Action Required</strong
+            >
+            Confirm with your group where the database dump was saved on the
+            flash drive — for example:
+            <code class="bg-amber-100 px-1 py-0.5 text-xs"
+              >/database/cnsc-codex-dump/</code
+            >
+            or
+            <code class="bg-amber-100 px-1 py-0.5 text-xs"
+              >/database/cnsc_codex_backup.gz</code
+            >. Also confirm the exact filename before the defense.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section id="s4" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >04</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Database Setup Instructions</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-4">
+          <p>
+            The system uses MongoDB. There are two possible scenarios depending
+            on whether the database is local or cloud-hosted.
+          </p>
+
+          <p class="font-semibold">Option A — Local MongoDB:</p>
+          <ol class="divide-y divide-dashed divide-stone-200">
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >1</span
+              ><span
+                >Install MongoDB Community Server from
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >mongodb.com/try/download/community</code
+                >
+                and start the service.</span
+              >
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >2</span
+              ><span
+                >If you have a
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >mongodump</code
+                >
+                backup folder, run:
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >mongorestore --db cnsc-codex /path/to/dump/cnsc-codex</code
+                ></span
+              >
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >3</span
+              ><span
+                >If you have a JSON export, use MongoDB Compass to import it
+                into a database named
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >cnsc-codex</code
+                >.</span
+              >
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >4</span
+              ><span
+                >Set
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >MONGO_URI=mongodb://localhost:27017/cnsc-codex</code
+                >
+                in
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >server/.env</code
+                >.</span
+              >
+            </li>
+          </ol>
+
+          <p class="font-semibold pt-2">Option B — MongoDB Atlas (Cloud):</p>
+          <ol class="divide-y divide-dashed divide-stone-200">
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >1</span
+              ><span
+                >Create a free account at
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >mongodb.com/atlas</code
+                >
+                and create a cluster.</span
+              >
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >2</span
+              ><span>Create a database user with a username and password.</span>
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >3</span
+              ><span
+                >Get your connection string:
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >mongodb+srv://username:password@cluster.mongodb.net/cnsc-codex</code
+                ></span
+              >
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >4</span
+              ><span
+                >Paste that string as the value of
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >MONGO_URI</code
+                >
+                in
+                <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                  >server/.env</code
+                >.</span
+              >
+            </li>
+            <li class="flex gap-3 py-2.5">
+              <span
+                class="font-mono text-[11px] font-semibold text-primary bg-primary-light border border-red-200 min-w-[26px] h-[26px] flex items-center justify-center flex-shrink-0 mt-0.5"
+                >5</span
+              ><span
+                >No local import is needed if the live database is still active
+                on Atlas — the system connects directly.</span
+              >
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Section 5 -->
+      <section id="s5" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >05</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Database Connection Credentials (Local Setup)</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            Based on the README environment variable template, the default local
+            configuration should be:
+          </p>
+          <table class="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Setting
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Value
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">MONGO_URI</td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >mongodb://localhost:27017/cnsc-codex</code
+                  >
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Database Name
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >cnsc-codex</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Database User
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  None (local MongoDB default)
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Database Password
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  None (local MongoDB default)
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Database Host
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >localhost</code
+                  >
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  MongoDB Port
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >27017</code
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
+              >Note</strong
+            >
+            If your group changed these credentials, check the actual
+            <code class="bg-amber-100 px-1 text-xs">server/.env</code> file
+            saved on the flash drive — it is gitignored and not visible in the
+            GitHub repository.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6 -->
+      <section id="s6" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >06</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Port Configuration and Firewall Notes</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>The system uses two ports that must be free and unblocked:</p>
+          <table class="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Port
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Used By
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >5000</code
+                  >
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Express backend server
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >5173</code
+                  >
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Vite React frontend (development mode)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="bg-primary-light border border-red-200 border-l-4 border-l-primary px-4 py-3 text-xs"
+            style="color: #500000"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1"
+              style="color: #8b1a1a"
+              >Instruction for Ma'am</strong
+            >
+            Please ensure ports 5000 and 5173 are free and not blocked by the
+            Windows Firewall. If another application is already using port 5000,
+            the backend will fail to start. No special firewall rules are needed
+            beyond this, since everything runs on localhost.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 7 -->
+      <section id="s7" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >07</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Environment Configuration Files</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            There are two
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >.env</code
+            >
+            files that must be created manually. They are gitignored, so they
+            will not be present after cloning — copy them from the flash drive
+            or create them fresh.
+          </p>
+
+          <p class="font-semibold">
+            File 1 —
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >server/.env</code
+            >
+          </p>
+          <pre
+            class="bg-stone-900 text-green-300 font-mono text-xs leading-7 px-5 py-4 overflow-x-auto whitespace-pre"
+          ><span class="text-stone-500"># MongoDB connection</span>
+<span class="text-yellow-300">MONGO_URI</span>=mongodb://localhost:27017/cnsc-codex
+
+<span class="text-stone-500"># Server</span>
+<span class="text-yellow-300">PORT</span>=5000
+<span class="text-yellow-300">SESSION_SECRET</span>=any_random_secret_string_here
+
+<span class="text-stone-500"># Email (Gmail App Password)</span>
+<span class="text-yellow-300">EMAIL_USER</span>=your_gmail@gmail.com
+<span class="text-yellow-300">EMAIL_PASS</span>=your_gmail_app_password
+
+<span class="text-stone-500"># Feature flags</span>
+<span class="text-yellow-300">ENABLE_REQUIREMENT_GATING</span>=false
+<span class="text-yellow-300">REQUIREMENT_MAX_FILE_MB</span>=10</pre>
+
+          <p class="font-semibold pt-2">
+            File 2 —
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >client/.env</code
+            >
+          </p>
+          <pre
+            class="bg-stone-900 text-green-300 font-mono text-xs leading-7 px-5 py-4 overflow-x-auto whitespace-pre"
+          ><span class="text-yellow-300">VITE_API_URL</span>=http://localhost:5000
+<span class="text-yellow-300">VITE_UPLOADS_URL</span>=http://localhost:5000/uploads</pre>
+
+          <div
+            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
+              >Switching from Live to Local Mode</strong
+            >
+            If the system was previously pointed at a live cloud server, the
+            <code class="bg-amber-100 px-1 text-xs">VITE_API_URL</code> in
+            <code class="bg-amber-100 px-1 text-xs">client/.env</code> may be
+            set to a live domain. To switch to local mode, change it to
+            <code class="bg-amber-100 px-1 text-xs">http://localhost:5000</code
+            >.
+          </div>
+          <div
+            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
+              >Important</strong
+            >
+            Make sure to include the actual
+            <code class="bg-amber-100 px-1 text-xs">.env</code> files on the
+            flash drive, since they contain real credentials that are not
+            committed to GitHub.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 8 -->
+      <section id="s8" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >08</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Install and Run Commands</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            Open a terminal (Command Prompt or PowerShell on Windows; Terminal
+            on Mac or Linux) and run the following commands in order:
+          </p>
+          <pre
+            class="bg-stone-900 text-green-300 font-mono text-xs leading-7 px-5 py-4 overflow-x-auto whitespace-pre"
+          ><span class="text-stone-500"># Step 1 — Navigate to the project folder</span>
+cd CnscCodexMain
+
+<span class="text-stone-500"># Step 2 — Install all dependencies</span>
+<span class="text-stone-500"># This installs both client and server packages at once via npm workspaces</span>
+npm install
+
+<span class="text-stone-500"># Step 3 — Start the application</span>
+<span class="text-stone-500"># This boots both the React frontend and Express backend simultaneously</span>
+npm run dev</pre>
+          <div
+            class="bg-primary-light border border-red-200 border-l-4 border-l-primary px-4 py-3 text-xs"
+            style="color: #500000"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1"
+              style="color: #8b1a1a"
+              >Note</strong
+            >
+            The <code class="bg-red-100 px-1 text-xs">npm run dev</code> command
+            uses <code class="bg-red-100 px-1 text-xs">concurrently</code> to
+            start both the backend and frontend at the same time. You do not
+            need to open two separate terminals.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 9 -->
+      <section id="s9" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >09</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Local Access URL</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            Once the system is running, open a web browser and go to the
+            following address:
+          </p>
+          <table class="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Purpose
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  URL
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Frontend (the actual website)
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >http://localhost:5173</code
+                  >
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Backend API (for testing only)
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+                    >http://localhost:5000</code
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Ma'am only needs to open
+            <code class="bg-stone-100 px-1 py-0.5 text-primary text-xs"
+              >http://localhost:5173</code
+            >
+            in the browser to use and explore the system.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 10 -->
+      <section id="s10" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >10</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >Pre-Created Test Account Credentials</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            No seed files or hardcoded test accounts were found in the
+            repository. User accounts are stored in MongoDB and not committed to
+            GitHub.
+          </p>
+          <div
+            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
+              >Action Required</strong
+            >
+            Check your MongoDB database for existing accounts and note them down
+            before the defense. Make sure at least one account per role is
+            present in the database dump provided.
+          </div>
+          <table class="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Role
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Email
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Password
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  SDU Administrator
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  SDU Coordinator
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">Dean</td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5">Adviser</td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5">
+                  Student Leader
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+                <td
+                  class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
+                >
+                  fill in
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 11 -->
+      <section id="s11" class="bg-white border border-stone-300 mb-8">
+        <div
+          class="flex items-center gap-4 px-6 py-4 border-b border-stone-200 bg-stone-50"
+        >
+          <span
+            class="font-mono text-[11px] text-stone-400 font-semibold min-w-[28px]"
+            >11</span
+          >
+          <span class="font-bold text-sm tracking-tight text-primary"
+            >External Service Dependencies</span
+          >
+        </div>
+        <div class="px-6 py-5 text-sm text-stone-800 space-y-3">
+          <p>
+            The system relies on several external services. The following table
+            explains what may fail and how to handle it during the defense:
+          </p>
+          <table class="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Feature
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  Dependency
+                </th>
+                <th
+                  class="bg-stone-100 font-mono text-[11px] tracking-wide uppercase text-stone-500 px-3.5 py-2.5 border border-stone-300 text-left"
+                >
+                  What Happens Without It
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Email notifications
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Gmail via Nodemailer (requires internet + valid Gmail App
+                  Password in
+                  <code class="bg-stone-100 px-1 text-xs">.env</code>)
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Accreditation email alerts will fail silently. The rest of the
+                  system continues to work normally.
+                </td>
+              </tr>
+
+              <tr>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Real-time notifications
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Socket.IO (runs locally on port 5000 — no internet needed)
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Works offline as long as the server is running.
+                </td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  File uploads
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Stored locally in
+                  <code class="bg-stone-100 px-1 text-xs">server/uploads/</code>
+                </td>
+                <td class="border border-stone-300 px-3.5 py-2.5 align-top">
+                  Works offline as long as the folder exists locally.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="bg-primary-light border border-red-200 border-l-4 border-l-primary px-4 py-3 text-xs"
+            style="color: #500000"
+          >
+            <strong
+              class="block font-mono text-[10px] tracking-widest uppercase mb-1"
+              style="color: #8b1a1a"
+              >Suggested Explanation for Ma'am</strong
+            >
+            The email notification feature and the AI document feedback feature
+            require an active internet connection and valid API credentials. If
+            those credentials are not configured, those two features will not
+            work — but all core features including accreditation management,
+            proposals, financial reports, and user management will function
+            normally on localhost without an internet connection.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer
+      class="text-center font-mono text-[11px] text-stone-500 py-6 border-t border-stone-300 tracking-wide"
+    >
+      CNSC Codex &mdash; Local Deployment Guide
+    </footer>
+  </body>
+</html>
