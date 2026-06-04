@@ -226,11 +226,11 @@ export function AdviserProposal({ orgData }) {
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: "#F5F5F9" }}>
-      <div className="max-w-7xl mx-auto">
+    <div>
+      <div>
         {/* Enhanced Header */}
-        <div className="mb-8">
-          <div className="bg-white/80 backdrop-blur-sm  shadow-xl border border-white/20 p-8">
+        <div className="">
+          <div className="p-6 bg-white">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-2xl font-semibold text-slate-600 mt-2">
@@ -301,10 +301,10 @@ export function AdviserProposal({ orgData }) {
 
         {/* Enhanced Table */}
         {!loading && !error && proposals.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+          <div className="">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-slate-200">
+                <thead className=" bg-white border-y-3 ">
                   <tr>
                     <th className="px-8 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                       <div className="flex items-center gap-2">

@@ -312,23 +312,6 @@
             file. The uploads folder is gitignored and no backup file was
             committed to the repository.
           </p>
-          <div
-            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
-          >
-            <strong
-              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
-              >Action Required</strong
-            >
-            Confirm with your group where the database dump was saved on the
-            flash drive — for example:
-            <code class="bg-amber-100 px-1 py-0.5 text-xs"
-              >/database/cnsc-codex-dump/</code
-            >
-            or
-            <code class="bg-amber-100 px-1 py-0.5 text-xs"
-              >/database/cnsc_codex_backup.gz</code
-            >. Also confirm the exact filename before the defense.
-          </div>
         </div>
       </section>
 
@@ -558,18 +541,6 @@
               </tr>
             </tbody>
           </table>
-          <div
-            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
-          >
-            <strong
-              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
-              >Note</strong
-            >
-            If your group changed these credentials, check the actual
-            <code class="bg-amber-100 px-1 text-xs">server/.env</code> file
-            saved on the flash drive — it is gitignored and not visible in the
-            GitHub repository.
-          </div>
         </div>
       </section>
 
@@ -633,7 +604,7 @@
             <strong
               class="block font-mono text-[10px] tracking-widest uppercase mb-1"
               style="color: #8b1a1a"
-              >Instruction for Ma'am</strong
+              >Instruction</strong
             >
             Please ensure ports 5000 and 5173 are free and not blocked by the
             Windows Firewall. If another application is already using port 5000,
@@ -862,17 +833,7 @@ npm run dev</pre>
             repository. User accounts are stored in MongoDB and not committed to
             GitHub.
           </p>
-          <div
-            class="bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 px-4 py-3 text-xs text-amber-900"
-          >
-            <strong
-              class="block font-mono text-[10px] tracking-widest uppercase mb-1 text-amber-700"
-              >Action Required</strong
-            >
-            Check your MongoDB database for existing accounts and note them down
-            before the defense. Make sure at least one account per role is
-            present in the database dump provided.
-          </div>
+
           <table class="w-full border-collapse text-xs">
             <thead>
               <tr>
@@ -901,12 +862,12 @@ npm run dev</pre>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  sdu@cnsc.edu.ph
                 </td>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  password123
                 </td>
               </tr>
               <tr class="bg-stone-50">
@@ -916,12 +877,12 @@ npm run dev</pre>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  sducoordinator@cnsc.edu.ph
                 </td>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  password123
                 </td>
               </tr>
               <tr>
@@ -929,12 +890,12 @@ npm run dev</pre>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  dean.ccms@cnsc.edu.ph
                 </td>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  password123
                 </td>
               </tr>
               <tr class="bg-stone-50">
@@ -942,12 +903,12 @@ npm run dev</pre>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  Through Registration
                 </td>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  Through Registration
                 </td>
               </tr>
               <tr>
@@ -957,12 +918,12 @@ npm run dev</pre>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  Through Registration
                 </td>
                 <td
                   class="border border-stone-300 px-3.5 py-2.5 text-stone-400 italic"
                 >
-                  fill in
+                  Through Registration
                 </td>
               </tr>
             </tbody>
@@ -1053,11 +1014,6 @@ npm run dev</pre>
             class="bg-primary-light border border-red-200 border-l-4 border-l-primary px-4 py-3 text-xs"
             style="color: #500000"
           >
-            <strong
-              class="block font-mono text-[10px] tracking-widest uppercase mb-1"
-              style="color: #8b1a1a"
-              >Suggested Explanation for Ma'am</strong
-            >
             The email notification feature and the AI document feedback feature
             require an active internet connection and valid API credentials. If
             those credentials are not configured, those two features will not

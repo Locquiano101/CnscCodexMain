@@ -16,7 +16,14 @@ import {
 import axios from "axios";
 import { API_ROUTER, DOCU_API_ROUTER } from "../../../../App";
 import { FileText, Upload, Mail, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,9 +36,6 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // New state for "reset popup"
-  const [showResetPopup, setShowResetPopup] = useState(false);
 
   useEffect(() => {
     const GetAccreditationInformation = async () => {
@@ -46,7 +50,7 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
 
         const response = await axios.get(
           `${API_ROUTER}/getAccreditationInfo/${orgId}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         console.log(response);
 
@@ -73,7 +77,10 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
   }
 
   return (
-    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full p-6 overflow-auto"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <div className="w-full">
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-7 gap-6">
@@ -101,21 +108,6 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
           </div>
         </div>
       </div>
-
-      {/* Upload Modal */}
-      {uploadingDocType && (
-        <UploadDocument
-          title={`Upload ${uploadingDocType.replace(/([A-Z])/g, " $1").trim()}`}
-          onFileSelect={setSelectedFile}
-          onSubmit={handleUploadSubmit}
-          onCancel={() => {
-            setUploadingDocType(null);
-            setSelectedFile(null);
-          }}
-          buttonLabel="Upload"
-          buttonClass="bg-blue-600 hover:bg-blue-700"
-        />
-      )}
     </div>
   );
 }
@@ -123,7 +115,10 @@ export function AdviserAccreditationMainComponent({ user, orgId }) {
 // Loading skeleton component
 function LoadingSkeleton() {
   return (
-    <div className="h-full p-6 overflow-auto" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full p-6 overflow-auto"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header Skeleton */}
         <div className="mb-8">
@@ -238,7 +233,7 @@ function ErrorState({ error, onRetry }) {
         <p className="text-gray-600 mb-4">{error}</p>
         <button
           onClick={onRetry}
-          className="inline-flex items-center px-4 py-2 border border-transparent  shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent  shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           Try Again
         </button>
@@ -259,9 +254,14 @@ function OverallStatus({ accreditationData }) {
     async function loadCustomRequirements() {
       setLoadingCustom(true);
       try {
-        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true },
+        );
         if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
-        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        const customs = (Array.isArray(data) ? data : []).filter(
+          (r) => r.type === "custom",
+        );
         const orgId = accreditationData.organizationProfile?._id;
         if (!orgId || customs.length === 0) {
           if (!ignore) setLoadingCustom(false);
@@ -270,16 +270,24 @@ function OverallStatus({ accreditationData }) {
         const results = await Promise.all(
           customs.map(async (r) => {
             try {
-              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
-              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+              const { data: sub } = await axios.get(
+                `${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`,
+                { withCredentials: true },
+              );
+              return {
+                key: r.key,
+                status: sub?.submission?.status || "Not Submitted",
+              };
             } catch (e) {
-              return { key: r.key, status: 'Not Submitted' };
+              return { key: r.key, status: "Not Submitted" };
             }
-          })
+          }),
         );
         if (!ignore) {
           const map = {};
-          results.forEach(({ key, status }) => { map[key] = status; });
+          results.forEach(({ key, status }) => {
+            map[key] = status;
+          });
           setCustomStatusMap(map);
         }
       } catch (err) {
@@ -292,19 +300,24 @@ function OverallStatus({ accreditationData }) {
     if (accreditationData?.organizationProfile?._id) {
       loadCustomRequirements();
     }
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [accreditationData]);
 
   // Determine which template requirements are enabled
   const enabledTemplateKeys = new Set(
     (visibleRequirements || [])
       .filter((r) => r.type === "template")
-      .map((r) => r.key)
+      .map((r) => r.key),
   );
 
   const requirements = [];
   // Only include document trio if template 'accreditation-documents' is enabled
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("accreditation-documents")
+  ) {
     requirements.push(
       {
         name: "Joint Statement",
@@ -312,13 +325,14 @@ function OverallStatus({ accreditationData }) {
       },
       {
         name: "Pledge Against Hazing",
-        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+        status:
+          accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
       },
       {
         name: "Constitution And By-Laws",
         status:
           accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-      }
+      },
     );
   }
   // Roster
@@ -329,7 +343,10 @@ function OverallStatus({ accreditationData }) {
     });
   }
   // President profile
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("president-info")
+  ) {
     requirements.push({
       name: "President Profile",
       status:
@@ -337,7 +354,10 @@ function OverallStatus({ accreditationData }) {
     });
   }
   // Financial Report
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("financial-report")
+  ) {
     requirements.push({
       name: "Financial Report",
       status: accreditationData.FinancialReport?.isActive
@@ -347,7 +367,9 @@ function OverallStatus({ accreditationData }) {
   }
 
   // Append custom requirements
-  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  const customVisible = (visibleRequirements || []).filter(
+    (r) => r.type === "custom",
+  );
   for (const req of customVisible) {
     requirements.push({
       name: req.title,
@@ -359,9 +381,10 @@ function OverallStatus({ accreditationData }) {
     const s = (req.status || "").toLowerCase();
     return s === "approved" || s === "submitted" || s === "active";
   }).length;
-  const progressPercentage = requirements.length > 0
-    ? (completedRequirements / requirements.length) * 100
-    : 0;
+  const progressPercentage =
+    requirements.length > 0
+      ? (completedRequirements / requirements.length) * 100
+      : 0;
 
   return (
     <Card className="h-full">
@@ -372,7 +395,7 @@ function OverallStatus({ accreditationData }) {
           </h2>
           <div
             className={`px-4 py-2 rounded-full flex items-center gap-2 ${getStatusColor(
-              overallStatus
+              overallStatus,
             )}`}
           >
             {getStatusIcon(overallStatus)}
@@ -380,53 +403,53 @@ function OverallStatus({ accreditationData }) {
           </div>
         </div>
 
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Progress</span>
-          <span className="text-sm font-medium text-gray-700">
-            {completedRequirements}/{requirements.length} completed
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 -full h-3">
-          <div
-            className="bg-blue-600 h-3 -full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Requirements List */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Requirements Checklist
-        </h3>
-        {loadingCustom && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg text-blue-700 text-sm">
-            <div className="animate-spin">⏳</div>
-            <span>Loading custom requirements...</span>
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">Progress</span>
+            <span className="text-sm font-medium text-gray-700">
+              {completedRequirements}/{requirements.length} completed
+            </span>
           </div>
-        )}
-        {requirements.map((req, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between p-3 bg-gray-50 "
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-gray-400" />
-              <span className="font-medium text-gray-900">{req.name}</span>
-            </div>
+          <div className="w-full bg-gray-200 -full h-3">
             <div
-              className={`px-3 py-1 rounded-full text-sm flex items-center gap-2 ${getStatusColor(
-                req.status
-              )}`}
-            >
-              {getStatusIcon(req.status)}
-              <span>{getDisplayStatus(req.status)}</span>
-            </div>
+              className="bg-primary h-3 -full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
           </div>
-        ))}
-      </div>
+        </div>
+
+        {/* Requirements List */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Requirements Checklist
+          </h3>
+          {loadingCustom && (
+            <div className="flex items-center gap-2 p-3 bg-primary rounded-lg text-primary text-sm">
+              <div className="animate-spin">⏳</div>
+              <span>Loading custom requirements...</span>
+            </div>
+          )}
+          {requirements.map((req, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 bg-gray-50 "
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-gray-400" />
+                <span className="font-medium text-gray-900">{req.name}</span>
+              </div>
+              <div
+                className={`px-3 py-1 rounded-full text-sm flex items-center gap-2 ${getStatusColor(
+                  req.status,
+                )}`}
+              >
+                {getStatusIcon(req.status)}
+                <span>{getDisplayStatus(req.status)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -509,7 +532,7 @@ function PresidentInformation({ accreditationData }) {
                   className="flex justify-between items-center p-2 bg-gray-50 rounded"
                 >
                   <span className="text-sm font-medium">{skill.skill}</span>
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-shade-light text-primary px-2 py-1 rounded-full">
                     {skill.level}
                   </span>
                 </div>
@@ -567,7 +590,7 @@ function DocumentDisplayCard({ user, accreditationData }) {
     try {
       const response = await axios.post(
         `${API_ROUTER}/accreditationEmailInquiry`,
-        emailData
+        emailData,
       );
       console.log(response.data);
       setShowEmailModal(false);
@@ -581,7 +604,7 @@ function DocumentDisplayCard({ user, accreditationData }) {
       return (
         <div className="border border-gray-200 p-4 shadow-sm hover:bg-gray-50 transition-colors">
           <div className="flex items-start gap-3 min-w-0">
-            <FileText className="w-8 h-8 text-blue-600" />
+            <FileText className="w-8 h-8 text-primary" />
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-gray-900">{label}</h3>
               <p
@@ -610,7 +633,7 @@ function DocumentDisplayCard({ user, accreditationData }) {
     return (
       <div
         onClick={() => openEmailModal(key, label, doc?._id)}
-        className="border-2 border-dashed border-gray-300 p-8 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+        className="border-2 border-dashed border-gray-300 p-8 cursor-pointer hover:border-primary hover:bg-primary transition-colors"
       >
         <div className="text-center">
           <Mail className="w-8 h-8 mx-auto text-gray-400 mb-2" />
@@ -632,17 +655,17 @@ function DocumentDisplayCard({ user, accreditationData }) {
           {renderDocumentCard(
             "Joint Statement",
             JointStatement,
-            "JointStatement"
+            "JointStatement",
           )}
           {renderDocumentCard(
             "Constitution and By-Laws",
             ConstitutionAndByLaws,
-            "ConstitutionAndByLaws"
+            "ConstitutionAndByLaws",
           )}
           {renderDocumentCard(
             "Pledge Against Hazing",
             PledgeAgainstHazing,
-            "PledgeAgainstHazing"
+            "PledgeAgainstHazing",
           )}
         </div>
       </CardContent>
@@ -697,15 +720,12 @@ function DocumentDisplayCard({ user, accreditationData }) {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowEmailModal(false)}
-            >
+            <Button variant="outline" onClick={() => setShowEmailModal(false)}>
               Cancel
             </Button>
             <Button
               onClick={handleSendEmail}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary"
             >
               Send Email
             </Button>
@@ -725,7 +745,7 @@ function RosterLists({ accreditationData }) {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${API_ROUTER}/getRosterMembers/${accreditationData.organizationProfile._id}`
+        `${API_ROUTER}/getRosterMembers/${accreditationData.organizationProfile._id}`,
       );
       setRosterData(response.data.rosterMembers || []);
       setError(null);
@@ -769,58 +789,57 @@ function RosterLists({ accreditationData }) {
         ) : rosterData.length > 0 ? (
           <div className="space-y-4">
             {rosterData.map((member) => (
-            <div
-              key={member._id}
-              className="flex items-center justify-between p-4 bg-gray-50"
+              <div
+                key={member._id}
+                className="flex items-center justify-between p-4 bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                    <img
+                      src={
+                        member.profilePicture
+                          ? `${DOCU_API_ROUTER}/${accreditationData.organizationProfile._id}/${member.profilePicture}`
+                          : "/cnsc-logo.png"
+                      }
+                      className="max-h-32 aspect-square border object-cover rounded"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">{member.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      {member.position} • {member.year}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2 py-1 text-xs ${getStatusColor(
+                      member.status,
+                    )}`}
+                  >
+                    {member.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Users className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Roster Submitted
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Upload your organization roster to continue with accreditation
+            </p>
+            <a
+              href="./accreditation/roster-of-members"
+              className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-primary transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <img
-                    src={
-                      member.profilePicture
-                        ? `${DOCU_API_ROUTER}/${accreditationData.organizationProfile._id}/${member.profilePicture}`
-                        : "/cnsc-logo.png"
-                    }
-                    alt="Profile Picture"
-                    className="max-h-32 aspect-square border object-cover rounded"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">{member.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    {member.position} • {member.year}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-2 py-1 text-xs ${getStatusColor(
-                    member.status
-                  )}`}
-                >
-                  {member.status}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <Users className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No Roster Submitted
-          </h3>
-          <p className="text-gray-500 mb-4">
-            Upload your organization roster to continue with accreditation
-          </p>
-          <a
-            href="./accreditation/roster-of-members"
-            className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            Notify organization
-          </a>
-        </div>
-      )}
+              Notify organization
+            </a>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -829,7 +848,7 @@ function RosterLists({ accreditationData }) {
 function UploadDocument({
   title = "Upload a Document",
   buttonLabel = "Submit",
-  buttonClass = "bg-blue-600 hover:bg-blue-700",
+  buttonClass = "bg-primary hover:bg-primary",
   onFileSelect,
   onSubmit,
   onCancel,
@@ -866,7 +885,7 @@ function getStatusColor(status) {
     case "approved":
       return "text-green-600 bg-green-50";
     case "advicerapproved":
-      return "text-blue-500 bg-blue-50";
+      return "text-primary bg-primary";
     case "deanapproved":
       return "text-indigo-600 bg-indigo-50";
     case "pending":
@@ -876,7 +895,7 @@ function getStatusColor(status) {
     case "revisionrequested":
       return "text-orange-600 bg-orange-50";
     case "submitted":
-      return "text-blue-600 bg-blue-50";
+      return "text-primary bg-primary";
     case "active":
       return "text-green-600 bg-green-50";
     default:

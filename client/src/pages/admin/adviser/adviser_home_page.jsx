@@ -20,7 +20,10 @@ export default function AdviserHomePage({ orgData, accreditationData, user }) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen space-y-6 p-6" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="min-h-screen space-y-6 p-6"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       {/* Header */}
       <header className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
@@ -75,7 +78,7 @@ function AccreditationComponent({ orgId }) {
       try {
         const response = await axios.get(
           `${API_ROUTER}/getAccreditationInfo/${orgId}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setAccreditationData(response.data);
 
@@ -96,9 +99,14 @@ function AccreditationComponent({ orgId }) {
     async function loadCustomRequirements() {
       setLoadingCustom(true);
       try {
-        const { data } = await axios.get(`${API_ROUTER}/accreditation/requirements/visible`, { withCredentials: true });
+        const { data } = await axios.get(
+          `${API_ROUTER}/accreditation/requirements/visible`,
+          { withCredentials: true },
+        );
         if (!ignore) setVisibleRequirements(Array.isArray(data) ? data : []);
-        const customs = (Array.isArray(data) ? data : []).filter((r) => r.type === 'custom');
+        const customs = (Array.isArray(data) ? data : []).filter(
+          (r) => r.type === "custom",
+        );
         if (!orgId || customs.length === 0) {
           if (!ignore) setLoadingCustom(false);
           return;
@@ -106,16 +114,24 @@ function AccreditationComponent({ orgId }) {
         const results = await Promise.all(
           customs.map(async (r) => {
             try {
-              const { data: sub } = await axios.get(`${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`, { withCredentials: true });
-              return { key: r.key, status: sub?.submission?.status || 'Not Submitted' };
+              const { data: sub } = await axios.get(
+                `${API_ROUTER}/accreditation/requirements/${r.key}/submission/${orgId}`,
+                { withCredentials: true },
+              );
+              return {
+                key: r.key,
+                status: sub?.submission?.status || "Not Submitted",
+              };
             } catch (e) {
-              return { key: r.key, status: 'Not Submitted' };
+              return { key: r.key, status: "Not Submitted" };
             }
-          })
+          }),
         );
         if (!ignore) {
           const map = {};
-          results.forEach(({ key, status }) => { map[key] = status; });
+          results.forEach(({ key, status }) => {
+            map[key] = status;
+          });
           setCustomStatusMap(map);
         }
       } catch (err) {
@@ -126,7 +142,9 @@ function AccreditationComponent({ orgId }) {
       }
     }
     loadCustomRequirements();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [orgId]);
 
   if (!accreditationData) return null;
@@ -135,12 +153,15 @@ function AccreditationComponent({ orgId }) {
   const enabledTemplateKeys = new Set(
     (visibleRequirements || [])
       .filter((r) => r.type === "template")
-      .map((r) => r.key)
+      .map((r) => r.key),
   );
 
   const requirements = [];
   // Only include document trio if template 'accreditation-documents' is enabled
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("accreditation-documents")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("accreditation-documents")
+  ) {
     requirements.push(
       {
         name: "Joint Statement",
@@ -148,13 +169,14 @@ function AccreditationComponent({ orgId }) {
       },
       {
         name: "Pledge Against Hazing",
-        status: accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
+        status:
+          accreditationData.PledgeAgainstHazing?.status || "Not Submitted",
       },
       {
         name: "Constitution And By-Laws",
         status:
           accreditationData.ConstitutionAndByLaws?.status || "Not Submitted",
-      }
+      },
     );
   }
   // Roster
@@ -165,7 +187,10 @@ function AccreditationComponent({ orgId }) {
     });
   }
   // President profile
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("president-info")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("president-info")
+  ) {
     requirements.push({
       name: "President Profile",
       status:
@@ -173,7 +198,10 @@ function AccreditationComponent({ orgId }) {
     });
   }
   // Financial Report
-  if (enabledTemplateKeys.size === 0 || enabledTemplateKeys.has("financial-report")) {
+  if (
+    enabledTemplateKeys.size === 0 ||
+    enabledTemplateKeys.has("financial-report")
+  ) {
     requirements.push({
       name: "Financial Report",
       status: accreditationData.FinancialReport?.isActive
@@ -183,7 +211,9 @@ function AccreditationComponent({ orgId }) {
   }
 
   // Append custom requirements
-  const customVisible = (visibleRequirements || []).filter((r) => r.type === "custom");
+  const customVisible = (visibleRequirements || []).filter(
+    (r) => r.type === "custom",
+  );
   for (const req of customVisible) {
     requirements.push({
       name: req.title,
@@ -223,24 +253,32 @@ function AccreditationComponent({ orgId }) {
 
   const getDisplayStatus = (status) => {
     const statusMap = {
-      "DeanApproved": "Approved by the Dean",
-      "AdviserApproved": "Approved by the Adviser",
-      "RevisionRequested": "Revision Requested",
+      DeanApproved: "Approved by the Dean",
+      AdviserApproved: "Approved by the Adviser",
+      RevisionRequested: "Revision Requested",
       "Not Submitted": "Not Submitted",
-      "Incomplete": "Incomplete",
-      "Approved": "Approved",
-      "Pending": "Pending",
-      "Rejected": "Rejected",
-      "Submitted": "Submitted",
-      "Active": "Active",
-      "Inactive": "Inactive"
+      Incomplete: "Incomplete",
+      Approved: "Approved",
+      Pending: "Pending",
+      Rejected: "Rejected",
+      Submitted: "Submitted",
+      Active: "Active",
+      Inactive: "Inactive",
     };
     return statusMap[status] || status;
   };
 
   const getStatusIcon = (status) => {
     const statusLower = status?.toLowerCase();
-    if (["approved", "submitted", "active", "deanapproved", "adviserapproved"].includes(statusLower)) {
+    if (
+      [
+        "approved",
+        "submitted",
+        "active",
+        "deanapproved",
+        "adviserapproved",
+      ].includes(statusLower)
+    ) {
       return <CheckCircle className="w-4 h-4 text-emerald-600" />;
     }
     if (["pending", "revisionrequested"].includes(statusLower)) {
@@ -278,7 +316,7 @@ function AccreditationComponent({ orgId }) {
         </div>
         <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+            className="bg-blue-500 h-full rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -313,7 +351,7 @@ function AccreditationComponent({ orgId }) {
             </div>
             <div
               className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${getStatusColor(
-                req.status
+                req.status,
               )}`}
             >
               {getStatusIcon(req.status)}
@@ -334,7 +372,7 @@ function ProposalsComponent({ orgData }) {
     try {
       const { data } = await axios.get(
         `${API_ROUTER}/getStudentLeaderProposalConduct/${orgData._id}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setProposalsConduct(data);
     } catch (err) {
@@ -489,7 +527,7 @@ function ProposalsComponent({ orgData }) {
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-slate-900">
                     {formatCurrency(
-                      item.ProposedIndividualActionPlan.budgetaryRequirements
+                      item.ProposedIndividualActionPlan.budgetaryRequirements,
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600 capitalize">
@@ -517,7 +555,7 @@ function PostComponent({ orgData }) {
       try {
         const response = await axios.get(
           `${API_ROUTER}/getOrgProfilePosts/${orgData._id}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setPosts(response.data);
       } catch (error) {
@@ -542,7 +580,7 @@ function PostComponent({ orgData }) {
       ".svg",
     ];
     const firstImage = content.find((item) =>
-      imageExtensions.some((ext) => item.fileName.toLowerCase().includes(ext))
+      imageExtensions.some((ext) => item.fileName.toLowerCase().includes(ext)),
     );
     return firstImage
       ? `${DOCU_API_ROUTER}/${orgId}/${firstImage.fileName}`
@@ -604,7 +642,7 @@ function PostComponent({ orgData }) {
           posts.map((post) => {
             const imageUrl = getFirstImage(
               post.content,
-              post.organizationProfile?._id
+              post.organizationProfile?._id,
             );
             const tags = parseTags(post.tags);
             const hasContent = post.caption && post.caption.trim().length > 0;
@@ -656,7 +694,7 @@ function PostComponent({ orgData }) {
                   {/* Footer */}
                   <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                     <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
                         {post.organizationProfile?.orgAcronym?.[0] || "O"}
                       </div>
                       <span className="text-sm font-medium text-slate-700">

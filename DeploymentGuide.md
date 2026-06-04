@@ -52,9 +52,6 @@ There are no specific OS restrictions. The project is built entirely on Node.js,
 
 This cannot be determined from the repository alone. The project uses **MongoDB** (not MySQL), so the backup format is a `.bson` dump folder (via `mongodump`) or a JSON export — not a `.sql` file. The uploads folder is gitignored and no backup file was committed to the repository.
 
-> ⚠️ **Action Required**
-> Confirm with your group where the database dump was saved on the flash drive — for example: `/database/cnsc-codex-dump/` or `/database/cnsc_codex_backup.gz`. Also confirm the exact filename before the defense.
-
 ---
 
 ## 4. Database Setup Instructions
@@ -97,9 +94,6 @@ Based on the README environment variable template, the default local configurati
 | Database Host     | `localhost`                            |
 | MongoDB Port      | `27017`                                |
 
-> ⚠️ **Note**
-> If your group changed these credentials, check the actual `server/.env` file saved on the flash drive — it is gitignored and not visible in the GitHub repository.
-
 ---
 
 ## 6. Port Configuration and Firewall Notes
@@ -111,7 +105,6 @@ The system uses two ports that must be free and unblocked:
 | `5000` | Express backend server                 |
 | `5173` | Vite React frontend (development mode) |
 
-> **Instruction for Ma'am**
 > Please ensure ports 5000 and 5173 are free and not blocked by the Windows Firewall. If another application is already using port 5000, the backend will fail to start. No special firewall rules are needed beyond this, since everything runs on localhost.
 
 ---
@@ -185,24 +178,24 @@ Once the system is running, open a web browser and go to the following address:
 | Frontend (the actual website)  | `http://localhost:5173` |
 | Backend API (for testing only) | `http://localhost:5000` |
 
-Ma'am only needs to open `http://localhost:5173` in the browser to use and explore the system.
+only needs to open `http://localhost:5173` in the browser to use and explore the system.
 
 ---
 
 ## 10. Pre-Created Test Account Credentials
 
-No seed files or hardcoded test accounts were found in the repository. User accounts are stored in MongoDB and not committed to GitHub.
+seeded file is provided and test accounts are found in the repository. User accounts are stored in MongoDB and not committed to GitHub.
 
 > ⚠️ **Action Required**
-> Check your MongoDB database for existing accounts and note them down before the defense. Make sure at least one account per role is present in the database dump provided.
+> Check your MongoDB database for existing accounts and make sure at least one account per role is present in the database dump provided. (⚠️ FOR TEST ONLY)
 
-| Role              | Email     | Password  |
-| ----------------- | --------- | --------- |
-| SDU Administrator | _fill in_ | _fill in_ |
-| SDU Coordinator   | _fill in_ | _fill in_ |
-| Dean              | _fill in_ | _fill in_ |
-| Adviser           | _fill in_ | _fill in_ |
-| Student Leader    | _fill in_ | _fill in_ |
+| Role              | Email                        | Password               |
+| ----------------- | ---------------------------- | ---------------------- |
+| SDU Administrator | _sdu@cnsc.edu.ph_            | _password123_          |
+| SDU Coordinator   | _sducoordinator@cnsc.edu.ph_ | _password123_          |
+| Dean              | _dean.ccms@cnsc.edu.ph_      | _password123_          |
+| Adviser           | _Through Registration_       | _Through Registration_ |
+| Student Leader    | _Through Registration_       | _Through Registration_ |
 
 ---
 

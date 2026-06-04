@@ -622,7 +622,7 @@ function PostComponent({ orgData }) {
                     {/* Footer */}
                     <div className="flex items-center justify-between pt-3 border-t">
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
                           {post.organizationProfile?.orgAcronym?.[0] || "O"}
                         </div>
                         <span className="text-sm font-medium">

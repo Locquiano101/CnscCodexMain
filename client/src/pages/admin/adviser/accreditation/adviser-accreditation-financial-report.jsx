@@ -39,7 +39,7 @@ export function AdviserFinancialReport({ orgData }) {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${API_ROUTER}/getFinancialReport/${orgData._id}`
+          `${API_ROUTER}/getFinancialReport/${orgData._id}`,
         );
         console.log("Financial Report Response:", response.data);
         setFinancialReport(response.data);
@@ -110,8 +110,7 @@ export function AdviserFinancialReport({ orgData }) {
     let runningBalance = currentBalance;
     return months.map((month) => {
       const data = monthlyStats[month];
-      runningBalance =
-        runningBalance + data.cashInflow - data.cashOutflow;
+      runningBalance = runningBalance + data.cashInflow - data.cashOutflow;
       return {
         ...data,
         balance: runningBalance,
@@ -150,21 +149,20 @@ export function AdviserFinancialReport({ orgData }) {
   }
 
   // Calculate totals from actual data
-  const totalCollections = financialReport.collections?.reduce(
-    (sum, item) => sum + item.amount,
-    0
-  ) || 0;
+  const totalCollections =
+    financialReport.collections?.reduce((sum, item) => sum + item.amount, 0) ||
+    0;
 
   const totalReimbursements = financialReport.reimbursements.reduce(
     (sum, item) => sum + item.amount,
-    0
+    0,
   );
 
   const totalCashInflow = totalCollections + totalReimbursements;
 
   const totalDisbursements = financialReport.disbursements.reduce(
     (sum, item) => sum + item.amount,
-    0
+    0,
   );
 
   // Replace the existing expenseBreakdown calculation with this improved version
@@ -240,7 +238,7 @@ export function AdviserFinancialReport({ orgData }) {
           value: amount,
           color: greenShades[index % greenShades.length],
         });
-      }
+      },
     );
 
     // Add disbursement types with red shades
@@ -251,7 +249,7 @@ export function AdviserFinancialReport({ orgData }) {
           value: amount,
           color: redShades[index % redShades.length],
         });
-      }
+      },
     );
 
     return result;
@@ -260,7 +258,10 @@ export function AdviserFinancialReport({ orgData }) {
   const expenseBreakdown = financialReport ? createExpenseBreakdown() : [];
 
   return (
-    <div className="h-full w-full p-6 flex gap-4" style={{ backgroundColor: '#F5F5F9' }}>
+    <div
+      className="h-full w-full p-6 flex gap-4"
+      style={{ backgroundColor: "#F5F5F9" }}
+    >
       <Card className="flex flex-col flex-1 overflow-hidden">
         <CardContent className="p-6">
           {/* Header */}
@@ -274,11 +275,6 @@ export function AdviserFinancialReport({ orgData }) {
                 Financial Report
               </h2>
             </div>
-
-            {/* Right Section: Button */}
-            <Button className="bg-amber-500 hover:bg-amber-600">
-              Summarize Report
-            </Button>
           </div>
 
           {/* Summary Cards */}
@@ -314,7 +310,7 @@ export function AdviserFinancialReport({ orgData }) {
             </div>
 
             {/* Current Balance */}
-            <div className="bg-amber-100 flex-1 min-w-[200px] p-4 rounded-lg border border-amber-200 shadow-sm mb-3">
+            <div className="bg-amber-100 flex-1 min-w-[200px] p-4 rounded-lg border border-amber-200 shadow-sm ">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-amber-600 font-medium">
@@ -332,71 +328,71 @@ export function AdviserFinancialReport({ orgData }) {
           </div>
 
           {/* Charts */}
-          <div className="flex mt-4 flex-col gap-6">
-          {/* Monthly Comparison Bar Chart */}
-          <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Monthly Comparison
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Bar
-                    dataKey="cashInflow"
-                    fill="#22c55e"
-                    name="Cash Inflow"
-                  />
-                  <Bar
-                    dataKey="cashOutflow"
-                    fill="#ef4444"
-                    name="Cash Outflow"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Expense Breakdown Pie Chart */}
-          {expenseBreakdown.length > 0 && (
-            <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Expense Breakdown
-                </h3>
-              </div>
+          <div className="flex mt-12 flex-col gap-6">
+            {/* Monthly Comparison Bar Chart */}
+            <div className="">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Monthly Comparison
+              </h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={expenseBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      labelLine={false}
-                      dataKey="value"
-                      label={({ name, percent }) =>
-                        `${name} ${(percent * 100).toFixed(0)}%`
-                      }
-                    >
-                      {expenseBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
+                  <BarChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
                     <Tooltip formatter={(value) => formatCurrency(value)} />
-                  </PieChart>
+                    <Legend />
+                    <Bar
+                      dataKey="cashInflow"
+                      fill="#22c55e"
+                      name="Cash Inflow"
+                    />
+                    <Bar
+                      dataKey="cashOutflow"
+                      fill="#ef4444"
+                      name="Cash Outflow"
+                    />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Expense Breakdown Pie Chart */}
+            {expenseBreakdown.length > 0 && (
+              <div className="bg-white p-4 rounded-2xl shadow border border-gray-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <DollarSign className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Expense Breakdown
+                  </h3>
+                </div>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={expenseBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        labelLine={false}
+                        dataKey="value"
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {expenseBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -451,9 +447,7 @@ export function AdviserFinancialReport({ orgData }) {
               <div className="p-2.5 bg-green-100 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Cash Inflow
-              </h2>
+              <h2 className="text-xl font-bold text-gray-800">Cash Inflow</h2>
             </div>
           </div>
           <div className="flex-1 p-4 overflow-auto flex flex-col gap-3">

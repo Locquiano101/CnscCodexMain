@@ -438,6 +438,7 @@ export const UpdateDocumentStatus = async (req, res) => {
     const { documentId } = req.params;
     const { status, revisionNotes } = req.body;
 
+    console.log(documentId, status, revisionNotes);
     if (!documentId) {
       return res
         .status(400)

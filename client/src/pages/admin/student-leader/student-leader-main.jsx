@@ -714,12 +714,6 @@ function StudentNavigation({ orgData }) {
               label: "Notifications",
               path: "/student-leader/notifications",
             },
-            {
-              key: "Profile",
-              icon: <User2 className="w-5 h-5" />,
-              label: "Profile",
-              path: "/student-leader/Profile",
-            },
           ].map((item) => (
             <NavLink
               key={item.key}

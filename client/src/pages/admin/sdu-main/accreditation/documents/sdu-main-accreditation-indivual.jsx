@@ -30,7 +30,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
     try {
       const { data } = await axios.get(
         `${API_ROUTER}/getAccreditationInfo/${selectedOrg._id}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log(data);
       setAccreditationData(data);
@@ -74,61 +74,30 @@ export function SduMainAccreditationDocumentIndividualOrganization({
     // Maybe show an error toast
   };
 
-  const ApprovePopup = () => {
-    const handleUpdateStatus = async ({ documentId, status }) => {
-      try {
-        // 1. Update the document status
-        await axios.post(
-          `${API_ROUTER}/UpdateDocument/${documentId}`,
-          { status },
-          { withCredentials: true }
-        );
+  const showStatusNotification = (type, message) => {
+    let remaining = 3;
 
-        // 2. Refresh accreditation data
-        const { data } = await axios.get(
-          `${API_ROUTER}/getAccreditationInfo/${selectedOrg?._id}`,
-          { withCredentials: true }
-        );
+    setStatusNotification({
+      type,
+      message,
+      secs: remaining,
+    });
 
-        setAccreditationData(data);
-        console.log(`Document ${documentId} status updated to ${status}`);
+    const interval = setInterval(() => {
+      remaining--;
 
-        // Close popup after success
-        setShowApprovePopup(false);
-      } catch (err) {
-        console.error("Error updating document status:", err);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setStatusNotification(null);
+        return;
       }
-    };
 
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-          <h3 className="text-lg font-semibold mb-4">Approve Document</h3>
-          <p className="text-gray-600 mb-4">
-            Approve {selectedDocument?.label}?
-          </p>
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={() => setShowApprovePopup(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() =>
-                handleUpdateStatus({
-                  documentId: selectedDocument?.doc?._id,
-                  status: "Approved",
-                })
-              }
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Approve
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+      setStatusNotification({
+        type,
+        message,
+        secs: remaining,
+      });
+    }, 1000);
   };
 
   const DocumentDetailsPopup = () => {
@@ -146,7 +115,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
                 <p className="text-sm text-gray-500">
                   Uploaded{" "}
                   {new Date(
-                    selectedDocument?.doc?.createdAt
+                    selectedDocument?.doc?.createdAt,
                   ).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
@@ -158,7 +127,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
             <div className="flex items-center gap-3">
               <div
                 className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getStatusStyle(
-                  selectedDocument?.doc?.status
+                  selectedDocument?.doc?.status,
                 )}`}
               >
                 {getStatusIcon(selectedDocument?.doc?.status)}
@@ -243,12 +212,72 @@ export function SduMainAccreditationDocumentIndividualOrganization({
     }
   };
 
-  const RevisionPopup = () => {
-    const [revisionNotes, setRevisionNotes] = useState("");
+  const ApprovePopup = () => {
+    const handleUpdateStatus = async ({ documentId, status }) => {
+      try {
+        await axios.post(
+          `${API_ROUTER}/UpdateDocument/${documentId}`,
+          { status },
+          { withCredentials: true },
+        );
 
+        const { data } = await axios.get(
+          `${API_ROUTER}/getAccreditationInfo/${selectedOrg?._id}`,
+          { withCredentials: true },
+        );
+
+        setAccreditationData(data);
+
+        // Hide popup immediately
+        setShowApprovePopup(false);
+
+        // Show success notification
+        showStatusNotification(
+          "approved",
+          `${selectedDocument?.label} approved successfully`,
+        );
+      } catch (err) {
+        console.error("Error updating document status:", err);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <h3 className="text-lg font-semibold mb-4">Approve Document</h3>
+
+          <p className="text-gray-600 mb-4">
+            Approve {selectedDocument?.label}?
+          </p>
+
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={() => setShowApprovePopup(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={() =>
+                handleUpdateStatus({
+                  documentId: selectedDocument?.doc?._id,
+                  status: "Approved",
+                })
+              }
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Approve
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const RevisionPopup = () => {
     const handleUpdateRevision = async () => {
       try {
-        // 1. Update the document status with revision notes
         await axios.post(
           `${API_ROUTER}/UpdateDocument/${selectedDocument?.doc?._id}`,
           {
@@ -256,22 +285,20 @@ export function SduMainAccreditationDocumentIndividualOrganization({
             revisionNotes,
             logs: "revision from the Sdu by the SDU",
           },
-          { withCredentials: true }
+          { withCredentials: true },
         );
-
-        // 2. Refresh accreditation data
         const { data } = await axios.get(
           `${API_ROUTER}/getAccreditationInfo/${selectedOrg?._id}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
-
         setAccreditationData(data);
-        console.log(
-          `Document ${selectedDocument?.doc?._id} status updated to Revision From SDU`
-        );
 
-        // Close revision popup after success
         setShowRevisionPopup(false);
+
+        showStatusNotification(
+          "revision",
+          `Revision request sent for ${selectedDocument?.label}`,
+        );
       } catch (err) {
         console.error("Error updating document status:", err);
       }
@@ -280,39 +307,56 @@ export function SduMainAccreditationDocumentIndividualOrganization({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-          <h3 className="text-lg font-semibold mb-4">Create Revision</h3>
-          <p className="text-gray-600 mb-4">
-            Create a revision for {selectedDocument?.label}
-          </p>
-
-          {/* Text box for revision notes */}
-          <textarea
-            className="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Enter revision notes here..."
-            value={revisionNotes}
-            onChange={(e) => setRevisionNotes(e.target.value)}
-            rows={4}
-          />
-
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={() => setShowRevisionPopup(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleUpdateRevision}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              Create Revision
-            </button>
-          </div>
+          {!done ? (
+            <>
+              <h3 className="text-lg font-semibold mb-4">Create Revision</h3>
+              <p className="text-gray-600 mb-4">
+                Create a revision for {selectedDocument?.label}
+              </p>
+              <textarea
+                className="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter revision notes here..."
+                value={revisionNotes}
+                onChange={(e) => setRevisionNotes(e.target.value)}
+                rows={4}
+              />
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowRevisionPopup(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateRevision}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Create Revision
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-2">
+              <div className="text-4xl mb-3">📝</div>
+              <h3 className="text-lg font-semibold text-orange-700 mb-1">
+                Revision Requested!
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                The organization has been notified of the required revisions.
+              </p>
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden mx-auto max-w-xs">
+                <div
+                  className="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${(secs / 3) * 100}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Closing in {secs}s…</p>
+            </div>
+          )}
         </div>
       </div>
     );
   };
-
   // Show loading or nothing if data not ready yet
   if (!accreditationData) {
     return <div className="p-4 text-gray-500">Loading documents...</div>;
@@ -348,7 +392,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
                 <div className="flex items-center ">
                   <div
                     className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getStatusStyle(
-                      doc.status
+                      doc.status,
                     )}`}
                   >
                     {getStatusIcon(doc.status)}
@@ -393,7 +437,10 @@ export function SduMainAccreditationDocumentIndividualOrganization({
 
   return (
     <>
-      <div className="grid h-full gap-6 p-6 lg:grid-cols-3" style={{ backgroundColor: '#F5F5F9' }}>
+      <div
+        className="grid h-full gap-6 p-6 lg:grid-cols-3"
+        style={{ backgroundColor: "#F5F5F9" }}
+      >
         <DocumentCard
           label="Joint Statement"
           doc={JointStatement}
@@ -410,6 +457,7 @@ export function SduMainAccreditationDocumentIndividualOrganization({
           docKey="PledgeAgainstHazing"
         />
       </div>
+
       {/* Popups */}
       {showApprovePopup && <ApprovePopup />}
       {showRevisionPopup && <RevisionPopup />}
