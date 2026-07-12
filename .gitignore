@@ -48,3 +48,6 @@ server/uploads
 client/package.json
 server/package.json
 package-lock.json
+
+# GESF developer logs (developer-only, not for remote)
+.dev-logs/

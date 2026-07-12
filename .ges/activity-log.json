@@ -1,0 +1,93 @@
+[
+  {
+    "id": "activity-1782729303938-1",
+    "timestamp": "2026-06-29T10:35:03.938Z",
+    "source": "cli",
+    "action": "init",
+    "title": "Project initialized: CnscCodexMain",
+    "description": "Initialized GESF for saas project in Philippines with frameworks: GDPR, OWASP, CIS, NIST. Installed 6 policy packs: gdpr, owasp, cis, nist, privacy-core, ph-dpa. Genesis governance record created: gov-1782729303935-1.",
+    "status": "success",
+    "details": {
+      "packs_affected": [
+        "gdpr",
+        "owasp",
+        "cis",
+        "nist",
+        "privacy-core",
+        "ph-dpa"
+      ],
+      "frameworks_added": [
+        "GDPR",
+        "OWASP",
+        "CIS",
+        "NIST"
+      ],
+      "country": "PH",
+      "genesis_governance_record_id": "gov-1782729303935-1"
+    }
+  },
+  {
+    "id": "activity-1782729306175-1",
+    "timestamp": "2026-06-29T10:35:06.175Z",
+    "source": "cli",
+    "action": "audit",
+    "title": "Compliance audit completed",
+    "description": "Scanned 272 files, found 18 findings (12 critical, 0 high, 6 medium, 0 low). Overall score: 0%.",
+    "status": "failed",
+    "details": {
+      "findings_count": 18,
+      "score": 0,
+      "files_scanned": 272
+    }
+  },
+  {
+    "id": "activity-1782729313197-1",
+    "timestamp": "2026-06-29T10:35:13.197Z",
+    "source": "cli",
+    "action": "score",
+    "title": "Score displayed: 0% (F)",
+    "description": "Compliance score: 0% (Grade F) across 23 frameworks.",
+    "status": "success",
+    "details": {
+      "score": 0
+    }
+  },
+  {
+    "id": "activity-1782729456552-1",
+    "timestamp": "2026-06-29T10:37:36.552Z",
+    "source": "cli",
+    "action": "score",
+    "title": "Score displayed: 0% (F)",
+    "description": "Compliance score: 0% (Grade F) across 23 frameworks.",
+    "status": "success",
+    "details": {
+      "score": 0
+    }
+  },
+  {
+    "id": "activity-1782729479647-1",
+    "timestamp": "2026-06-29T10:37:59.647Z",
+    "source": "cli",
+    "action": "audit",
+    "title": "Compliance audit completed",
+    "description": "Scanned 272 files, found 18 findings (12 critical, 0 high, 6 medium, 0 low). Overall score: 0%.",
+    "status": "failed",
+    "details": {
+      "findings_count": 18,
+      "score": 0,
+      "files_scanned": 272
+    }
+  },
+  {
+    "id": "activity-1782729489604-1",
+    "timestamp": "2026-06-29T10:38:09.604Z",
+    "source": "cli",
+    "action": "score",
+    "title": "Score displayed: 0% (F)",
+    "description": "Compliance score: 0% (Grade F) across 23 frameworks.",
+    "status": "success",
+    "details": {
+      "score": 0
+    }
+  }
+]

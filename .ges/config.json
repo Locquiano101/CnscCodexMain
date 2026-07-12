@@ -1,0 +1,75 @@
+{
+  "project_name": "CnscCodexMain",
+  "project_type": "saas",
+  "frameworks": [
+    "GDPR",
+    "OWASP",
+    "CIS",
+    "NIST"
+  ],
+  "country": "PH",
+  "requirements": {
+    "encryption": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "mfa": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "audit_logs": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "backups": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "retention_policy": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "vulnerability_scanning": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "authentication": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "authorization": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "secrets_management": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "logging": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "monitoring": {
+      "required": true,
+      "level": "recommended"
+    },
+    "data_classification": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "disaster_recovery": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "incident_response": {
+      "required": true,
+      "level": "mandatory"
+    },
+    "privacy_controls": {
+      "required": true,
+      "level": "mandatory"
+    }
+  },
+  "created_at": "2026-06-29T10:35:03.903Z",
+  "version": "1.5.8"
+}
