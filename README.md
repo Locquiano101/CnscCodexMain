@@ -433,20 +433,6 @@ All API endpoints are prefixed with `/api`. Key route groups:
 
 ---
 
-## 📸 Screenshots
-
-> ⚠️ This section may need confirmation — screenshots have not been included in the repository. Add images of the main dashboard, accreditation flow, and financial report screens here.
-
-| View                     | Preview            |
-| ------------------------ | ------------------ |
-| Home Page                | _(add screenshot)_ |
-| Student Leader Dashboard | _(add screenshot)_ |
-| Accreditation Overview   | _(add screenshot)_ |
-| Financial Report         | _(add screenshot)_ |
-| SDU Admin Panel          | _(add screenshot)_ |
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! To get started:
@@ -473,14 +459,6 @@ Contributions are welcome! To get started:
 - Use `nodemon` for backend development — it auto-restarts on file changes.
 - ESLint is configured for the client; run `npm run lint --workspace client` to check for issues.
 - A `sandbox.jsx` file exists in the client for experimental/testing purposes.
-
----
-
-## 📄 License
-
-This project is licensed under the **ISC License**.
-
-> ⚠️ No `LICENSE` file was found in the repository root. This section is based on the `"license": "ISC"` field in `package.json`. Consider adding a formal `LICENSE` file.
 
 ---
 
